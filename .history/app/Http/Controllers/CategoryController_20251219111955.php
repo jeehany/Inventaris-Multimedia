@@ -1,0 +1,56 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Models\Category;
+
+class CategoryController extends Controller
+{
+    // 1. Halaman Daftar Kategori (Tabel)
+    public function index()
+    {
+        $categories = Category::all();
+        return view('categories.index', compact('categories'));
+    }
+
+    // 2. Halaman Form Tambah Kategori (Mirip Tool Create)
+    public function create()
+    {
+        return view('categories.create');
+    }
+
+    // 3. Proses Simpan Data
+    public function store(Request $request)
+    {
+        $request->validate([
+            'category_name' => 'required|string|max:255', // Ubah validasi
+        ]);
+
+        Category::create($request->all());
+
+        return redirect()->route('categories.index');
+    }
+
+    // TAMBAHAN: Update Kategori
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'category_name' => 'required|string|max:255',
+        ]);
+
+        $category = \App\Models\Category::findOrFail($id);
+        
+        // Update data (termasuk description jika ada di form)
+        $category->update($request->all());
+
+        return redirect()->route('categories.index')->with('success', 'Kategori berhasil diperbarui!');
+    }
+
+    // 4. Hapus Kategori
+    public function destroy(Category $category)
+    {
+        $category->delete();
+        return redirect()->route('categories.index');
+    }
+}

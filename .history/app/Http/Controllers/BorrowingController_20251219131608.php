@@ -1,0 +1,154 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Borrowing;
+use App\Models\Tool;
+use App\Models\Borrower;
+use App\Models\BorrowingItem; // Tambahkan ini
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB; // WAJIB: Untuk Database Transaction
+use Illuminate\Support\Facades\Auth;
+
+class BorrowingController extends Controller
+{
+    // Menampilkan seluruh daftar riwayat peminjaman
+    public function index()
+    {
+        // Kita ambil data peminjaman, urutkan dari yang terbaru
+        // 'with' digunakan agar kita bisa mengambil nama peminjam & user tanpa loading lama
+        $borrowings = Borrowing::with(['borrower', 'user'])->latest()->get();
+        
+        return view('borrowings.index', compact('borrowings'));
+    }
+
+    // Menampilkan formulir tambah peminjaman
+    public function create()
+    {
+        $borrowers = \App\Models\Borrower::all();
+        // Kita kirim data Kategori juga sekarang
+        $categories = \App\Models\Category::all(); 
+        
+        return view('borrowings.create', compact('borrowers', 'categories'));
+    }
+
+    // method store() disini untuk menyimpan data
+    public function store(Request $request)
+    {
+        $request->validate([
+            'borrower_id' => 'required|exists:borrowers,id',
+            'planned_return_date' => 'required|date|after_or_equal:today',
+            'tool_ids' => 'required|array|min:1', // Wajib pilih minimal 1 alat
+        ], [
+            'tool_ids.required' => 'Anda belum memilih alat apapun!',
+        ]);
+
+        // Gunakan Transaction agar data aman
+        try {
+            DB::beginTransaction();
+
+            // 2. Buat Data Peminjaman (Header)
+            $borrowing = Borrowing::create([
+                'borrower_id' => $request->borrower_id,
+                'user_id' => Auth::id(), // Petugas yang input (Login saat ini)
+                'borrow_date' => now(), // Tanggal pinjam = Detik ini
+                'planned_return_date' => $request->planned_return_date,
+                'borrowing_status' => 'active', // Status sedang dipinjam
+            ]);
+
+            // 3. Proses Setiap Alat yang Dipilih
+            foreach ($request->tool_ids as $toolId) {
+                $tool = Tool::find($toolId);
+
+                // Catat di tabel detail (borrowing_items)
+                BorrowingItem::create([
+                    'borrowing_id' => $borrowing->id,
+                    'tool_id' => $toolId,
+                    'tool_condition_before' => $tool->current_condition, // Catat kondisi saat diambil
+                ]);
+
+                // Update status alat jadi "borrowed" (supaya tidak muncul di list lagi)
+                $tool->update(['availability_status' => 'borrowed']);
+            }
+
+            DB::commit(); // Simpan permanen jika semua lancar
+
+            return redirect()->route('borrowings.index')->with('success', 'Peminjaman berhasil dicatat!');
+
+        } catch (\Exception $e) {
+            DB::rollBack(); 
+            
+            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    // Fungsi untuk memproses pengembalian
+    public function returnItem($id)
+    {
+        // 1. Cari data peminjamannya
+        $borrowing = Borrowing::with('items.tool')->findOrFail($id);
+
+        // 2. Update status peminjaman
+        $borrowing->update([
+            'borrowing_status' => 'returned', // Status jadi Kembali
+            'actual_return_date' => now(),    // Tanggal kembali = Detik ini
+        ]);
+
+        // 3. Kembalikan Status Alat menjadi 'Available'
+        foreach ($borrowing->items as $item) {
+            $tool = $item->tool;
+            $tool->update(['availability_status' => 'available']);
+        }
+
+        // 4. Balik ke halaman tadi dengan pesan sukses
+        return redirect()->route('borrowings.index')->with('success', 'Barang berhasil dikembalikan! Stok alat sudah bertambah.');
+    }
+
+    // --- Menampilkan Halaman Edit ---
+    public function edit($id)
+    {
+        $borrowing = Borrowing::findOrFail($id);
+        $borrowers = \App\Models\Borrower::all(); // Ambil data peminjam
+        
+        // Kita tidak mengizinkan edit alat di sini agar stok tidak rusak, 
+        // jadi cuma edit tanggal/catatan saja.
+        return view('borrowings.edit', compact('borrowing', 'borrowers'));
+    }
+
+    // --- Menyimpan Perubahan Edit ---
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'planned_return_date' => 'required|date',
+            'notes' => 'nullable|string',
+        ]);
+
+        $borrowing = Borrowing::findOrFail($id);
+        
+        $borrowing->update([
+            'planned_return_date' => $request->planned_return_date,
+            'notes' => $request->notes,
+        ]);
+
+        return redirect()->route('borrowings.index')->with('success', 'Data peminjaman berhasil diperbarui.');
+    }
+
+    // --- Hapus Data (Opsional) ---
+    public function destroy($id)
+    {
+        $borrowing = Borrowing::findOrFail($id);
+        $borrowing->delete();
+        
+        return redirect()->route('borrowings.index')->with('success', 'Riwayat berhasil dihapus.');
+    }
+
+    public function getToolsByCategory($categoryId)
+    {
+        // Ambil alat berdasarkan kategori DAN statusnya Available
+        $tools = \App\Models\Tool::where('category_id', $categoryId)
+                    ->where('availability_status', 'available') // Hanya yang tersedia
+                    ->get();
+                    
+        return response()->json($tools);
+    }
+}
