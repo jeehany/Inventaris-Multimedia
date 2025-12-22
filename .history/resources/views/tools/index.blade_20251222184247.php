@@ -78,9 +78,9 @@
                                             </button>
 
                                             {{-- Tombol Hapus --}}
-                                            <form action="{{ route('tools.destroy', $tool->id) }}" method="POST" onsubmit="return confirm('Yakin hapus data ini?');">
+                                            <form action="{{ route('tools.destroy', $tool->id) }}" method="POST" onsubmit="return confirm('Yakin nonaktifkan alat ini?');">
                                                 @csrf @method('DELETE')
-                                                <button type="submit" class="text-red-600 bg-red-50 hover:bg-red-100 px-3 py-1 rounded transition">Hapus</button>
+                                                <button type="submit" class="text-red-600 bg-red-50 hover:bg-red-100 px-3 py-1 rounded transition">Nonaktifkan</button>
                                             </form>
                                         </td>
                                     </tr>

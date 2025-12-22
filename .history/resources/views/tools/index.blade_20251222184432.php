@@ -78,9 +78,9 @@
                                             </button>
 
                                             {{-- Tombol Hapus --}}
-                                            <form action="{{ route('tools.destroy', $tool->id) }}" method="POST" onsubmit="return confirm('Yakin hapus data ini?');">
+                                            <form action="{{ route('tools.destroy', $tool->id) }}" method="POST" onsubmit="return confirmSoftDelete(this);" data-has-history="{{ $tool->borrowingItems()->exists() ? '1' : '0' }}">
                                                 @csrf @method('DELETE')
-                                                <button type="submit" class="text-red-600 bg-red-50 hover:bg-red-100 px-3 py-1 rounded transition">Hapus</button>
+                                                <button type="submit" class="text-red-600 bg-red-50 hover:bg-red-100 px-3 py-1 rounded transition">Nonaktifkan</button>
                                             </form>
                                         </td>
                                     </tr>
@@ -192,22 +192,13 @@
         </div>
     </div>
     <script>
-        function confirmDelete(form, id) {
-            const submitBtn = form.querySelector('button[type="submit"]');
-            const hasHistory = submitBtn && submitBtn.dataset.hasHistory === '1';
-
-            if (!hasHistory) {
-                return confirm('Yakin hapus data ini?');
+        function confirmSoftDelete(form) {
+            const hasHistory = form && form.getAttribute('data-has-history') === '1';
+            if (hasHistory) {
+                alert('Data tidak dapat dinonaktifkan karena memiliki riwayat peminjaman.');
+                return false;
             }
-
-            // Jika ada riwayat, minta konfirmasi khusus
-            const ok = confirm('Alat ini memiliki riwayat peminjaman. Menghapus paksa akan menghapus juga riwayat tersebut. Lanjutkan hapus paksa?');
-            if (ok) {
-                const input = form.querySelector('input[name="force"]');
-                if (input) input.value = 1;
-                return true;
-            }
-            return false;
+            return confirm('Yakin nonaktifkan alat ini?');
         }
     </script>
 </x-app-layout>
