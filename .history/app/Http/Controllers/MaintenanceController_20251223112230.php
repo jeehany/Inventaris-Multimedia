@@ -1,0 +1,98 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Maintenance;
+use App\Models\Tool;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class MaintenanceController extends Controller
+{
+    // Tampilkan Daftar Maintenance
+    public function index()
+    {
+        // Ambil data maintenance terbaru
+        $maintenances = Maintenance::with(['tool', 'user'])->latest()->paginate(10);
+        return view('maintenances.index', compact('maintenances'));
+    }
+
+    // Form Tambah Maintenance
+    public function create()
+    {
+        // Hanya alat yang Available atau Broken yang bisa di-service
+        // Alat yang sedang dipinjam (borrowed) tidak bisa langsung di-service (harus dikembalikan dulu)
+        $tools = Tool::where('status', '!=', 'borrowed')->get();
+        return view('maintenances.create', compact('tools'));
+    }
+
+    // Proses Simpan (Mulai Service)
+    public function store(Request $request)
+    {
+        $request->validate([
+            'tool_id' => 'required|exists:tools,id',
+            'start_date' => 'required|date',
+            'note' => 'required|string',
+        ]);
+
+        // 1. Buat Data Maintenance
+        Maintenance::create([
+            'tool_id' => $request->tool_id,
+            'user_id' => Auth::id(), // Siapa yang input
+            'start_date' => $request->start_date,
+            'note' => $request->note,
+            'status' => 'in_progress',
+        ]);
+
+        // 2. UPDATE Status Alat Jadi 'maintenance'
+        $tool = Tool::find($request->tool_id);
+        $tool->update(['status' => 'maintenance']);
+
+        return redirect()->route('maintenances.index')->with('success', 'Alat berhasil didaftarkan ke perbaikan.');
+    }
+
+    // Form Edit / Selesaikan
+    public function edit(Maintenance $maintenance)
+    {
+        return view('maintenances.edit', compact('maintenance'));
+    }
+
+    // Proses Update (Selesaikan Service)
+    public function update(Request $request, Maintenance $maintenance)
+    {
+        // Jika tombol "Selesai Perbaikan" diklik
+        if ($request->has('complete_maintenance')) {
+            $request->validate([
+                'end_date' => 'required|date',
+                'cost' => 'nullable|numeric',
+            ]);
+
+            // 1. Update Data Maintenance
+            $maintenance->update([
+                'end_date' => $request->end_date,
+                'cost' => $request->cost ?? 0,
+                'status' => 'completed',
+            ]);
+
+            // 2. UPDATE Status Alat Kembali Jadi 'available'
+            $maintenance->tool->update(['status' => 'available']);
+
+            return redirect()->route('maintenances.index')->with('success', 'Perbaikan selesai! Alat kembali tersedia.');
+        }
+
+        // Update biasa (misal edit catatan)
+        $maintenance->update($request->only('note', 'start_date'));
+        return redirect()->route('maintenances.index')->with('success', 'Data perbaikan diperbarui.');
+    }
+
+    public function destroy(Maintenance $maintenance)
+    {
+        // Hati-hati: Jika hapus data sedang berjalan, kembalikan status alat
+        if ($maintenance->status == 'in_progress') {
+            $maintenance->tool->update(['status' => 'available']);
+        }
+        
+        $maintenance->delete();
+        return redirect()->route('maintenances.index')->with('success', 'Data dihapus.');
+    }
+}
