@@ -19,11 +19,7 @@
                     <div class="flex justify-between mb-6">
                         <h3 class="text-lg font-medium text-gray-900">Data Transaksi</h3>
                         @auth
-                            @if(auth()->user()->isHead())
-                                <a href="{{ route('purchases.report') }}" class="bg-gray-800 hover:bg-gray-900 text-white font-bold py-2 px-4 rounded shadow">
-                                    Laporan Pembelian
-                                </a>
-                            @else
+                            @if(!auth()->user()->isHead())
                                 <a href="{{ route('purchases.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow">
                                     + Catat Pembelian Baru
                                 </a>

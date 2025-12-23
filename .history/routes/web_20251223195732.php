@@ -47,7 +47,6 @@ Route::middleware('auth')->group(function () {
     // Route untuk Pembelian
     Route::resource('vendors', VendorController::class);
     Route::resource('purchases', PurchaseController::class);
-    Route::get('/purchases/report', [PurchaseController::class, 'report'])->name('purchases.report');
     Route::post('/purchases/{purchase}/approve', [PurchaseController::class, 'approve'])->name('purchases.approve');
     Route::post('/purchases/{purchase}/reject', [PurchaseController::class, 'reject'])->name('purchases.reject');
 

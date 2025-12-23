@@ -46,9 +46,4 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
-
-    public function isHead(): bool
-    {
-        return in_array($this->role, ['kepala', 'head']);
-    }
 }

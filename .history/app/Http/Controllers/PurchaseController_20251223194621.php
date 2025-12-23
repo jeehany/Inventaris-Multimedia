@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str; // Untuk generate kode acak
+use Illuminate\Support\Facades\Auth;
 
 class PurchaseController extends Controller
 {
@@ -24,11 +25,6 @@ class PurchaseController extends Controller
     {
         $vendors = Vendor::all();
         $categories = Category::all(); // <--- Ambil data kategori
-        // Prevent kepala/head from creating purchases via UI/API
-        $user = Auth::user();
-        if ($user && in_array($user->role, ['kepala','head'])) {
-            return redirect()->route('purchases.index')->with('error', 'Akses ditolak. Anda tidak dapat membuat transaksi.');
-        }
         return view('purchases.create', compact('vendors', 'categories'));
     }
 
@@ -38,7 +34,7 @@ class PurchaseController extends Controller
         $request->validate([
             'purchase_date' => 'required|date',
             'vendor_id'     => 'required|exists:vendors,id',
-            // status is not accepted from form — always saved as 'pending'
+            'status'        => 'required|string',
             'items'         => 'required|array|min:1',
             'items.*.tool_name' => 'required|string',
             
@@ -88,7 +84,7 @@ class PurchaseController extends Controller
 
             DB::commit();
 
-            return redirect()->route('purchases.index')->with('success', 'Permintaan pembelian berhasil disimpan dan menunggu persetujuan kepala.');
+            return redirect()->route('purchases.index')->with('success', 'Transaksi berhasil disimpan & Stok bertambah!');
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -168,39 +164,9 @@ class PurchaseController extends Controller
 
     public function destroy(Purchase $purchase)
     {
-        // Prevent kepala/head from deleting
-        $user = Auth::user();
-        if ($user && in_array($user->role, ['kepala','head'])) {
-            return redirect()->route('purchases.index')->with('error', 'Akses ditolak. Anda tidak dapat menghapus transaksi.');
-        }
-
         // Hati-hati, kalau dihapus tools yang sudah digenerate jadi yatim piatu (null)
         // Sesuai constraint nullOnDelete di migration
         $purchase->delete();
         return redirect()->route('purchases.index')->with('success', 'Data dihapus');
-    }
-
-    /**
-     * Printable report for kepala (role kepala/head only)
-     */
-    public function report(Request $request)
-    {
-        $user = Auth::user();
-        if (!$user || !in_array($user->role, ['kepala','head'])) {
-            return redirect()->route('purchases.index')->with('error', 'Akses ditolak. Hanya kepala yang dapat melihat laporan.');
-        }
-
-        $query = Purchase::with(['vendor', 'user']);
-
-        if ($request->start_date) {
-            $query->whereDate('purchase_date', '>=', $request->start_date);
-        }
-        if ($request->end_date) {
-            $query->whereDate('purchase_date', '<=', $request->end_date);
-        }
-
-        $purchases = $query->orderBy('purchase_date', 'desc')->get();
-
-        return view('purchases.report', compact('purchases'));
     }
 }

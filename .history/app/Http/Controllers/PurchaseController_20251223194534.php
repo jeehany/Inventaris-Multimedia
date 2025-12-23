@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str; // Untuk generate kode acak
+use Illuminate\Support\Facades\Auth;
 
 class PurchaseController extends Controller
 {
@@ -24,11 +25,6 @@ class PurchaseController extends Controller
     {
         $vendors = Vendor::all();
         $categories = Category::all(); // <--- Ambil data kategori
-        // Prevent kepala/head from creating purchases via UI/API
-        $user = Auth::user();
-        if ($user && in_array($user->role, ['kepala','head'])) {
-            return redirect()->route('purchases.index')->with('error', 'Akses ditolak. Anda tidak dapat membuat transaksi.');
-        }
         return view('purchases.create', compact('vendors', 'categories'));
     }
 
@@ -38,7 +34,7 @@ class PurchaseController extends Controller
         $request->validate([
             'purchase_date' => 'required|date',
             'vendor_id'     => 'required|exists:vendors,id',
-            // status is not accepted from form — always saved as 'pending'
+            'status'        => 'required|string',
             'items'         => 'required|array|min:1',
             'items.*.tool_name' => 'required|string',
             
@@ -59,14 +55,14 @@ class PurchaseController extends Controller
                 $grandTotal += $item['quantity'] * $item['unit_price'];
             }
 
-            // 3. SIMPAN HEADER: status default ke 'pending' (admin input hanya membuat permintaan)
+            // 3. SIMPAN HEADER (Perbaikan Nama Kolom di sini)
             $purchase = Purchase::create([
                 'purchase_code' => 'PO-' . date('Ymd') . '-' . rand(100, 999),
                 'purchase_date' => $request->purchase_date,
                 'vendor_id'     => $request->vendor_id,
-                'status'        => 'pending',
-                'total_amount'  => $grandTotal,
-                'user_id'       => Auth::id(),
+                'status'        => $request->status,
+                'total_amount'  => $grandTotal, // <-- SUDAH DIPERBAIKI (Sesuai Migration)
+                'user_id'       => Auth::id(),  // <-- SUDAH DIPERBAIKI (Sesuai Migration)
             ]);
 
             // 4. SIMPAN ITEMS & GENERATE TOOLS
@@ -83,12 +79,29 @@ class PurchaseController extends Controller
                     'subtotal'      => $item['quantity'] * $item['unit_price'],
                 ]);
 
-                // B. Tidak membuat Tool saat input pembelian — akan dibuat saat kepala menyetujui.
+                // B. LOGIKA AUTO CREATE TOOLS (Hanya jika Approved)
+                if ($request->status === 'approved') {
+                    for ($i = 1; $i <= $item['quantity']; $i++) {
+                        
+                        // Generate Kode Unik
+                        $prefix = strtoupper(substr($item['tool_name'], 0, 3)); 
+                        $uniqueCode = $prefix . '-' . date('ymd') . '-' . strtoupper(Str::random(4));
+
+                        Tool::create([
+                            'tool_code' => $uniqueCode,
+                            'tool_name' => $item['tool_name'] . ' #' . $i, 
+                            'category_id' => $item['category_id'],
+                            'current_condition' => 'Baik',
+                            'availability_status' => 'available',
+                            'purchase_item_id' => $purchaseItem->id,
+                        ]);
+                    }
+                }
             }
 
             DB::commit();
 
-            return redirect()->route('purchases.index')->with('success', 'Permintaan pembelian berhasil disimpan dan menunggu persetujuan kepala.');
+            return redirect()->route('purchases.index')->with('success', 'Transaksi berhasil disimpan & Stok bertambah!');
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -115,29 +128,6 @@ class PurchaseController extends Controller
 
         if ($purchase->status !== 'pending') {
             return redirect()->back()->with('error', 'Permintaan ini sudah diproses.');
-        }
-
-
-        // Buat tools untuk setiap purchase item jika belum dibuat
-        foreach ($purchase->items as $item) {
-            $existing = \App\Models\Tool::where('purchase_item_id', $item->id)->count();
-            if ($existing >= $item->quantity) {
-                continue; // sudah dibuat
-            }
-
-            for ($i = 1; $i <= $item->quantity; $i++) {
-                $prefix = strtoupper(substr($item->tool_name, 0, 3));
-                $uniqueCode = $prefix . '-' . date('ymd') . '-' . strtoupper(Str::random(4));
-
-                \App\Models\Tool::create([
-                    'tool_code' => $uniqueCode,
-                    'tool_name' => $item->tool_name . ' #' . $i,
-                    'category_id' => $item->category_id,
-                    'current_condition' => 'Baik',
-                    'availability_status' => 'available',
-                    'purchase_item_id' => $item->id,
-                ]);
-            }
         }
 
         $purchase->status = 'approved';
@@ -168,39 +158,9 @@ class PurchaseController extends Controller
 
     public function destroy(Purchase $purchase)
     {
-        // Prevent kepala/head from deleting
-        $user = Auth::user();
-        if ($user && in_array($user->role, ['kepala','head'])) {
-            return redirect()->route('purchases.index')->with('error', 'Akses ditolak. Anda tidak dapat menghapus transaksi.');
-        }
-
         // Hati-hati, kalau dihapus tools yang sudah digenerate jadi yatim piatu (null)
         // Sesuai constraint nullOnDelete di migration
         $purchase->delete();
         return redirect()->route('purchases.index')->with('success', 'Data dihapus');
-    }
-
-    /**
-     * Printable report for kepala (role kepala/head only)
-     */
-    public function report(Request $request)
-    {
-        $user = Auth::user();
-        if (!$user || !in_array($user->role, ['kepala','head'])) {
-            return redirect()->route('purchases.index')->with('error', 'Akses ditolak. Hanya kepala yang dapat melihat laporan.');
-        }
-
-        $query = Purchase::with(['vendor', 'user']);
-
-        if ($request->start_date) {
-            $query->whereDate('purchase_date', '>=', $request->start_date);
-        }
-        if ($request->end_date) {
-            $query->whereDate('purchase_date', '<=', $request->end_date);
-        }
-
-        $purchases = $query->orderBy('purchase_date', 'desc')->get();
-
-        return view('purchases.report', compact('purchases'));
     }
 }

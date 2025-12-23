@@ -168,39 +168,9 @@ class PurchaseController extends Controller
 
     public function destroy(Purchase $purchase)
     {
-        // Prevent kepala/head from deleting
-        $user = Auth::user();
-        if ($user && in_array($user->role, ['kepala','head'])) {
-            return redirect()->route('purchases.index')->with('error', 'Akses ditolak. Anda tidak dapat menghapus transaksi.');
-        }
-
         // Hati-hati, kalau dihapus tools yang sudah digenerate jadi yatim piatu (null)
         // Sesuai constraint nullOnDelete di migration
         $purchase->delete();
         return redirect()->route('purchases.index')->with('success', 'Data dihapus');
-    }
-
-    /**
-     * Printable report for kepala (role kepala/head only)
-     */
-    public function report(Request $request)
-    {
-        $user = Auth::user();
-        if (!$user || !in_array($user->role, ['kepala','head'])) {
-            return redirect()->route('purchases.index')->with('error', 'Akses ditolak. Hanya kepala yang dapat melihat laporan.');
-        }
-
-        $query = Purchase::with(['vendor', 'user']);
-
-        if ($request->start_date) {
-            $query->whereDate('purchase_date', '>=', $request->start_date);
-        }
-        if ($request->end_date) {
-            $query->whereDate('purchase_date', '<=', $request->end_date);
-        }
-
-        $purchases = $query->orderBy('purchase_date', 'desc')->get();
-
-        return view('purchases.report', compact('purchases'));
     }
 }
