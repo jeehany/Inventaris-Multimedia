@@ -4,54 +4,58 @@ namespace App\Http\Controllers;
 
 use App\Models\Maintenance;
 use App\Models\Tool;
-use App\Models\MaintenanceType; 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class MaintenanceController extends Controller
 {
+    // Tampilkan Daftar Maintenance
     public function index()
     {
-        // Eager load relasi agar performa cepat (N+1 problem solved)
-        $maintenances = Maintenance::with(['tool', 'user', 'type'])->latest()->paginate(10);
+        // Hapus 'with' type karena tidak ada relasinya
+        $maintenances = Maintenance::with(['tool', 'user'])->latest()->paginate(10);
         return view('maintenances.index', compact('maintenances'));
     }
 
+    // Form Tambah Maintenance
     public function create()
     {
-        // Mengambil alat yang statusnya TIDAK maintenance
-        // Sesuai migration tools: nama kolom 'availability_status'
+        // PERBAIKAN: Gunakan 'availability_status' sesuai migration
         $tools = Tool::where('availability_status', '!=', 'maintenance')->get();
         
-        $types = MaintenanceType::all(); 
-
-        return view('maintenances.create', compact('tools', 'types'));
+        // HAPUS: $types karena tabel maintenance tidak punya maintenance_type_id
+        
+        return view('maintenances.create', compact('tools'));
     }
 
+    // Proses Simpan
     public function store(Request $request)
     {
         $request->validate([
-            'tool_id' => 'required|exists:tools,id',
-            'maintenance_type_id' => 'required|exists:maintenance_types,id',
+            'tool_id' => 'required',
+            // HAPUS: maintenance_type_id validation
             'start_date' => 'required|date',
-            'note' => 'required|string',
+            'note' => 'required',
         ]);
 
-        // Simpan Data
+        // 1. Simpan Data Maintenance
         Maintenance::create([
             'tool_id' => $request->tool_id,
-            'maintenance_type_id' => $request->maintenance_type_id,
+            // HAPUS: maintenance_type_id
             'user_id' => Auth::id(),
             'start_date' => $request->start_date,
             'note' => $request->note,
             'status' => 'in_progress',
         ]);
 
-        // Update Status Alat menjadi 'maintenance'
+        // 2. Update Status Alat
+        // PERBAIKAN: Gunakan 'availability_status'
         $tool = Tool::find($request->tool_id);
-        $tool->update(['availability_status' => 'maintenance']);
+        if ($tool) {
+            $tool->update(['availability_status' => 'maintenance']);
+        }
 
-        return redirect()->route('maintenances.index')->with('success', 'Data berhasil disimpan.');
+        return redirect()->route('maintenances.index')->with('success', 'Maintenance tercatat & Status alat diperbarui.');
     }
 
     public function edit(Maintenance $maintenance)
@@ -61,11 +65,10 @@ class MaintenanceController extends Controller
 
     public function update(Request $request, Maintenance $maintenance)
     {
-        // Logic Selesai Perbaikan
         if ($request->has('complete_maintenance')) {
             $request->validate([
-                'end_date' => 'required|date|after_or_equal:start_date',
-                'cost' => 'nullable|numeric|min:0',
+                'end_date' => 'required|date',
+                'cost' => 'nullable|numeric',
             ]);
 
             $maintenance->update([
@@ -74,22 +77,21 @@ class MaintenanceController extends Controller
                 'status' => 'completed',
             ]);
 
-            // Kembalikan alat jadi Available
+            // PERBAIKAN: Gunakan 'availability_status'
             if ($maintenance->tool) {
                 $maintenance->tool->update(['availability_status' => 'available']);
             }
 
-            return redirect()->route('maintenances.index')->with('success', 'Perbaikan selesai.');
+            return redirect()->route('maintenances.index')->with('success', 'Perbaikan selesai! Alat kembali tersedia.');
         }
 
-        // Logic Update Biasa (Edit Info)
         $maintenance->update($request->only('note', 'start_date'));
         return redirect()->route('maintenances.index')->with('success', 'Data diperbarui.');
     }
 
     public function destroy(Maintenance $maintenance)
     {
-        // Jika dihapus saat sedang perbaikan, kembalikan status alat
+        // PERBAIKAN: Gunakan 'availability_status'
         if ($maintenance->status == 'in_progress' && $maintenance->tool) {
             $maintenance->tool->update(['availability_status' => 'available']);
         }

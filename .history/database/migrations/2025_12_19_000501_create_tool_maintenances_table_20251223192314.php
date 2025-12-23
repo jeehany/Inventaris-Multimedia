@@ -15,8 +15,6 @@ return new class extends Migration
             $table->foreignId('tool_id')->constrained('tools')->onDelete('cascade');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             
-            // Pastikan tabel 'maintenance_types' migration-nya dijalankan SEBELUM file ini
-            $table->foreignId('maintenance_type_id')->constrained('maintenance_types');
             
             $table->date('start_date'); // Tanggal mulai perbaikan
             $table->date('end_date')->nullable(); // Tanggal selesai

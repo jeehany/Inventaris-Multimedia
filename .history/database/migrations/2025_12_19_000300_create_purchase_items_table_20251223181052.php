@@ -12,14 +12,13 @@ return new class extends Migration
             $table->id();
             $table->foreignId('purchase_id')->constrained('purchases')->onDelete('cascade');
             
-            // KOLOM-KOLOM INI DISESUAIKAN DENGAN ERROR LOG MAS:
-            $table->foreignId('category_id')->nullable()->constrained('tool_categories'); // Tadi 'tool_category_id'
-            $table->string('tool_name');      // Tadi 'item_name'
-            $table->string('specification')->nullable();
-            $table->integer('quantity');
-            $table->decimal('unit_price', 15, 2); // Tadi 'price'
-            $table->decimal('subtotal', 15, 2);
-            
+            // Sesuai tampilan form "Daftar Barang" Anda
+            $table->string('item_name'); // Nama Alat
+            $table->foreignId('tool_category_id')->nullable()->constrained('tool_categories'); // Kategori
+            $table->string('specification')->nullable(); // Spesifikasi
+            $table->integer('quantity'); // Qty
+            $table->decimal('price', 15, 2); // Harga Satuan
+            $table->decimal('subtotal', 15, 2); // Subtotal
             $table->timestamps();
         });
     }

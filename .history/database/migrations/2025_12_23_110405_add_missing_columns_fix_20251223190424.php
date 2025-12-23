@@ -1,0 +1,1 @@
+php artisan make:migration add_missing_columns_fix

@@ -25,6 +25,15 @@ class MaintenanceTypeController extends Controller
         return redirect()->route('maintenance-types.index')->with('success', 'Jenis maintenance berhasil dibuat.');
     }
 
+    // public function edit($id)
+    // {
+    //     // Kita cari datanya, lalu simpan dengan nama $maintenance
+    //     $maintenance = \App\Models\MaintenanceType::findOrFail($id);
+
+    //     // Kirim ke view
+    //     return view('maintenance_types.edit', compact('maintenance'));
+    // }
+
     public function update(Request $request, $id)
     {
         $request->validate([

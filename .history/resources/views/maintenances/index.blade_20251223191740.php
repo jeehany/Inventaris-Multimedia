@@ -30,8 +30,7 @@
                                 <tr>
                                     <th class="border px-4 py-2 text-center">No</th>
                                     <th class="border px-4 py-2 text-left">Nama Alat</th>
-                                    {{-- KOLOM JENIS (Sudah Ditambahkan) --}}
-                                    <th class="border px-4 py-2 text-left">Jenis</th>
+                                    {{-- HAPUS KOLOM JENIS --}}
                                     <th class="border px-4 py-2 text-left">Masalah / Note</th>
                                     <th class="border px-4 py-2 text-center">Tgl Mulai</th>
                                     <th class="border px-4 py-2 text-center">Status</th>
@@ -45,16 +44,11 @@
                                         <td class="border px-4 py-2 text-center">{{ $maintenances->firstItem() + $key }}</td>
                                         <td class="border px-4 py-2 font-bold">{{ $item->tool->tool_name ?? 'Alat Dihapus' }}</td>
                                         
-                                        {{-- DATA JENIS --}}
-                                        <td class="border px-4 py-2">
-                                            <span class="bg-indigo-100 text-indigo-800 text-xs font-semibold px-2.5 py-0.5 rounded">
-                                                {{ $item->type->name ?? 'Umum' }}
-                                            </span>
-                                        </td>
+                                        {{-- HAPUS DATA JENIS --}}
 
                                         <td class="border px-4 py-2">
                                             {{ Str::limit($item->note, 50) }}
-                                            <div class="text-xs text-gray-400 mt-1">Pelapor: {{ $item->user->name ?? '-' }}</div>
+                                            <div class="text-xs text-gray-400 mt-1">Pelapor: {{ $item->user->name }}</div>
                                         </td>
                                         <td class="border px-4 py-2 text-center">{{ \Carbon\Carbon::parse($item->start_date)->format('d M Y') }}</td>
                                         <td class="border px-4 py-2 text-center">
@@ -89,7 +83,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="8" class="border px-4 py-8 text-center text-gray-500">
+                                        <td colspan="7" class="border px-4 py-8 text-center text-gray-500">
                                             Belum ada data riwayat perbaikan.
                                         </td>
                                     </tr>

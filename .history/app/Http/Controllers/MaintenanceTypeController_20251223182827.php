@@ -9,8 +9,8 @@ class MaintenanceTypeController extends Controller
 {
     public function index()
     {
-        $maintenanceTypes = \App\Models\MaintenanceType::all();
-        return view('maintenance_types.index', compact('maintenanceTypes'));
+        $types = MaintenanceType::all();
+        return view('maintenance_types.index', compact('types'));
     }
 
     public function create()
@@ -25,22 +25,20 @@ class MaintenanceTypeController extends Controller
         return redirect()->route('maintenance-types.index')->with('success', 'Jenis maintenance berhasil dibuat.');
     }
 
-    public function update(Request $request, $id)
+    // public function edit($id)
+    // {
+    //     // Kita cari datanya, lalu simpan dengan nama $maintenance
+    //     $maintenance = \App\Models\MaintenanceType::findOrFail($id);
+
+    //     // Kirim ke view
+    //     return view('maintenance_types.edit', compact('maintenance'));
+    // }
+
+    public function update(Request $request, MaintenanceType $maintenanceType)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string', // Pastikan ini ada
-        ]);
-
-        $type = \App\Models\MaintenanceType::findOrFail($id);
-        
-        $type->update([
-            'name' => $request->name,
-            'description' => $request->description, // Simpan deskripsi
-        ]);
-
-        // Redirect kembali ke halaman Index (supaya popup tertutup dan data ter-refresh)
-        return redirect()->route('maintenance-types.index')->with('success', 'Berhasil diupdate');
+        $request->validate(['name' => 'required|string|max:255']);
+        $maintenanceType->update($request->all());
+        return redirect()->route('maintenance-types.index')->with('success', 'Data diperbarui.');
     }
 
     public function destroy(MaintenanceType $maintenanceType)

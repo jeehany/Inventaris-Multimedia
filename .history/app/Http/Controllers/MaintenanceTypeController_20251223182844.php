@@ -9,8 +9,8 @@ class MaintenanceTypeController extends Controller
 {
     public function index()
     {
-        $maintenanceTypes = \App\Models\MaintenanceType::all();
-        return view('maintenance_types.index', compact('maintenanceTypes'));
+        $types = MaintenanceType::all();
+        return view('maintenance_types.index', compact('types'));
     }
 
     public function create()
@@ -24,6 +24,15 @@ class MaintenanceTypeController extends Controller
         MaintenanceType::create($request->all());
         return redirect()->route('maintenance-types.index')->with('success', 'Jenis maintenance berhasil dibuat.');
     }
+
+    // public function edit($id)
+    // {
+    //     // Kita cari datanya, lalu simpan dengan nama $maintenance
+    //     $maintenance = \App\Models\MaintenanceType::findOrFail($id);
+
+    //     // Kirim ke view
+    //     return view('maintenance_types.edit', compact('maintenance'));
+    // }
 
     public function update(Request $request, $id)
     {
