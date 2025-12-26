@@ -27,7 +27,7 @@
                                 </select>
                             </div>
                             {{-- Kode Alat (unik) --}}
-                            <div class="hidden">
+                            <div>
                                 <label class="block font-medium text-sm text-gray-700">Kode Alat (Kode unik)</label>
                                 <input type="text" id="tool_code" name="tool_code" readonly class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 bg-gray-50" required>
                             </div>
@@ -56,6 +56,12 @@
                                     <option value="borrowed">Sedang Dipinjam</option>
                                     <option value="maintenance">Dalam Perbaikan</option>
                                 </select>
+                            </div>
+
+                            {{-- Jumlah --}}
+                            <div>
+                                <label class="block font-medium text-sm text-gray-700">Jumlah</label>
+                                <input type="number" name="amount" value="1" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
                             </div>
 
                         </div>

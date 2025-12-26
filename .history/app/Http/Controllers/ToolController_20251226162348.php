@@ -8,7 +8,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf; 
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Validation\Rule; // Tambahkan ini untuk validasi update
 
 class ToolController extends Controller
 {
@@ -19,7 +18,11 @@ class ToolController extends Controller
     public function index(Request $request)
     {
         $categories = Category::all();
+
+        // Panggil logika filter private di bawah
         $query = $this->getFilteredQuery($request);
+
+        // Pagination & Append Query String
         $tools = $query->latest()->paginate(10)->withQueryString();
 
         return view('tools.index', compact('tools', 'categories'));
@@ -28,7 +31,10 @@ class ToolController extends Controller
     public function exportPdf(Request $request)
     {
         $query = $this->getFilteredQuery($request);
+        
+        // Ambil semua data tanpa paginasi untuk PDF
         $tools = $query->get();
+
         $pdf = Pdf::loadView('tools.pdf', compact('tools'));
         
         return $pdf->download('laporan-inventaris-alat-' . now()->format('Y-m-d') . '.pdf');
@@ -40,11 +46,13 @@ class ToolController extends Controller
 
     public function trash()
     {
+        // Hanya staff/admin yang boleh lihat tong sampah (opsional)
         $user = Auth::user();
         if ($user && in_array($user->role, ['kepala','head'])) {
              return redirect()->route('tools.index')->with('error', 'Akses ditolak.');
         }
 
+        // onlyTrashed() hanya mengambil data yang sudah dihapus
         $tools = Tool::onlyTrashed()->with('category')->paginate(10);
         return view('tools.trash', compact('tools'));
     }
@@ -58,13 +66,10 @@ class ToolController extends Controller
 
         $tool = Tool::onlyTrashed()->findOrFail($id);
         
-        // Cek apakah kode alat bertabrakan dengan data aktif saat ini
-        // Jika kode 'A-001' dihapus, lalu ada 'A-001' baru dibuat, restore akan error/duplicate.
-        // Opsional: Tambahkan logika suffix jika duplikat, tapi di sini kita restore standar.
-        
         $tool->availability_status = 'available';
         $tool->save();
-        $tool->restore();
+
+        $tool->restore(); // Menghapus tanda deleted_at
         
         return redirect()->route('tools.trash')->with('success', 'Alat berhasil dipulihkan ke daftar aktif.');
     }
@@ -80,11 +85,7 @@ class ToolController extends Controller
         }
 
         $categories = Category::all();
-        
-        // (Opsional) Kita bisa kirim calon kode berikutnya ke view untuk ditampilkan
-        $nextCode = $this->generateNextToolCode(); 
-
-        return view('tools.create', compact('categories', 'nextCode'));
+        return view('tools.create', compact('categories'));
     }
 
     public function store(Request $request) {
@@ -93,26 +94,19 @@ class ToolController extends Controller
             return redirect()->route('tools.index')->with('error', 'Akses ditolak.');
         }
         
-        // 1. Validasi Input (Hapus validasi tool_code dari user input karena akan auto-generate)
         $request->validate([
-            // 'tool_code' tidak divalidasi dari input user agar konsisten by system
+            'tool_code' => 'required|string|unique:tools,tool_code',
             'tool_name' => 'required|string',
             'category_id' => 'required|exists:tool_categories,id',
             'current_condition' => 'required|string',
-            'availability_status' => 'nullable|in:available,borrowed,maintenance,lost,disposed,broken',
+            'availability_status' => 'nullable|in:available,borrowed,maintenance,lost,disposed,broken', // Update enum jika perlu
         ]);
 
-        $data = $request->only(['tool_name', 'category_id', 'current_condition', 'availability_status']);
-        
-        // 2. AUTO GENERATE CODE
-        // Fungsi ini menjamin kode mengikuti urutan terakhir MESKIPUN data terakhir sudah dihapus
-        $data['tool_code'] = $this->generateNextToolCode();
-        
+        $data = $request->only(['tool_code', 'tool_name', 'category_id', 'current_condition', 'availability_status']);
         $data['availability_status'] = $data['availability_status'] ?? 'available';
 
         Tool::create($data);
-        
-        return redirect()->route('tools.index')->with('success', 'Alat berhasil ditambahkan dengan kode: ' . $data['tool_code']);
+        return redirect()->route('tools.index')->with('success', 'Alat berhasil ditambahkan.');
     }
 
     public function edit($id) {
@@ -135,16 +129,14 @@ class ToolController extends Controller
             'tool_name'   => 'required|string|max:255',
             'category_id' => 'required|exists:tool_categories,id',
             'current_condition' => 'required|string',
-            // Validasi: pastikan tidak mengubah kode menjadi kode yang sudah ada (termasuk di trash)
-            // (Jika tool_code bisa diedit, tambahkan validasi unique di sini)
         ]);
         
         $tool = Tool::findOrFail($id);
         
         $tool->update([
-            'tool_name'         => $request->tool_name,
-            'category_id'       => $request->category_id,
-            'current_condition' => $request->current_condition, 
+            'tool_name'           => $request->tool_name,
+            'category_id'         => $request->category_id,
+            'current_condition'   => $request->current_condition, 
             'availability_status' => $request->availability_status,
         ]);
 
@@ -153,71 +145,37 @@ class ToolController extends Controller
 
     public function destroy($id)
     {
+        // 1. Cek Role Kepala
         $user = Auth::user();
         if ($user && in_array($user->role, ['kepala','head'])) {
             return redirect()->route('tools.index')->with('error', 'Akses ditolak.');
         }
 
+        // 2. Eksekusi Hapus (Soft Delete)
         $tool = Tool::findOrFail($id);
-
-        if ($tool->availability_status == 'borrowed') {
-            return redirect()->back()->with('error', 'Gagal! Alat sedang dipinjam oleh seseorang.');
-        }
         
-        if ($tool->availability_status == 'maintenance') {
-            return redirect()->back()->with('error', 'Gagal! Alat sedang dalam perbaikan.');
+        // PENTING: Sebelum dihapus, pastikan tidak sedang dipinjam
+        if ($tool->availability_status == 'borrowed') {
+             return redirect()->back()->with('error', 'Gagal! Alat sedang dipinjam.');
         }
 
-        $tool->availability_status = 'disposed'; 
-        $tool->save();
-        $tool->delete(); 
+        // Ubah status jadi 'disposed' agar jelas tracking-nya
+        $tool->update(['availability_status' => 'disposed']);
+        
+        $tool->delete(); // Karena pakai SoftDeletes, ini cuma mengisi deleted_at
 
-        return redirect()->route('tools.index')->with('success', 'Alat berhasil dipindahkan ke Inventaris Tak Terpakai.');
+        return redirect()->route('tools.index')->with('success', 'Alat dipindahkan ke Inventaris Tak Terpakai.');
     }
 
     // ==========================
     // 4. HELPER FUNCTION
     // ==========================
 
-    /**
-     * Membuat kode alat otomatis berdasarkan data terakhir (termasuk Trash).
-     * Format contoh: TOOL-001, TOOL-002
-     */
-    private function generateNextToolCode()
-    {
-        // 1. Ambil tool terakhir berdasarkan ID, TERMASUK yang sudah dihapus (withTrashed)
-        $lastTool = Tool::withTrashed()->orderBy('id', 'desc')->first();
-
-        // 2. Jika belum ada data sama sekali, mulai dari 001
-        if (!$lastTool) {
-            return 'TOOL-001'; 
-        }
-
-        // 3. Ambil kode terakhir
-        $lastCode = $lastTool->tool_code;
-
-        // 4. Pecah string dan angka (Contoh: TOOL-005 menjadi "TOOL-" dan "005")
-        // Regex: Ambil semua karakter sebelum angka terakhir, dan ambil angka terakhirnya
-        if (preg_match('/^(.*?)(\d+)$/', $lastCode, $matches)) {
-            $prefix = $matches[1]; // misal "TOOL-"
-            $number = intval($matches[2]); // misal 5
-            $length = strlen($matches[2]); // panjang digit (misal 3 digit)
-            
-            // Increment angka
-            $newNumber = $number + 1;
-            
-            // Gabungkan kembali dengan padding nol di depan
-            return $prefix . str_pad($newNumber, $length, '0', STR_PAD_LEFT);
-        }
-
-        // Fallback jika format kode sebelumnya tidak mengandung angka (misal "OBENG")
-        return $lastCode . '-1';
-    }
-
     private function getFilteredQuery(Request $request)
     {
         $query = Tool::with('category');
 
+        // Filter Search
         if ($request->has('search') && $request->search != null) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -226,10 +184,12 @@ class ToolController extends Controller
             });
         }
 
+        // Filter Status
         if ($request->has('status') && $request->status != null) {
             $query->where('availability_status', $request->status);
         }
 
+        // Filter Kategori
         if ($request->has('category_id') && $request->category_id != null && $request->category_id != 'all') {
             $query->where('category_id', $request->category_id);
         }

@@ -27,7 +27,7 @@
                                 </select>
                             </div>
                             {{-- Kode Alat (unik) --}}
-                            <div class="hidden">
+                            <div>
                                 <label class="block font-medium text-sm text-gray-700">Kode Alat (Kode unik)</label>
                                 <input type="text" id="tool_code" name="tool_code" readonly class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 bg-gray-50" required>
                             </div>
@@ -58,6 +58,12 @@
                                 </select>
                             </div>
 
+                            {{-- Jumlah --}}
+                            <div>
+                                <label class="block font-medium text-sm text-gray-700">Jumlah</label>
+                                <input type="number" name="amount" value="1" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                            </div>
+
                         </div>
 
                         <div class="mt-6 flex justify-end gap-3">
@@ -70,27 +76,61 @@
             </div>
         </div>
     </div>
+   {{-- Script AJAX --}}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const select = document.getElementById('category_select');
             const codeInput = document.getElementById('tool_code');
+            const loader = document.getElementById('loading_code');
 
             async function fetchNext(catId) {
-                if (!catId) { codeInput.value = ''; return; }
+                // Reset input jika tidak ada kategori
+                if (!catId) { 
+                    codeInput.value = ''; 
+                    return; 
+                }
+
+                // Tampilkan loading
+                if(loader) loader.classList.remove('hidden');
+                codeInput.classList.add('opacity-50');
+
                 try {
-                    const res = await fetch(`/categories/${catId}/next-code`);
-                    if (!res.ok) return;
-                    const json = await res.json();
-                    if (json.next) codeInput.value = json.next;
-                    else codeInput.value = '';
-                } catch (e) {
-                    console.error('Fetch next code error', e);
+                    // Panggil route yang kita buat di web.php
+                    const response = await fetch(`/tools/get-next-code/${catId}`);
+                    
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+
+                    const json = await response.json();
+                    
+                    // Masukkan hasil ke input
+                    if (json.next) {
+                        codeInput.value = json.next;
+                    } else {
+                        codeInput.value = 'ERROR-GEN';
+                    }
+
+                } catch (error) {
+                    console.error('Gagal mengambil kode:', error);
+                    codeInput.value = 'ERROR';
+                } finally {
+                    // Sembunyikan loading
+                    if(loader) loader.classList.add('hidden');
+                    codeInput.classList.remove('opacity-50');
                 }
             }
 
             if (select) {
-                select.addEventListener('change', function() { fetchNext(this.value); });
-                if (select.value) fetchNext(select.value);
+                // Event saat user mengubah pilihan kategori
+                select.addEventListener('change', function() { 
+                    fetchNext(this.value); 
+                });
+
+                // Trigger saat halaman dimuat (jika user kembali dari validasi error / old input)
+                if (select.value && codeInput.value === '') {
+                    fetchNext(select.value);
+                }
             }
         });
     </script>

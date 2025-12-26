@@ -136,17 +136,13 @@
 
                                         <td class="px-4 py-3 text-center">
                                             <div class="flex justify-center items-center space-x-2">
-                                                
-                                                {{-- 1. Tombol Edit (Hanya muncul jika status 'active' / belum dikembalikan) --}}
-                                                @if($borrowing->borrowing_status == 'active')
-                                                    <button onclick="toggleModal('modal-edit-{{ $borrowing->id }}')" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 p-1 rounded" title="Edit Data">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                        </svg>
-                                                    </button>
-                                                @endif
+                                                {{-- Tombol Edit --}}
+                                                <button onclick="toggleModal('modal-edit-{{ $borrowing->id }}')" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 p-1 rounded">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                    </svg>
+                                                </button>
 
-                                                {{-- 2. Logika Tombol Kembalikan / Hapus --}}
                                                 @if($borrowing->borrowing_status == 'active')
                                                     {{-- Tombol Kembalikan --}}
                                                     <form action="{{ route('borrowings.return', $borrowing->id) }}" method="POST" onsubmit="return confirm('Apakah barang fisik sudah diterima kembali dan dicek kondisinya?');">
@@ -172,55 +168,54 @@
                                                 @endif
                                             </div>
 
-                                            {{-- MODAL EDIT (Hanya dirender jika active agar aman) --}}
-                                            @if($borrowing->borrowing_status == 'active')
-                                                <div id="modal-edit-{{ $borrowing->id }}" class="fixed inset-0 z-50 hidden overflow-y-auto text-left" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-                                                    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                                                        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="toggleModal('modal-edit-{{ $borrowing->id }}')"></div>
-                                                        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-                                                        
-                                                        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                                                            <form action="{{ route('borrowings.update', $borrowing->id) }}" method="POST">
-                                                                @csrf
-                                                                @method('PUT')
-                                                                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                                                                    <h3 class="text-lg font-medium text-gray-900 mb-4">Edit Peminjaman</h3>
-                                                                    
-                                                                    <div class="mb-4">
-                                                                        <label class="block text-gray-700 text-sm font-bold mb-2">Nama Peminjam</label>
-                                                                        <input type="text" value="{{ $borrowing->borrower->name }}" disabled class="bg-gray-200 border border-gray-300 text-gray-700 text-sm rounded-lg block w-full p-2.5 cursor-not-allowed">
-                                                                    </div>
-
-                                                                    <div class="mb-4">
-                                                                        <label class="block text-gray-700 text-sm font-bold mb-2">Rencana Kembali (Baru)</label>
-                                                                        <input type="date" name="planned_return_date" value="{{ $borrowing->planned_return_date }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                                                                    </div>
-
-                                                                    <div class="mb-2">
-                                                                        <label class="block text-gray-700 text-sm font-bold mb-2">Catatan</label>
-                                                                        <textarea name="notes" rows="3" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">{{ $borrowing->notes }}</textarea>
-                                                                    </div>
+                                            {{-- MODAL EDIT --}}
+                                            <div id="modal-edit-{{ $borrowing->id }}" class="fixed inset-0 z-50 hidden overflow-y-auto text-left" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                                                <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                                                    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="toggleModal('modal-edit-{{ $borrowing->id }}')"></div>
+                                                    <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                                                    
+                                                    <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                                                        <form action="{{ route('borrowings.update', $borrowing->id) }}" method="POST">
+                                                            @csrf
+                                                            @method('PUT')
+                                                            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                                                                <h3 class="text-lg font-medium text-gray-900 mb-4">Edit Peminjaman</h3>
+                                                                
+                                                                <div class="mb-4">
+                                                                    <label class="block text-gray-700 text-sm font-bold mb-2">Nama Peminjam</label>
+                                                                    <input type="text" value="{{ $borrowing->borrower->name }}" disabled class="bg-gray-200 border border-gray-300 text-gray-700 text-sm rounded-lg block w-full p-2.5 cursor-not-allowed">
                                                                 </div>
-                                                                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                                                                    @auth
-                                                                        @if(!auth()->user()->isHead())
-                                                                            <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 sm:ml-3 sm:w-auto sm:text-sm">
-                                                                                Simpan
-                                                                            </button>
-                                                                        @endif
-                                                                    @endauth
 
-                                                                    <button type="button" onclick="toggleModal('modal-edit-{{ $borrowing->id }}')" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
-                                                                        Batal
-                                                                    </button>
+                                                                <div class="mb-4">
+                                                                    <label class="block text-gray-700 text-sm font-bold mb-2">Rencana Kembali (Baru)</label>
+                                                                    <input type="date" name="planned_return_date" value="{{ $borrowing->planned_return_date }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                                                                 </div>
-                                                            </form>
-                                                        </div>
+
+                                                                <div class="mb-2">
+                                                                    <label class="block text-gray-700 text-sm font-bold mb-2">Catatan</label>
+                                                                    <textarea name="notes" rows="3" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">{{ $borrowing->notes }}</textarea>
+                                                                </div>
+                                                            </div>
+                                                            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                                                                @auth
+                                                                    @if(!auth()->user()->isHead())
+                                                                        <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 sm:ml-3 sm:w-auto sm:text-sm">
+                                                                            Simpan
+                                                                        </button>
+                                                                    @endif
+                                                                @endauth
+
+                                                                <button type="button" onclick="toggleModal('modal-edit-{{ $borrowing->id }}')" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                                                                    Batal
+                                                                </button>
+                                                            </div>
+                                                        </form>
                                                     </div>
                                                 </div>
-                                            @endif
+                                            </div>
+                                            {{-- END MODAL --}}
+
                                         </td>
-                                        
                                     </tr>
                                 @empty
                                     <tr>

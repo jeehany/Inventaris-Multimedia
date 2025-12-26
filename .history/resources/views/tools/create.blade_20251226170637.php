@@ -58,6 +58,12 @@
                                 </select>
                             </div>
 
+                            {{-- Jumlah --}}
+                            <div>
+                                <label class="block font-medium text-sm text-gray-700">Jumlah</label>
+                                <input type="number" name="amount" value="1" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                            </div>
+
                         </div>
 
                         <div class="mt-6 flex justify-end gap-3">

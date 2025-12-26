@@ -26,7 +26,7 @@ class UserSeeder extends Seeder
         // 2. Membuat Akun Kepala (Head)
         User::create([
             'name' => 'Kepala',
-            'email' => 'kepala@gmail.com',
+            'email' => 'kepala@example.com',
             'password' => Hash::make('12345678'), // Password default: password
             'role' => 'head', // Sesuai enum ['admin', 'head']
             'email_verified_at' => now(),

@@ -11,9 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('maintenance_types', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+        Schema::table('tools', function (Blueprint $table) {
+            //
         });
     }
 
@@ -22,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('maintenance_types');
+        Schema::table('tools', function (Blueprint $table) {
+            //
+        });
     }
 };

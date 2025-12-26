@@ -18,6 +18,8 @@ return new class extends Migration
             $table->foreignId('category_id')->constrained('tool_categories');
             $table->string('current_condition'); // Baik, Rusak Ringan, Rusak Berat
             $table->enum('availability_status', ['available', 'borrowed', 'maintenance', 'disposed']);
+            
+            // Relasi ke item pembelian (asal usul barang)
             $table->foreignId('purchase_item_id')->nullable()->constrained('purchase_items')->nullOnDelete();
             $table->timestamps();
             $table->softDeletes();
