@@ -194,18 +194,4 @@ class BorrowingController extends Controller
 
         return redirect()->route('borrowings.index')->with('success', 'Data peminjaman berhasil diperbarui.');
     }
-
-    // --- TAMBAHAN UNTUK DROPDOWN ALAT ---
-    public function getToolsByCategory($categoryId)
-    {
-        // Kita ambil alat berdasarkan Kategori
-        // DAN statusnya harus 'available' (biar yang sedang dipinjam tidak muncul)
-        // Saya sesuaikan nama kolomnya dengan fungsi store() kamu: 'availability_status'
-        
-        $tools = Tool::where('category_id', $categoryId)
-                     ->where('availability_status', 'available') 
-                     ->get();
-
-        return response()->json($tools);
-    }
 }

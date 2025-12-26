@@ -38,8 +38,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('tools', ToolController::class);
 
     // --- Peminjam & Peminjaman ---
-    Route::resource('borrowers', BorrowerController::class);
     Route::get('/borrowings/export-pdf', [BorrowingController::class, 'exportPdf'])->name('borrowings.exportPdf');
+    Route::resource('borrowers', BorrowerController::class);
     Route::resource('borrowings', BorrowingController::class);
 
     // --- Route Custom (Return & AJAX) ---

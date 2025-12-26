@@ -33,13 +33,13 @@ Route::middleware('auth')->group(function () {
     // --- Master Data (Kategori & Alat) ---
     // Di gambar kamu errornya ada di baris ini (ada tulisan 'Rout'), ini sudah saya hapus.
     Route::resource('categories', CategoryController::class);
+    
     Route::get('/categories/{category}/next-code', [CategoryController::class, 'nextCode'])->name('categories.nextCode');
-    Route::get('tools/export-pdf', [App\Http\Controllers\ToolController::class, 'exportPdf'])->name('tools.export_pdf');
     Route::resource('tools', ToolController::class);
 
     // --- Peminjam & Peminjaman ---
-    Route::resource('borrowers', BorrowerController::class);
     Route::get('/borrowings/export-pdf', [BorrowingController::class, 'exportPdf'])->name('borrowings.exportPdf');
+    Route::resource('borrowers', BorrowerController::class);
     Route::resource('borrowings', BorrowingController::class);
 
     // --- Route Custom (Return & AJAX) ---

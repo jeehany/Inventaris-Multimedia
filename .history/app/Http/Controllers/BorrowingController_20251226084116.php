@@ -32,16 +32,13 @@ class BorrowingController extends Controller
      */
     public function exportPdf(Request $request)
     {
-        // 1. Gunakan logika filter yang sama
+        // 1. Gunakan logika filter yang SAMA PERSIS dengan Index
         $query = $this->getFilteredQuery($request);
 
-        // 2. Load Relationship 'borrower' dan 'items.tool'
-        // PENTING: Tanpa 'with', PDF tidak bisa membaca data relasi (sering kosong)
-        $borrowings = $query->with(['borrower', 'items.tool']) 
-                            ->latest()
-                            ->get();
+        // 2. Ambil SEMUA data (get) bukan paginate
+        $borrowings = $query->latest()->get();
 
-        // 3. Load View PDF
+        // 3. Load View PDF (Kita buat setelah ini)
         $pdf = Pdf::loadView('borrowings.pdf', compact('borrowings'));
         
         // 4. Download file
@@ -193,19 +190,5 @@ class BorrowingController extends Controller
         ]);
 
         return redirect()->route('borrowings.index')->with('success', 'Data peminjaman berhasil diperbarui.');
-    }
-
-    // --- TAMBAHAN UNTUK DROPDOWN ALAT ---
-    public function getToolsByCategory($categoryId)
-    {
-        // Kita ambil alat berdasarkan Kategori
-        // DAN statusnya harus 'available' (biar yang sedang dipinjam tidak muncul)
-        // Saya sesuaikan nama kolomnya dengan fungsi store() kamu: 'availability_status'
-        
-        $tools = Tool::where('category_id', $categoryId)
-                     ->where('availability_status', 'available') 
-                     ->get();
-
-        return response()->json($tools);
     }
 }

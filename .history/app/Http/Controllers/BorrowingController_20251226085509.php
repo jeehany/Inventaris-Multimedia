@@ -31,22 +31,22 @@ class BorrowingController extends Controller
      * [BARU] Export Laporan ke PDF
      */
     public function exportPdf(Request $request)
-    {
-        // 1. Gunakan logika filter yang sama
-        $query = $this->getFilteredQuery($request);
+{
+    // 1. Gunakan logika filter yang sama
+    $query = $this->getFilteredQuery($request);
 
-        // 2. Load Relationship 'borrower' dan 'items.tool'
-        // PENTING: Tanpa 'with', PDF tidak bisa membaca data relasi (sering kosong)
-        $borrowings = $query->with(['borrower', 'items.tool']) 
-                            ->latest()
-                            ->get();
+    // 2. Load Relationship 'borrower' dan 'items.tool'
+    // PENTING: Tanpa 'with', PDF tidak bisa membaca data relasi (sering kosong)
+    $borrowings = $query->with(['borrower', 'items.tool']) 
+                        ->latest()
+                        ->get();
 
-        // 3. Load View PDF
-        $pdf = Pdf::loadView('borrowings.pdf', compact('borrowings'));
-        
-        // 4. Download file
-        return $pdf->download('laporan-peminjaman-' . now()->format('Y-m-d') . '.pdf');
-    }
+    // 3. Load View PDF
+    $pdf = Pdf::loadView('borrowings.pdf', compact('borrowings'));
+    
+    // 4. Download file
+    return $pdf->download('laporan-peminjaman-' . now()->format('Y-m-d') . '.pdf');
+}
 
     /**
      * [HELPER] Fungsi Logika Filter (Dipakai oleh Index & ExportPdf)
@@ -193,19 +193,5 @@ class BorrowingController extends Controller
         ]);
 
         return redirect()->route('borrowings.index')->with('success', 'Data peminjaman berhasil diperbarui.');
-    }
-
-    // --- TAMBAHAN UNTUK DROPDOWN ALAT ---
-    public function getToolsByCategory($categoryId)
-    {
-        // Kita ambil alat berdasarkan Kategori
-        // DAN statusnya harus 'available' (biar yang sedang dipinjam tidak muncul)
-        // Saya sesuaikan nama kolomnya dengan fungsi store() kamu: 'availability_status'
-        
-        $tools = Tool::where('category_id', $categoryId)
-                     ->where('availability_status', 'available') 
-                     ->get();
-
-        return response()->json($tools);
     }
 }
