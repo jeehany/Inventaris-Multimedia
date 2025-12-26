@@ -13,68 +13,54 @@ class ToolController extends Controller
     /**
      * Helper: Logika Filter (Dipakai Index & PDF)
      */
+    private function getFilteredQuery(Request $request)
+    {
+        $query = Tool::with('category');
+
+        // 1. Search Nama Alat
+        if ($request->filled('search')) {
+            $query->where(function($q) use ($request) {
+                $q->where('tool_name', 'like', '%' . $request->search . '%')
+                  ->orWhere('tool_code', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        // 2. Filter Kategori
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
+        
+        // 3. Filter Kondisi
+        $cond = $request->input('current_condition', $request->input('condition'));
+        if ($cond) {
+            $query->where('current_condition', $cond);
+        }
+
+        return $query;
+    }
+
     public function index(Request $request)
     {
-        // 1. Ambil data kategori untuk dropdown filter
-        $categories = Category::all();
-
-        // 2. Panggil logika filter (sama seperti di BorrowingController)
         $query = $this->getFilteredQuery($request);
-
-        // 3. Pagination & Append Query String (supaya filter tidak hilang saat pindah hal)
+        
         $tools = $query->latest()->paginate(10)->withQueryString();
+        $categories = Category::all();
 
         return view('tools.index', compact('tools', 'categories'));
     }
 
-    /**
-     * Export PDF Inventaris Alat
-     */
+    // --- FUNGSI EXPORT PDF ---
     public function exportPdf(Request $request)
     {
-        // 1. Gunakan logika filter yang sama
+        // 1. Ambil data pakai filter yang sama, tapi get() semua (tanpa paginate)
         $query = $this->getFilteredQuery($request);
+        $tools = $query->latest()->get();
 
-        // 2. Ambil semua data (tanpa pagination)
-        $tools = $query->get();
-
-        // 3. Load View PDF (Kamu perlu buat file resources/views/tools/pdf.blade.php nanti)
+        // 2. Load View PDF
         $pdf = Pdf::loadView('tools.pdf', compact('tools'));
         
-        // 4. Download
-        return $pdf->download('laporan-inventaris-alat-' . now()->format('Y-m-d') . '.pdf');
-    }
-
-    /**
-     * [HELPER] Logika Filter Terpusat
-     */
-    private function getFilteredQuery(Request $request)
-    {
-        // Load relasi kategori agar query lebih ringan (Eager Loading)
-        $query = Tool::with('category');
-
-        // 1. Logika Search (Nama Alat atau Kode Alat)
-        if ($request->has('search') && $request->search != null) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('tool_name', 'like', '%'.$search.'%')
-                  ->orWhere('tool_code', 'like', '%'.$search.'%');
-            });
-        }
-
-        // 2. Logika Filter Status Ketersediaan
-        if ($request->has('status') && $request->status != null) {
-            // value status sesuaikan dengan database enum kamu
-            // misal: 'available', 'borrowed', 'maintenance'
-            $query->where('availability_status', $request->status);
-        }
-
-        // 3. Logika Filter Kategori (Pengganti Periode)
-        if ($request->has('category_id') && $request->category_id != null && $request->category_id != 'all') {
-            $query->where('category_id', $request->category_id);
-        }
-
-        return $query;
+        // 3. Download
+        return $pdf->download('laporan-inventaris-' . now()->format('Y-m-d') . '.pdf');
     }
 
     public function create() {

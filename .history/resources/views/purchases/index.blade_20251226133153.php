@@ -50,10 +50,9 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         {{ \Carbon\Carbon::parse($purchase->purchase_date)->format('d M Y') }}
                                     </td>
-                                    <td class="px-6 py-4 text-sm text-gray-900 font-medium">
-    {{-- Ambil semua tool_name, lalu gabungkan dengan koma --}}
-    {{ $purchase->items->pluck('tool_name')->implode(', ') }}
-</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                                        {{ $purchase->iten->name }}
+                                    </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
                                         {{ $purchase->vendor->name }}
                                     </td>

@@ -34,7 +34,7 @@ Route::middleware('auth')->group(function () {
     // Di gambar kamu errornya ada di baris ini (ada tulisan 'Rout'), ini sudah saya hapus.
     Route::resource('categories', CategoryController::class);
     Route::get('/categories/{category}/next-code', [CategoryController::class, 'nextCode'])->name('categories.nextCode');
-    Route::get('tools/export-pdf', [App\Http\Controllers\ToolController::class, 'exportPdf'])->name('tools.exportPdf');
+    Route::get('tools/export-pdf', [App\Http\Controllers\ToolController::class, 'exportPdf'])->name('tools.exppdf');
     Route::resource('tools', ToolController::class);
 
     // --- Peminjam & Peminjaman ---

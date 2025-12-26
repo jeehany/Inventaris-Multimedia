@@ -36,7 +36,7 @@
                             <thead class="bg-gray-50">
                                 <tr>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama Alat</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Supplier (Vendor)</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Biaya</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
@@ -50,10 +50,6 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         {{ \Carbon\Carbon::parse($purchase->purchase_date)->format('d M Y') }}
                                     </td>
-                                    <td class="px-6 py-4 text-sm text-gray-900 font-medium">
-    {{-- Ambil semua tool_name, lalu gabungkan dengan koma --}}
-    {{ $purchase->items->pluck('tool_name')->implode(', ') }}
-</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
                                         {{ $purchase->vendor->name }}
                                     </td>

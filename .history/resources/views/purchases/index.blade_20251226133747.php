@@ -50,9 +50,15 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         {{ \Carbon\Carbon::parse($purchase->purchase_date)->format('d M Y') }}
                                     </td>
-                                    <td class="px-6 py-4 text-sm text-gray-900 font-medium">
-    {{-- Ambil semua tool_name, lalu gabungkan dengan koma --}}
-    {{ $purchase->items->pluck('tool_name')->implode(', ') }}
+                                    <td class="px-6 py-4 text-sm text-gray-900">
+    <ul class="list-disc list-inside">
+        @foreach($purchase->items as $item)
+            <li>
+                {{ $item->tool->tool_name ?? 'Item tidak ditemukan' }} 
+                <span class="text-gray-500 text-xs">({{ $item->quantity }} unit)</span>
+            </li>
+        @endforeach
+    </ul>
 </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
                                         {{ $purchase->vendor->name }}
