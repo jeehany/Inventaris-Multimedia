@@ -7,7 +7,6 @@ use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf; 
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ToolController extends Controller
 {
@@ -65,13 +64,8 @@ class ToolController extends Controller
         }
 
         $tool = Tool::onlyTrashed()->findOrFail($id);
-        
-        $tool->availability_status = 'available';
-        $tool->save();
-
-        $tool->restore(); // Menghapus tanda deleted_at
-        
-        return redirect()->route('tools.trash')->with('success', 'Alat berhasil dipulihkan ke daftar aktif.');
+        $tool->restore(); // Mengembalikan data aktif
+        return redirect()->back()->with('success', 'Alat dikembalikan ke daftar aktif.');
     }
 
     // ==========================
@@ -153,18 +147,9 @@ class ToolController extends Controller
 
         // 2. Eksekusi Hapus (Soft Delete)
         $tool = Tool::findOrFail($id);
-        
-        // PENTING: Sebelum dihapus, pastikan tidak sedang dipinjam
-        if ($tool->availability_status == 'borrowed') {
-             return redirect()->back()->with('error', 'Gagal! Alat sedang dipinjam.');
-        }
+        $tool->delete(); // Karena pakai SoftDeletes di Model, ini otomatis masuk Trash
 
-        // Ubah status jadi 'disposed' agar jelas tracking-nya
-        $tool->update(['availability_status' => 'disposed']);
-        
-        $tool->delete(); // Karena pakai SoftDeletes, ini cuma mengisi deleted_at
-
-        return redirect()->route('tools.index')->with('success', 'Alat dipindahkan ke Inventaris Tak Terpakai.');
+        return redirect()->route('tools.index')->with('success', 'Alat berhasil dipindahkan ke Inventaris Tak Terpakai.');
     }
 
     // ==========================

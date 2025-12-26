@@ -65,13 +65,8 @@ class ToolController extends Controller
         }
 
         $tool = Tool::onlyTrashed()->findOrFail($id);
-        
-        $tool->availability_status = 'available';
-        $tool->save();
-
-        $tool->restore(); // Menghapus tanda deleted_at
-        
-        return redirect()->route('tools.trash')->with('success', 'Alat berhasil dipulihkan ke daftar aktif.');
+        $tool->restore(); // Mengembalikan data aktif
+        return redirect()->back()->with('success', 'Alat dikembalikan ke daftar aktif.');
     }
 
     // ==========================
@@ -154,7 +149,7 @@ class ToolController extends Controller
         // 2. Eksekusi Hapus (Soft Delete)
         $tool = Tool::findOrFail($id);
         
-        // PENTING: Sebelum dihapus, pastikan tidak sedang dipinjam
+        / PENTING: Sebelum dihapus, pastikan tidak sedang dipinjam
         if ($tool->availability_status == 'borrowed') {
              return redirect()->back()->with('error', 'Gagal! Alat sedang dipinjam.');
         }

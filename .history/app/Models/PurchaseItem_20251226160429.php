@@ -33,7 +33,7 @@ class PurchaseItem extends Model
     }
 
     public function tool()
-    {
-        return $this->belongsTo(Tool::class)->withTrashed();
-    }
+{
+    return $this->belongsTo(Tool::class)->withTrashed();
+}
 }

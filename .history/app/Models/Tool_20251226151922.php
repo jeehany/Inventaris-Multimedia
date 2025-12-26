@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Tool extends Model
 {
+    use SoftDeletes; // <--- Pasang Trait ini
+    
     use HasFactory;
     use SoftDeletes;
 

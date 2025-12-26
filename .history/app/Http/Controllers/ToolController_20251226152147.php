@@ -6,77 +6,100 @@ use App\Models\Tool;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Barryvdh\DomPDF\Facade\Pdf; 
-use Illuminate\Database\Eloquent\SoftDeletes;
+use Barryvdh\DomPDF\Facade\Pdf; // Import PDF facade
 
 class ToolController extends Controller
 {
-    // ==========================
-    // 1. READ DATA (INDEX & PDF)
-    // ==========================
-
+    /**
+     * Helper: Logika Filter (Dipakai Index & PDF)
+     */
     public function index(Request $request)
     {
+        // 1. Ambil data kategori untuk dropdown filter
         $categories = Category::all();
 
-        // Panggil logika filter private di bawah
+        // 2. Panggil logika filter (sama seperti di BorrowingController)
         $query = $this->getFilteredQuery($request);
 
-        // Pagination & Append Query String
+        // 3. Pagination & Append Query String (supaya filter tidak hilang saat pindah hal)
         $tools = $query->latest()->paginate(10)->withQueryString();
 
         return view('tools.index', compact('tools', 'categories'));
     }
 
+    // 2. Inventaris Tak Terpakai (Hanya yang dihapus)
+public function trash()
+{
+    // onlyTrashed() hanya mengambil data yang sudah dihapus
+    $tools = Tool::onlyTrashed()->with('category')->paginate(10);
+    return view('tools.trash', compact('tools'));
+}
+
+// 3. Hapus (Soft Delete) - Memindahkan ke folder "Tak Terpakai"
+public function destroy($id)
+{
+    $tool = Tool::findOrFail($id);
+    $tool->delete(); // Ini tidak menghapus baris DB, cuma isi deleted_at
+    return redirect()->back()->with('success', 'Alat dipindahkan ke Inventaris Tak Terpakai.');
+}
+
+// 4. Restore (Opsional: Jika ingin mengembalikan alat agar aktif lagi)
+public function restore($id)
+{
+    $tool = Tool::onlyTrashed()->findOrFail($id);
+    $tool->restore();
+    return redirect()->back()->with('success', 'Alat dikembalikan ke daftar aktif.');
+}
+
+    /**
+     * Export PDF Inventaris Alat
+     */
     public function exportPdf(Request $request)
     {
+        // 1. Gunakan logika filter yang sama
         $query = $this->getFilteredQuery($request);
-        
-        // Ambil semua data tanpa paginasi untuk PDF
+
+        // 2. Ambil semua data (tanpa pagination)
         $tools = $query->get();
 
+        // 3. Load View PDF (Kamu perlu buat file resources/views/tools/pdf.blade.php nanti)
         $pdf = Pdf::loadView('tools.pdf', compact('tools'));
         
+        // 4. Download
         return $pdf->download('laporan-inventaris-alat-' . now()->format('Y-m-d') . '.pdf');
     }
 
-    // ==========================
-    // 2. SOFT DELETES (TRASH)
-    // ==========================
-
-    public function trash()
+    /**
+     * [HELPER] Logika Filter Terpusat
+     */
+    private function getFilteredQuery(Request $request)
     {
-        // Hanya staff/admin yang boleh lihat tong sampah (opsional)
-        $user = Auth::user();
-        if ($user && in_array($user->role, ['kepala','head'])) {
-             return redirect()->route('tools.index')->with('error', 'Akses ditolak.');
+        // Load relasi kategori agar query lebih ringan (Eager Loading)
+        $query = Tool::with('category');
+
+        // 1. Logika Search (Nama Alat atau Kode Alat)
+        if ($request->has('search') && $request->search != null) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('tool_name', 'like', '%'.$search.'%')
+                  ->orWhere('tool_code', 'like', '%'.$search.'%');
+            });
         }
 
-        // onlyTrashed() hanya mengambil data yang sudah dihapus
-        $tools = Tool::onlyTrashed()->with('category')->paginate(10);
-        return view('tools.trash', compact('tools'));
-    }
-
-    public function restore($id)
-    {
-        $user = Auth::user();
-        if ($user && in_array($user->role, ['kepala','head'])) {
-             return redirect()->back()->with('error', 'Akses ditolak.');
+        // 2. Logika Filter Status Ketersediaan
+        if ($request->has('status') && $request->status != null) {
+            // value status sesuaikan dengan database enum kamu
+            // misal: 'available', 'borrowed', 'maintenance'
+            $query->where('availability_status', $request->status);
         }
 
-        $tool = Tool::onlyTrashed()->findOrFail($id);
-        
-        $tool->availability_status = 'available';
-        $tool->save();
+        // 3. Logika Filter Kategori (Pengganti Periode)
+        if ($request->has('category_id') && $request->category_id != null && $request->category_id != 'all') {
+            $query->where('category_id', $request->category_id);
+        }
 
-        $tool->restore(); // Menghapus tanda deleted_at
-        
-        return redirect()->route('tools.trash')->with('success', 'Alat berhasil dipulihkan ke daftar aktif.');
+        return $query;
     }
-
-    // ==========================
-    // 3. CRUD (CREATE, UPDATE, DELETE)
-    // ==========================
 
     public function create() {
         $user = Auth::user();
@@ -93,13 +116,12 @@ class ToolController extends Controller
         if ($user && in_array($user->role, ['kepala','head'])) {
             return redirect()->route('tools.index')->with('error', 'Akses ditolak.');
         }
-        
         $request->validate([
             'tool_code' => 'required|string|unique:tools,tool_code',
             'tool_name' => 'required|string',
             'category_id' => 'required|exists:tool_categories,id',
             'current_condition' => 'required|string',
-            'availability_status' => 'nullable|in:available,borrowed,maintenance,lost,disposed,broken', // Update enum jika perlu
+            'availability_status' => 'nullable|in:available,borrowed,maintenance,lost',
         ]);
 
         $data = $request->only(['tool_code', 'tool_name', 'category_id', 'current_condition', 'availability_status']);
@@ -124,7 +146,6 @@ class ToolController extends Controller
         if ($user && in_array($user->role, ['kepala','head'])) {
             return redirect()->route('tools.index')->with('error', 'Akses ditolak.');
         }
-        
         $request->validate([
             'tool_name'   => 'required|string|max:255',
             'category_id' => 'required|exists:tool_categories,id',
@@ -145,55 +166,14 @@ class ToolController extends Controller
 
     public function destroy($id)
     {
-        // 1. Cek Role Kepala
         $user = Auth::user();
         if ($user && in_array($user->role, ['kepala','head'])) {
             return redirect()->route('tools.index')->with('error', 'Akses ditolak.');
         }
 
-        // 2. Eksekusi Hapus (Soft Delete)
         $tool = Tool::findOrFail($id);
-        
-        // PENTING: Sebelum dihapus, pastikan tidak sedang dipinjam
-        if ($tool->availability_status == 'borrowed') {
-             return redirect()->back()->with('error', 'Gagal! Alat sedang dipinjam.');
-        }
+        $tool->delete();
 
-        // Ubah status jadi 'disposed' agar jelas tracking-nya
-        $tool->update(['availability_status' => 'disposed']);
-        
-        $tool->delete(); // Karena pakai SoftDeletes, ini cuma mengisi deleted_at
-
-        return redirect()->route('tools.index')->with('success', 'Alat dipindahkan ke Inventaris Tak Terpakai.');
-    }
-
-    // ==========================
-    // 4. HELPER FUNCTION
-    // ==========================
-
-    private function getFilteredQuery(Request $request)
-    {
-        $query = Tool::with('category');
-
-        // Filter Search
-        if ($request->has('search') && $request->search != null) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('tool_name', 'like', '%'.$search.'%')
-                  ->orWhere('tool_code', 'like', '%'.$search.'%');
-            });
-        }
-
-        // Filter Status
-        if ($request->has('status') && $request->status != null) {
-            $query->where('availability_status', $request->status);
-        }
-
-        // Filter Kategori
-        if ($request->has('category_id') && $request->category_id != null && $request->category_id != 'all') {
-            $query->where('category_id', $request->category_id);
-        }
-
-        return $query;
+        return redirect()->route('tools.index')->with('success', 'Alat berhasil dinonaktifkan.');
     }
 }

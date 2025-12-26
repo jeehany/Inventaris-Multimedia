@@ -96,18 +96,16 @@
                             <x-dropdown-link :href="route('vendors.index')">
                                 {{ __('Daftar Vendor') }}
                             </x-dropdown-link>
-
                             <x-dropdown-link :href="route('purchases.index')">
-                                {{ __('Permohonan Pembelian') }}
+                                {{ __('Transaksi & Riwayat Pembelian') }}
                             </x-dropdown-link>
-
-                            <x-dropdown-link :href="route('purchases.approved')">
-                                {{ __('Pembelian Barang') }}
-                            </x-dropdown-link>
-
-                            <x-dropdown-link :href="route('purchases.history')">
-                                {{ __('Riwayat Pembelian') }}
-                            </x-dropdown-link>
+                            @auth
+                                @if(auth()->user()->isHead())
+                                    <x-dropdown-link :href="route('purchases.report')">
+                                        {{ __('Laporan Pembelian') }}
+                                    </x-dropdown-link>
+                                @endif
+                            @endauth
                         </x-slot>
                     </x-dropdown>
                 </div>
@@ -159,31 +157,46 @@
             </x-responsive-nav-link>
 
             <div class="pt-2 pb-2 px-4 text-xs font-bold text-gray-500 uppercase">Manajemen Alat</div>
-            <x-responsive-nav-link :href="route('tools.index')" :active="request()->routeIs('tools.*')">
+            <x-responsive-nav-link :href="route('categories.index')" :active="request()->routeIs('categories.*')">
+                {{ __('Daftar Kategori') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('tools.index')" :active="request()->routeIs('tools.index') || request()->routeIs('tools.create') || request()->routeIs('tools.edit')">
                 {{ __('Daftar Inventaris') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('tools.trash')" :active="request()->routeIs('tools.trash')">
-                {{ __('Tak Terpakai') }}
+                {{ __('Inventaris Tak Terpakai') }}
             </x-responsive-nav-link>
 
             <div class="pt-2 pb-2 px-4 text-xs font-bold text-gray-500 uppercase">Peminjaman</div>
             <x-responsive-nav-link :href="route('borrowings.index')" :active="request()->routeIs('borrowings.*')">
                 {{ __('Transaksi') }}
             </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('borrowers.index')" :active="request()->routeIs('borrowers.*')">
+                {{ __('Data Peminjam') }}
+            </x-responsive-nav-link>
 
+            <div class="pt-2 pb-2 px-4 text-xs font-bold text-gray-500 uppercase">Perawatan</div>
+            <x-responsive-nav-link :href="route('maintenances.index')" :active="request()->routeIs('maintenances.*')">
+                {{ __('Riwayat Perbaikan') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('maintenance-types.index')" :active="request()->routeIs('maintenance-types.*')">
+                {{ __('Jenis Maintenance') }}
+            </x-responsive-nav-link>
+            
             <div class="pt-2 pb-2 px-4 text-xs font-bold text-gray-500 uppercase">Pembelian</div>
             <x-responsive-nav-link :href="route('vendors.index')" :active="request()->routeIs('vendors.*')">
-                {{ __('Vendor') }}
+                {{ __('Daftar Vendor') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('purchases.index')" :active="request()->routeIs('purchases.index')">
-                {{ __('Permohonan') }}
+            <x-responsive-nav-link :href="route('purchases.index')" :active="request()->routeIs('purchases.*')">
+                {{ __('Transaksi & Riwayat') }}
             </x-responsive-nav-link>
-             <x-responsive-nav-link :href="route('purchases.approved')" :active="request()->routeIs('purchases.approved')">
-                {{ __('Beli Barang') }}
-            </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('purchases.history')" :active="request()->routeIs('purchases.history')">
-                {{ __('Riwayat') }}
-            </x-responsive-nav-link>
+            @auth
+                @if(auth()->user()->isHead())
+                    <x-responsive-nav-link :href="route('purchases.report')" :active="request()->routeIs('purchases.report')">
+                        {{ __('Laporan Pembelian') }}
+                    </x-responsive-nav-link>
+                @endif
+            @endauth
         </div>
 
         <div class="pt-4 pb-1 border-t border-gray-200">
