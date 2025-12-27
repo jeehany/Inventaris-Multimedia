@@ -22,6 +22,8 @@
                         </div>
                     @endif
 
+<form action="{{ route('borrowers.store') }}" ... >
+
                     <form action="{{ route('borrowers.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
 

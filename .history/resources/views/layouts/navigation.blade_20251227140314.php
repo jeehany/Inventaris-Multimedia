@@ -47,11 +47,11 @@
                             </button>
                         </x-slot>
                         <x-slot name="content">
+                            <x-dropdown-link :href="route('borrowings.index')">
+                                {{ __('Daftar ') }}
+                            </x-dropdown-link>
                             <x-dropdown-link :href="route('borrowers.index')">
                                 {{ __('Data Peminjam') }}
-                            </x-dropdown-link>
-                            <x-dropdown-link :href="route('borrowings.index')">
-                                {{ __('Daftar Peminjaman') }}
                             </x-dropdown-link>
                         </x-slot>
                     </x-dropdown>

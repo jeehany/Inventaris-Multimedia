@@ -11,16 +11,9 @@
                 <div class="p-6 text-gray-900">
 
                     {{-- Tampilkan Error Validasi --}}
-                    @if ($errors->any())
-                        <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
-                            <strong class="font-bold">Ups! Ada masalah input:</strong>
-                            <ul class="mt-2 list-disc list-inside text-sm">
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
+@`
+
+<form action="{{ route('borrowers.store') }}" ... >
 
                     <form action="{{ route('borrowers.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf

@@ -50,9 +50,18 @@
                                 Filter
                             </button>
 
-                            {{-- Tombol Reset (Hanya muncul jika ada filter) --}}
+                            {{-- [BARU] Tombol Cetak PDF --}}
+                            {{-- Menggunakan request()->query() agar filter yang sedang aktif ikut terkirim ke PDF --}}
+                            <a href="{{ route('borrowings.exportPdf', request()->query()) }}" target="_blank" class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 text-sm flex items-center justify-center gap-1 w-full md:w-auto" title="Cetak Laporan PDF sesuai filter">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                PDF
+                            </a>
+
+                            {{-- Tombol Reset --}}
                             @if(request('search') || request('status') || (request('period') && request('period') !== 'all'))
-                                <a href="{{ route('borrowings.index') }}" class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 text-sm transition flex items-center justify-center w-full md:w-auto">
+                                <a href="{{ route('borrowings.index') }}" class="px-4 py-2 text-gray-500 hover:text-gray-700 text-sm border border-gray-300 rounded-md text-center w-full md:w-auto">
                                     Reset
                                 </a>
                             @endif

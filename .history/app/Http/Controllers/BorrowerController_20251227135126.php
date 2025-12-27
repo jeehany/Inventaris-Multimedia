@@ -30,27 +30,33 @@ class BorrowerController extends Controller
 
     public function store(Request $request)
     {
-        // 1. Validasi (Wajib Ada)
+        // 1. Validasi (HAPUS 'code' dari sini karena user tidak input)
         $request->validate([
             'name' => 'required|string|max:255',
-            'code' => 'required|string|unique:borrowers,code', // Mencegah NIS ganda
             'phone' => 'nullable|string',
             'photo' => 'nullable|image|max:2048',
         ]);
 
-        // 2. Siapkan Data
-        $data = $request->only(['code', 'name', 'phone']);
-        
-        // 3. Upload Foto
+        // 2. Generate Kode Otomatis (Format: PJM-001, PJM-002, dst)
+        $latest = \App\Models\Borrower::orderBy('id', 'desc')->first();
+        $nextId = $latest ? $latest->id + 1 : 1;
+        // PJM artinya Peminjam, %03d artinya angka 3 digit (001)
+        $generatedCode = 'PJM-' . sprintf("%03d", $nextId); 
+
+        // 3. Siapkan Data
+        $data = $request->only(['name', 'phone']);
+        $data['code'] = $generatedCode; // Masukkan kode otomatis tadi
+
+        // 4. Upload Foto
         if ($request->hasFile('photo')) {
             $path = $request->file('photo')->store('borrowers', 'public');
             $data['photo'] = $path;
         }
 
-        // 4. Simpan
+        // 5. Simpan
         \App\Models\Borrower::create($data);
 
-        return redirect()->route('borrowers.index')->with('success', 'Data peminjam berhasil ditambahkan.');
+        return redirect()->route('borrowers.index')->with('success', 'Data peminjam berhasil ditambahkan (Kode: ' . $generatedCode . ').');
     }
 
     public function edit($id) {

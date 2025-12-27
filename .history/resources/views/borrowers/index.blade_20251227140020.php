@@ -16,10 +16,10 @@
                             <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari Nama / NIS..." class="border-gray-300 rounded-md shadow-sm text-sm">
                             <button type="submit" class="bg-gray-800 text-white px-4 py-2 rounded-md hover:bg-gray-700 text-sm">Filter</button>
                             @if(request('search'))
-                                <a href="{{ route('borrowers.index') }}" class="px-4 py-2 text-gray-500 hover:text-gray-700 text-sm border border-gray-300 rounded-md text-center w-full md:w-auto">
-                                    Reset
-                                </a>
-                            @endif
+        <a href="{{ route('borrowers.index') }}" class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 text-sm transition flex items-center">
+            Reset
+        </a>
+    @endif
                         </form>
                         @auth
                             @if(!auth()->user()->isHead())

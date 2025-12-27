@@ -30,27 +30,43 @@ class BorrowerController extends Controller
 
     public function store(Request $request)
     {
-        // 1. Validasi (Wajib Ada)
-        $request->validate([
+        // 1. Cek Validasi Manual (Agar error muncul di layar putih)
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'code' => 'required|string|unique:borrowers,code', // Mencegah NIS ganda
+            'code' => 'required|string|unique:borrowers,code', // <-- Perhatikan ini
             'phone' => 'nullable|string',
             'photo' => 'nullable|image|max:2048',
         ]);
 
-        // 2. Siapkan Data
-        $data = $request->only(['code', 'name', 'phone']);
-        
-        // 3. Upload Foto
-        if ($request->hasFile('photo')) {
-            $path = $request->file('photo')->store('borrowers', 'public');
-            $data['photo'] = $path;
+        if ($validator->fails()) {
+            // INI AKAN MENAMPILKAN ERROR DI LAYAR
+            dd([
+                'Status' => 'Validasi Gagal',
+                'Pesan Error' => $validator->errors()->all(),
+                'Data yang Anda Input' => $request->all()
+            ]);
         }
 
-        // 4. Simpan
-        \App\Models\Borrower::create($data);
+        // 2. Coba Simpan ke Database
+        try {
+            $data = $request->only(['code', 'name', 'phone']);
+            
+            if ($request->hasFile('photo')) {
+                $path = $request->file('photo')->store('borrowers', 'public');
+                $data['photo'] = $path;
+            }
 
-        return redirect()->route('borrowers.index')->with('success', 'Data peminjam berhasil ditambahkan.');
+            \App\Models\Borrower::create($data);
+
+        } catch (\Exception $e) {
+            // INI AKAN MUNCUL JIKA DATABASE BERMASALAH (Misal ID tidak auto increment)
+            dd([
+                'Status' => 'Error Database',
+                'Pesan' => $e->getMessage()
+            ]);
+        }
+
+        return redirect()->route('borrowers.index')->with('success', 'Data berhasil ditambahkan.');
     }
 
     public function edit($id) {

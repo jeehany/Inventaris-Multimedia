@@ -30,24 +30,24 @@ class BorrowerController extends Controller
 
     public function store(Request $request)
     {
-        // 1. Validasi (Wajib Ada)
+        // 1. Validasi: 'code' (Identitas) WAJIB DIISI dan HARUS UNIK
         $request->validate([
-            'name' => 'required|string|max:255',
-            'code' => 'required|string|unique:borrowers,code', // Mencegah NIS ganda
+            'name'  => 'required|string|max:255',
+            'code'  => 'required|string|unique:borrowers,code', // <-- Input manual, tidak boleh sama
             'phone' => 'nullable|string',
             'photo' => 'nullable|image|max:2048',
         ]);
 
-        // 2. Siapkan Data
+        // 2. Ambil semua data inputan
         $data = $request->only(['code', 'name', 'phone']);
         
-        // 3. Upload Foto
+        // 3. Upload Foto jika ada
         if ($request->hasFile('photo')) {
             $path = $request->file('photo')->store('borrowers', 'public');
             $data['photo'] = $path;
         }
 
-        // 4. Simpan
+        // 4. Simpan ke Database
         \App\Models\Borrower::create($data);
 
         return redirect()->route('borrowers.index')->with('success', 'Data peminjam berhasil ditambahkan.');

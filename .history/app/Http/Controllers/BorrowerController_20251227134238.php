@@ -11,18 +11,13 @@ class BorrowerController extends Controller
     {
         $query = Borrower::query();
 
-        // Logika Search yang lebih aman (Grouped)
-        if ($request->filled('search')) {
+        if ($request->has('search') && $request->search != null) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('name', 'like', '%' . $search . '%')
-                  ->orWhere('code', 'like', '%' . $search . '%');
-            });
+            $query->where('name', 'like', "%$search%")
+                  ->orWhere('code', 'like', "%$search%");
         }
 
-        // Pagination + Query String (agar search tidak hilang saat pindah halaman)
         $borrowers = $query->latest()->paginate(10)->withQueryString();
-        
         return view('borrowers.index', compact('borrowers'));
     }
 
@@ -30,26 +25,20 @@ class BorrowerController extends Controller
 
     public function store(Request $request)
     {
-        // 1. Validasi (Wajib Ada)
         $request->validate([
             'name' => 'required|string|max:255',
-            'code' => 'required|string|unique:borrowers,code', // Mencegah NIS ganda
+            'code' => 'required|string|unique:borrowers,code', // Kode harus unik
             'phone' => 'nullable|string',
             'photo' => 'nullable|image|max:2048',
         ]);
 
-        // 2. Siapkan Data
         $data = $request->only(['code', 'name', 'phone']);
-        
-        // 3. Upload Foto
         if ($request->hasFile('photo')) {
             $path = $request->file('photo')->store('borrowers', 'public');
             $data['photo'] = $path;
         }
 
-        // 4. Simpan
-        \App\Models\Borrower::create($data);
-
+        Borrower::create($data);
         return redirect()->route('borrowers.index')->with('success', 'Data peminjam berhasil ditambahkan.');
     }
 
