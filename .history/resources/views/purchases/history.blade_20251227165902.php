@@ -22,20 +22,13 @@
                         
                         {{-- FILTER (DI KIRI) --}}
                         <form action="{{ url()->current() }}" method="GET" class="flex flex-col md:flex-row gap-2 w-full md:w-auto items-center">
-    
-                            {{-- BARU: Filter Status --}}
-                            <select name="status" class="rounded-md border-gray-300 text-sm focus:ring-blue-500 focus:border-blue-500 py-2 w-full md:w-auto">
-                                <option value="">- Semua Status -</option>
-                                <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Selesai</option>
-                                <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Ditolak</option>
-                            </select>
-
-                            {{-- Filter Search --}}
+                            
+                            {{-- Search --}}
                             <input type="text" name="search" value="{{ request('search') }}" 
                                 placeholder="Cari Kode / Alat..." 
                                 class="rounded-md border-gray-300 text-sm focus:ring-blue-500 focus:border-blue-500 py-2 w-full md:w-40">
 
-                            {{-- Filter Bulan --}}
+                            {{-- Bulan --}}
                             @php
                                 $indoMonths = [
                                     1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 
@@ -52,7 +45,7 @@
                                 @endforeach
                             </select>
 
-                            {{-- Filter Tahun --}}
+                            {{-- Tahun --}}
                             <select name="year" class="rounded-md border-gray-300 text-sm focus:ring-blue-500 focus:border-blue-500 py-2 w-full md:w-auto">
                                 <option value="">- Tahun -</option>
                                 @for($y = date('Y'); $y >= date('Y') - 5; $y--)
@@ -63,16 +56,23 @@
                             </select>
 
                             <button type="submit" class="bg-gray-800 text-white px-3 py-2 rounded-md text-sm hover:bg-gray-700">
-                                Filter
+                                Cari
                             </button>
 
-                            @if(request('search') || request('month') || request('year') || request('status'))
+                            @if(request('search') || request('month') || request('year'))
                                 <a href="{{ url()->current() }}" class="text-red-500 text-sm hover:underline ml-1">
                                     Reset
                                 </a>
                             @endif
                         </form>
 
+                        {{-- TOMBOL CETAK (DI KANAN) --}}
+                        <button onclick="window.print()" class="bg-white border border-gray-300 text-gray-700 text-sm px-4 py-2 rounded hover:bg-gray-50 flex items-center gap-2 shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                            </svg>
+                            Cetak Laporan
+                        </button>
                     </div>
 
                     {{-- TABLE --}}

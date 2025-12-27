@@ -63,7 +63,7 @@
                             </select>
 
                             <button type="submit" class="bg-gray-800 text-white px-3 py-2 rounded-md text-sm hover:bg-gray-700">
-                                Filter
+                                Cari
                             </button>
 
                             @if(request('search') || request('month') || request('year') || request('status'))

@@ -97,29 +97,15 @@ class PurchaseController extends Controller
     // ----------------------------------------------------------------------
     public function indexHistory(Request $request)
     {
-        $query = Purchase::with(['vendor', 'user', 'category']);
-
-        // --- FILTER 1: STATUS ---
-        // Logika: 
-        // 1. Jika pilih 'completed' -> cari yang is_purchased = true
-        // 2. Jika pilih 'rejected'  -> cari yang status = rejected
-        // 3. Jika kosong/all      -> cari keduanya (OR)
-        
-        if ($request->filled('status') && $request->status == 'completed') {
-            $query->where('is_purchased', true);
-        } 
-        elseif ($request->filled('status') && $request->status == 'rejected') {
-            $query->where('status', 'rejected');
-        } 
-        else {
-            // Default: Tampilkan Keduanya (Selesai ATAU Ditolak)
-            $query->where(function($q) {
+        // Query Dasar: Ambil yang Selesai (Purchased) ATAU Ditolak (Rejected)
+        // Kita bungkus dalam where(function) supaya logika OR tidak mengacaukan filter
+        $query = Purchase::with(['vendor', 'user', 'category'])
+            ->where(function($q) {
                 $q->where('is_purchased', true)
                   ->orWhere('status', 'rejected');
             });
-        }
 
-        // --- FILTER 2: SEARCH ---
+        // --- FILTER 1: SEARCH ---
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -131,16 +117,18 @@ class PurchaseController extends Controller
             });
         }
 
-        // --- FILTER 3: BULAN ---
+        // --- FILTER 2: BULAN ---
         if ($request->filled('month')) {
-            $query->whereMonth('updated_at', $request->month);
+            $query->whereMonth('updated_at', $request->month); 
+            // Gunakan updated_at karena ini riwayat selesai
         }
 
-        // --- FILTER 4: TAHUN ---
+        // --- FILTER 3: TAHUN ---
         if ($request->filled('year')) {
             $query->whereYear('updated_at', $request->year);
         }
 
+        // Eksekusi dengan Pagination
         $history = $query->orderBy('updated_at', 'desc')
                          ->paginate(10)
                          ->withQueryString();
