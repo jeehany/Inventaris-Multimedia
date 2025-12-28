@@ -23,7 +23,7 @@
                         <p class="text-sm text-gray-500">Upload bukti pembayaran untuk menyelesaikan transaksi.</p>
                     </div>
 
-                    {{-- FILTER SECTION --}}
+                    {{-- FILTER SECTION (DI KIRI) --}}
                     <div class="mb-6">
                         <form action="{{ url()->current() }}" method="GET" class="flex flex-col md:flex-row gap-2 w-full md:w-auto items-center justify-start">
                             
@@ -111,20 +111,11 @@
                                         <div class="font-bold text-lg text-gray-800">Rp {{ number_format($p->subtotal, 0, ',', '.') }}</div>
                                     </td>
                                     <td class="px-4 py-4 whitespace-nowrap text-center">
-                                        
-                                        {{-- LOGIC TOMBOL BERDASARKAN ROLE --}}
-                                        @if(Auth::user()->role == 'head')
-                                            {{-- BUTTON UNTUK KEPALA (READ ONLY) --}}
-                                            <span class="text-gray-400 text-xs italic">Read-only</span>
-                                        @else
-                                            {{-- BUTTON UNTUK ADMIN (TETAP SEPERTI SEMULA) --}}
-                                            <button 
-                                                onclick="openModal('{{ $p->id }}', '{{ addslashes($p->tool_name) }}', '{{ $p->unit_price }}')"
-                                                class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow-sm text-sm flex items-center justify-center gap-2 mx-auto transition-all transform hover:scale-105">
-                                                Process
-                                            </button>
-                                        @endif
-
+                                        <button 
+                                            onclick="openModal('{{ $p->id }}', '{{ addslashes($p->tool_name) }}', '{{ $p->unit_price }}')"
+                                            class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow-sm text-sm flex items-center justify-center gap-2 mx-auto transition-all transform hover:scale-105">
+                                            Process
+                                        </button>
                                     </td>
                                 </tr>
                                 @empty

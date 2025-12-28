@@ -79,26 +79,15 @@
                                         <td class="px-4 py-3 text-red-600 text-xs">
                                             {{ $tool->deleted_at->format('d M Y H:i') }}
                                         </td>
-                                        
-                                        {{-- KOLOM AKSI (MODIFIKASI DISINI) --}}
                                         <td class="px-4 py-3 text-center">
-                                            @auth
-                                                @if(!auth()->user()->isHead())
-                                                    {{-- JIKA BUKAN KEPALA (ADMIN/STAFF) -> MUNCUL TOMBOL RESTORE --}}
-                                                    <form action="{{ route('tools.restore', $tool->id) }}" method="POST" onsubmit="return confirm('Kembalikan alat ini ke daftar aktif?');">
-                                                        @csrf
-                                                        @method('PUT')
-                                                        <button type="submit" class="bg-green-100 text-green-700 px-3 py-1 rounded-md hover:bg-green-200 text-xs font-bold transition">
-                                                            Pulihkan (Restore)
-                                                        </button>
-                                                    </form>
-                                                @else
-                                                    {{-- JIKA KEPALA -> HANYA TULISAN READ-ONLY --}}
-                                                    <span class="text-gray-400 text-xs italic">Read-only</span>
-                                                @endif
-                                            @endauth
+                                            <form action="{{ route('tools.restore', $tool->id) }}" method="POST" onsubmit="return confirm('Kembalikan alat ini ke daftar aktif?');">
+                                                @csrf
+                                                @method('PUT')
+                                                <button type="submit" class="bg-green-100 text-green-700 px-3 py-1 rounded-md hover:bg-green-200 text-xs font-bold transition">
+                                                    Pulihkan (Restore)
+                                                </button>
+                                            </form>
                                         </td>
-
                                     </tr>
                                 @empty
                                     <tr>

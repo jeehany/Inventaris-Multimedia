@@ -115,7 +115,10 @@
                                         {{-- LOGIC TOMBOL BERDASARKAN ROLE --}}
                                         @if(Auth::user()->role == 'head')
                                             {{-- BUTTON UNTUK KEPALA (READ ONLY) --}}
-                                            <span class="text-gray-400 text-xs italic">Read-only</span>
+                                            <button type="button" disabled
+                                                class="text-gray-400 text-xs italic">
+                                                READ ONLY
+                                            </button>
                                         @else
                                             {{-- BUTTON UNTUK ADMIN (TETAP SEPERTI SEMULA) --}}
                                             <button 

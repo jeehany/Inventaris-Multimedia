@@ -111,20 +111,11 @@
                                         <div class="font-bold text-lg text-gray-800">Rp {{ number_format($p->subtotal, 0, ',', '.') }}</div>
                                     </td>
                                     <td class="px-4 py-4 whitespace-nowrap text-center">
-                                        
-                                        {{-- LOGIC TOMBOL BERDASARKAN ROLE --}}
-                                        @if(Auth::user()->role == 'head')
-                                            {{-- BUTTON UNTUK KEPALA (READ ONLY) --}}
-                                            <span class="text-gray-400 text-xs italic">Read-only</span>
-                                        @else
-                                            {{-- BUTTON UNTUK ADMIN (TETAP SEPERTI SEMULA) --}}
-                                            <button 
-                                                onclick="openModal('{{ $p->id }}', '{{ addslashes($p->tool_name) }}', '{{ $p->unit_price }}')"
-                                                class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow-sm text-sm flex items-center justify-center gap-2 mx-auto transition-all transform hover:scale-105">
-                                                Process
-                                            </button>
-                                        @endif
-
+                                        <button 
+                                            onclick="openModal('{{ $p->id }}', '{{ addslashes($p->tool_name) }}', '{{ $p->unit_price }}')"
+                                            class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow-sm text-sm flex items-center justify-center gap-2 mx-auto transition-all transform hover:scale-105">
+                                            Process
+                                        </button>
                                     </td>
                                 </tr>
                                 @empty
@@ -172,11 +163,21 @@
                                         <label class="block text-sm font-bold text-gray-700 mb-1">Upload Invoice / Receipt</label>
                                         <input type="file" name="proof_photo" required class="block w-full text-sm text-gray-500 border border-gray-300 rounded-md p-1" accept="image/*">
                                     </div>
+                                    
+                                    {{-- BAGIAN YANG DIEDIT: READ ONLY --}}
                                     <div class="mb-2">
-                                        <label class="block text-sm font-bold text-gray-700 mb-1">Final Price / Unit (Rp)</label>
-                                        <input type="number" name="real_price" id="modalPrice" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md">
-                                        <p class="text-xs text-gray-400 mt-1">Sesuaikan harga jika berbeda dengan estimasi awal.</p>
+                                        <label class="block text-sm font-bold text-gray-700 mb-1">Final Price / Unit (Locked)</label>
+                                        <div class="relative">
+                                            <input type="number" 
+                                                   name="real_price" 
+                                                   id="modalPrice" 
+                                                   class="bg-gray-200 cursor-not-allowed block w-full sm:text-sm border-gray-300 rounded-md text-gray-600 focus:ring-0 focus:border-gray-300"
+                                                   readonly>
+                                        </div>
+                                        <p class="text-xs text-red-500 mt-1 italic">* Harga sudah disetujui, tidak dapat diubah.</p>
                                     </div>
+                                    {{-- END EDIT --}}
+
                                 </div>
                             </div>
                         </div>

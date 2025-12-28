@@ -14,6 +14,10 @@
                 </div>
             @endif
 
+            <div class="bg-red-500 text-white p-4 font-bold text-center">
+                SAYA LOGIN SEBAGAI: {{ Auth::user()->role }}
+            </div>
+
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     
@@ -113,9 +117,12 @@
                                     <td class="px-4 py-4 whitespace-nowrap text-center">
                                         
                                         {{-- LOGIC TOMBOL BERDASARKAN ROLE --}}
-                                        @if(Auth::user()->role == 'head')
+                                        @if(Auth::user()->role == 'kepala')
                                             {{-- BUTTON UNTUK KEPALA (READ ONLY) --}}
-                                            <span class="text-gray-400 text-xs italic">Read-only</span>
+                                            <button type="button" disabled
+                                                class="bg-gray-400 cursor-not-allowed text-white font-bold py-2 px-4 rounded shadow-sm text-sm flex items-center justify-center gap-2 mx-auto">
+                                                READ ONLY
+                                            </button>
                                         @else
                                             {{-- BUTTON UNTUK ADMIN (TETAP SEPERTI SEMULA) --}}
                                             <button 
