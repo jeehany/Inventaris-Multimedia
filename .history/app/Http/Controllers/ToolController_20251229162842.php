@@ -154,11 +154,11 @@ class ToolController extends Controller
         Tool::create([
             'tool_code'           => $generatedCode,
             'tool_name'           => $request->tool_name,
-            'brand'               => $request->brand,            // <--- Baru
-            'purchase_date'       => $request->purchase_date,    // <--- Baru
             'category_id'         => $request->category_id,
+            // Perbaikan: Ambil dari input yang benar
             'current_condition'   => $request->current_condition, 
             'availability_status' => $request->availability_status,
+            // 'purchase_item_id' => null, 
         ]);
 
         return redirect()->route('tools.index')->with('success', 'Berhasil! Alat manual ditambahkan dengan kode: ' . $generatedCode);
@@ -181,22 +181,19 @@ class ToolController extends Controller
         }
         
         $request->validate([
-            'tool_name'         => 'required|string|max:255',
-            'brand'             => 'nullable|string|max:100', // <--- Baru
-            'purchase_date'     => 'nullable|date',           // <--- Baru
-            'category_id'       => 'required|exists:tool_categories,id',
+            'tool_name'   => 'required|string|max:255',
+            'category_id' => 'required|exists:tool_categories,id',
             'current_condition' => 'required|string',
-            'availability_status' => 'required',
+            // Validasi: pastikan tidak mengubah kode menjadi kode yang sudah ada (termasuk di trash)
+            // (Jika tool_code bisa diedit, tambahkan validasi unique di sini)
         ]);
         
         $tool = Tool::findOrFail($id);
         
         $tool->update([
-            'tool_name'           => $request->tool_name,
-            'brand'               => $request->brand,            // <--- Baru
-            'purchase_date'       => $request->purchase_date,    // <--- Baru
-            'category_id'         => $request->category_id,
-            'current_condition'   => $request->current_condition, 
+            'tool_name'         => $request->tool_name,
+            'category_id'       => $request->category_id,
+            'current_condition' => $request->current_condition, 
             'availability_status' => $request->availability_status,
         ]);
 

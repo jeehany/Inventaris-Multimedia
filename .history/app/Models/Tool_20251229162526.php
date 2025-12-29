@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Models\Purchase;
 
 
 class Tool extends Model
@@ -18,7 +17,7 @@ class Tool extends Model
     protected $fillable = [
         'tool_code', 
         'tool_name', 
-        'brand',           
+        'brand',           // <--- TAMBAHAN
         'purchase_date',
         'category_id', 
         'current_condition', 
@@ -38,10 +37,8 @@ class Tool extends Model
     }
 
     // Relasi balik ke pembelian
-    public function purchase()
+    public function originPurchaseItem()
     {
-        // Artinya: Kolom 'purchase_item_id' di tabel tools 
-        // milik id dari tabel purchases.
-        return $this->belongsTo(Purchase::class, 'purchase_item_id', 'id');
+        return $this->belongsTo(PurchaseItem::class, 'purchase_item_id');
     }
 }

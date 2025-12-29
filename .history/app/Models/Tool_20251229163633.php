@@ -38,10 +38,8 @@ class Tool extends Model
     }
 
     // Relasi balik ke pembelian
-    public function purchase()
+    public function originPurchaseItem()
     {
-        // Artinya: Kolom 'purchase_item_id' di tabel tools 
-        // milik id dari tabel purchases.
-        return $this->belongsTo(Purchase::class, 'purchase_item_id', 'id');
+        return $this->belongsTo(PurchaseItem::class, 'purchase_item_id');
     }
 }
