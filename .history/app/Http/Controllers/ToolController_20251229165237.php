@@ -183,6 +183,7 @@ class ToolController extends Controller
         
         // 1. Validasi
         $request->validate([
+            $request->validate([
             'tool_name'           => 'required|string|max:255',
             'category_id'         => 'required|exists:tool_categories,id',
             'brand'               => 'nullable|string|max:100', // Validasi Merk

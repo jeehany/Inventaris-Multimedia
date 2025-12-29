@@ -181,8 +181,8 @@ class ToolController extends Controller
             return redirect()->route('tools.index')->with('error', 'Akses ditolak.');
         }
         
-        // 1. Validasi
         $request->validate([
+            $request->validate([
             'tool_name'           => 'required|string|max:255',
             'category_id'         => 'required|exists:tool_categories,id',
             'brand'               => 'nullable|string|max:100', // Validasi Merk
@@ -193,15 +193,13 @@ class ToolController extends Controller
         
         $tool = Tool::findOrFail($id);
         
-        // 2. Update Data
         $tool->update([
             'tool_name'           => $request->tool_name,
+            'brand'               => $request->brand,            // <--- Baru
+            'purchase_date'       => $request->purchase_date,    // <--- Baru
             'category_id'         => $request->category_id,
-            'brand'               => $request->brand,           // Update Merk
-            'purchase_date'       => $request->purchase_date,   // Update Tanggal
-            'current_condition'   => $request->current_condition,
+            'current_condition'   => $request->current_condition, 
             'availability_status' => $request->availability_status,
-            // tool_code tidak kita update agar konsisten
         ]);
 
         return redirect()->route('tools.index')->with('success', 'Data alat diperbarui.');

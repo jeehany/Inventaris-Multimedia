@@ -27,7 +27,8 @@
                             <div>
                                 <label class="block font-medium text-sm text-gray-700">Kategori</label>
                                 <input type="text" value="{{ $tool->category->category_name }}" readonly class="mt-1 block w-full border-gray-300 rounded-md shadow-sm bg-gray-100 text-gray-500 cursor-not-allowed">
-                                <p class="text-xs text-gray-500 mt-1">Kategori tidak dapat diubah.</p>                           
+                                
+                                
                             </div>
 
                             {{-- Nama Alat --}}

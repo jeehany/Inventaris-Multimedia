@@ -182,14 +182,14 @@ class ToolController extends Controller
         }
         
         // 1. Validasi
-        $request->validate([
-            'tool_name'           => 'required|string|max:255',
-            'category_id'         => 'required|exists:tool_categories,id',
-            'brand'               => 'nullable|string|max:100', // Validasi Merk
-            'purchase_date'       => 'nullable|date',           // Validasi Tanggal (Boleh diedit)
-            'current_condition'   => 'required',
-            'availability_status' => 'required',
-        ]);
+    $request->validate([
+        'tool_name'           => 'required|string|max:255',
+        'category_id'         => 'required|exists:tool_categories,id',
+        'brand'               => 'nullable|string|max:100', // Validasi Merk
+        'purchase_date'       => 'nullable|date',           // Validasi Tanggal (Boleh diedit)
+        'current_condition'   => 'required',
+        'availability_status' => 'required',
+    ]);
         
         $tool = Tool::findOrFail($id);
         
