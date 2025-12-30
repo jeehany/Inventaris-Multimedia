@@ -148,100 +148,102 @@
         </div>
     </div>
 
-    {{-- MODAL UPLOAD / PROSES TRANSAKSI --}}
-    <div id="uploadModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+    {{-- MODAL UPLOAD --}}
+    <div id="uploadModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
         <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeModal()"></div>
-
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeModal()"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
             <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full">
                 
                 <form id="evidenceForm" method="POST" enctype="multipart/form-data">
-                    @csrf
-                    @method('PUT')
-                    
-                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">
-                            Proses Transaksi: <span id="modalToolName" class="text-blue-600 font-bold"></span>
-                        </h3>
-                        
-                        <input type="hidden" id="purchaseId" name="purchase_id">
+    @csrf
+    @method('PUT') {{-- PENTING: Gunakan method PUT untuk update --}}
+    
+    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4" id="modal-title">
+            Proses Transaksi & Upload Nota
+        </h3>
 
-                        <div class="grid grid-cols-1 gap-4">
-                            
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Estimasi Budget (Rencana)</label>
-                                <input type="text" id="displayPlannedPrice" disabled 
-                                       class="mt-1 block w-full bg-gray-100 border-gray-300 rounded-md shadow-sm sm:text-sm text-gray-500 cursor-not-allowed">
-                            </div>
+        {{-- Info Barang --}}
+        <div class="mb-4 bg-blue-50 p-3 rounded border border-blue-100">
+            <p class="text-xs text-blue-600 uppercase font-bold tracking-wide">Nama Barang</p>
+            <p id="modalToolName" class="text-md font-bold text-gray-800 mt-1">-</p>
+        </div>
 
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Harga Asli (Sesuai Nota)</label>
-                                <div class="mt-1 relative rounded-md shadow-sm">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <span class="text-gray-500 sm:text-sm">Rp</span>
-                                    </div>
-                                    <input type="number" name="actual_unit_price" required
-                                           class="focus:ring-blue-500 focus:border-blue-500 block w-full pl-12 sm:text-sm border-gray-300 rounded-md" 
-                                           placeholder="0">
-                                </div>
-                            </div>
+        {{-- Error Handling (Tetap Pertahankan) --}}
+        @if($errors->any())
+            <div class="mb-4 bg-red-100 text-red-700 px-4 py-2 rounded text-sm">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Merk / Brand</label>
-                                <input type="text" name="brand" required
-                                       class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                                       placeholder="Contoh: Canon, Honda, dll">
-                            </div>
+        {{-- GRID HARGA (INI BAGIAN INTI PERUBAHANNYA) --}}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            
+            {{-- 1. Harga Rencana (READ ONLY / DISABLED) --}}
+            <div>
+                <label class="block text-xs font-bold text-gray-500 mb-1">Harga Rencana (Budget)</label>
+                <div class="relative">
+                    <span class="absolute left-3 top-2 text-gray-500 sm:text-sm">Rp</span>
+                    <input type="text" id="displayPlannedPrice" disabled 
+                        class="pl-9 bg-gray-200 block w-full sm:text-sm border-gray-300 rounded-md cursor-not-allowed font-medium text-gray-500">
+                </div>
+            </div>
 
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Foto Nota / Bukti</label>
-                                <input type="file" name="proof_photo" required
-                                       class="mt-1 block w-full text-sm text-gray-500
-                                              file:mr-4 file:py-2 file:px-4
-                                              file:rounded-full file:border-0
-                                              file:text-sm file:font-semibold
-                                              file:bg-blue-50 file:text-blue-700
-                                              hover:file:bg-blue-100">
-                                <p class="mt-1 text-xs text-gray-500">Wajib upload gambar (JPG/PNG).</p>
-                            </div>
+            {{-- 2. Harga Asli (INPUT MANUAL) --}}
+            <div>
+                <label class="block text-xs font-bold text-blue-700 mb-1">Harga Asli (Sesuai Nota)</label>
+                <div class="relative">
+                    <span class="absolute left-3 top-2 text-gray-700 sm:text-sm font-bold">Rp</span>
+                    <input type="number" name="actual_unit_price" required placeholder="0"
+                        class="pl-9 focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-blue-300 rounded-md shadow-sm">
+                </div>
+            </div>
+        </div>
 
-                        </div>
-                    </div>
+        {{-- INPUT MERK (Tetap) --}}
+        <div class="mb-4">
+            <label class="block text-sm font-bold text-gray-700 mb-1">Brand / Merk</label>
+            <input type="text" name="brand" placeholder="Contoh: Canon, Makita" required 
+                value="{{ old('brand') }}"
+                class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md">
+        </div>
 
-                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                        <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 sm:ml-3 sm:w-auto sm:text-sm">
-                            Simpan
-                        </button>
-                        <button type="button" onclick="closeModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
-                            Batal
-                        </button>
-                    </div>
-                </form>
+        {{-- INPUT FILE NOTA (Tetap) --}}
+        <div class="mb-2">
+            <label class="block text-sm font-bold text-gray-700 mb-1">Upload Foto Nota/Kwitansi</label>
+            <input type="file" name="proof_photo" required class="block w-full text-sm text-gray-500 border border-gray-300 rounded-md p-1 bg-gray-50" accept="image/*">
+            <p class="text-xs text-gray-400 mt-1">Format: JPG, PNG, PDF. Max 2MB.</p>
+        </div>
+
+    </div>
+
+    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+        <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 sm:ml-3 sm:w-auto sm:text-sm">
+            Simpan Realisasi
+        </button>
+        <button type="button" onclick="closeModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+            Batal
+        </button>
+    </div>
+</form>
+
             </div>
         </div>
     </div>
 
     <script>
-        function openModal(id, name, plannedPrice) {
-            // 1. Reset Form
+        function openModal(id, name, price) {
             const form = document.getElementById('evidenceForm');
-            form.reset();
-            form.action = "/purchases/" + id + "/process"; // Sesuaikan route Anda
-
-            // 2. Isi Nama Barang
+            const url = "{{ route('purchases.evidence', ':id') }}"; 
+            form.action = url.replace(':id', id);
+            
             document.getElementById('modalToolName').innerText = name;
-
-            // 3. Isi Harga Rencana (Format Rupiah)
-            const priceInput = document.getElementById('displayPlannedPrice');
-            if(priceInput) {
-                try {
-                    priceInput.value = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(plannedPrice);
-                } catch(e) {
-                    priceInput.value = plannedPrice;
-                }
-            }
-
-            // 4. Tampilkan Modal
+            document.getElementById('modalPrice').value = price;
             document.getElementById('uploadModal').classList.remove('hidden');
         }
 

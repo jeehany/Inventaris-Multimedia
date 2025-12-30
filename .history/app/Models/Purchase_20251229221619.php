@@ -32,7 +32,7 @@ class Purchase extends Model
         // 3. Status & Eksekusi
         'status',                  // pending, approved, rejected
         'is_purchased',            // boolean
-        'transaction_proof_photo', // path file gambar
+        'proof_photo', // path file gambar
         'rejection_note',          // Jaga-jaga kalau ada catatan penolakan
     ];
 

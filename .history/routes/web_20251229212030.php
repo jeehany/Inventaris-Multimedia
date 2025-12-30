@@ -69,8 +69,8 @@ Route::middleware('auth')->group(function () {
     // Halaman Riwayat (Status Rejected & Completed/Purchased)
     Route::get('/purchases/transaction', [PurchaseController::class, 'indexTransaction'])->name('purchases.transaction');
     Route::get('/purchases/history', [PurchaseController::class, 'indexHistory'])->name('purchases.history');
-    Route::put('/purchases/{id}/process', [PurchaseController::class, 'process'])->name('purchases.process');
-
+    oute::put('/purchases/{id}/process', [PurchaseController::class, 'process'])->name('purchases.process');
+    
     // 2. Action Routes (Tombol Aksi)
     // Approve & Reject (Kepala)
     Route::patch('/purchases/{id}/approve', [PurchaseController::class, 'approve'])->name('purchases.approve');

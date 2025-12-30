@@ -114,68 +114,68 @@ class MaintenanceController extends Controller
     }
 
     public function update(Request $request, Maintenance $maintenance)
-    {
-        // Cek tombol mana yang diklik berdasarkan value="action"
-        $action = $request->input('action');
+{
+    // Cek tombol mana yang diklik berdasarkan value="action"
+    $action = $request->input('action');
 
-        // =========================================================
-        // SKENARIO 1: KLIK TOMBOL "SELESAI & KEMBALI"
-        // =========================================================
-        if ($action == 'complete') {
-            $request->validate([
-                'end_date' => 'required|date|after_or_equal:start_date',
-                'cost' => 'required|numeric|min:0',
-                // Validasi data info juga, biar gak hilang kalau diedit barengan
-                'note' => 'nullable|string',
-                'action_taken' => 'nullable|string',
-            ]);
-
-            $maintenance->update([
-                // Update Data Info (Kiri) agar tersimpan juga
-                'note' => $request->note,
-                'action_taken' => $request->action_taken,
-                'maintenance_type_id' => $request->maintenance_type_id,
-                'start_date' => $request->start_date,
-                
-                // Update Data Selesai (Kanan)
-                'end_date' => $request->end_date,
-                'cost' => $request->cost,
-                'status' => 'completed',
-            ]);
-
-            // Kembalikan alat jadi Available
-            if ($maintenance->tool) {
-                $maintenance->tool->update([
-                    'availability_status' => 'available',
-                    'current_condition'   => 'Baik'
-                ]);
-            }
-
-            return redirect()->route('maintenances.index')->with('success', 'Perbaikan selesai & Data tersimpan.');
-        }
-
-        // =========================================================
-        // SKENARIO 2: KLIK TOMBOL "SIMPAN INFO" (Update Biasa)
-        // =========================================================
-        // Default action kalau bukan complete
-        
+    // =========================================================
+    // SKENARIO 1: KLIK TOMBOL "SELESAI & KEMBALI"
+    // =========================================================
+    if ($action == 'complete') {
         $request->validate([
-            'note' => 'required|string',
-            'start_date' => 'required|date',
-            'maintenance_type_id' => 'required|exists:maintenance_types,id',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'cost' => 'required|numeric|min:0',
+            // Validasi data info juga, biar gak hilang kalau diedit barengan
+            'note' => 'nullable|string',
             'action_taken' => 'nullable|string',
         ]);
-        
+
         $maintenance->update([
-            'start_date' => $request->start_date,
+            // Update Data Info (Kiri) agar tersimpan juga
             'note' => $request->note,
-            'maintenance_type_id' => $request->maintenance_type_id,
             'action_taken' => $request->action_taken,
-            'status' => ($maintenance->status == 'pending') ? 'in_progress' : $maintenance->status
+            'maintenance_type_id' => $request->maintenance_type_id,
+            'start_date' => $request->start_date,
+            
+            // Update Data Selesai (Kanan)
+            'end_date' => $request->end_date,
+            'cost' => $request->cost,
+            'status' => 'completed',
         ]);
 
-        return redirect()->back()->with('success', 'Informasi perbaikan diperbarui.');
+        // Kembalikan alat jadi Available
+        if ($maintenance->tool) {
+            $maintenance->tool->update([
+                'availability_status' => 'available',
+                'current_condition'   => 'Baik'
+            ]);
+        }
+
+        return redirect()->route('maintenances.index')->with('success', 'Perbaikan selesai & Data tersimpan.');
     }
+
+    // =========================================================
+    // SKENARIO 2: KLIK TOMBOL "SIMPAN INFO" (Update Biasa)
+    // =========================================================
+    // Default action kalau bukan complete
+    
+    $request->validate([
+        'note' => 'required|string',
+        'start_date' => 'required|date',
+        'maintenance_type_id' => 'required|exists:maintenance_types,id',
+        'action_taken' => 'nullable|string',
+    ]);
+    
+    $maintenance->update([
+        'start_date' => $request->start_date,
+        'note' => $request->note,
+        'maintenance_type_id' => $request->maintenance_type_id,
+        'action_taken' => $request->action_taken,
+        'status' => ($maintenance->status == 'pending') ? 'in_progress' : $maintenance->status
+    ]);
+
+    return redirect()->back()->with('success', 'Informasi perbaikan diperbarui.');
+}
 
     public function destroy(Maintenance $maintenance)
     {

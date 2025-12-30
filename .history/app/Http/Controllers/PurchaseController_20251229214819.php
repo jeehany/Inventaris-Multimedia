@@ -332,87 +332,40 @@ class PurchaseController extends Controller
     }
 
     public function process(Request $request, $id)
-    {
-        // 1. VALIDASI (Sesuaikan dengan name di Form View)
-        $request->validate([
-            'actual_unit_price' => 'required|numeric', // Di form namanya actual_unit_price
-            'brand'             => 'required|string|max:100',
-            'proof_photo'       => 'nullable|image|max:5120',
-        ]);
+{
+    // 1. Validasi
+    $request->validate([
+        'actual_unit_price' => 'required|numeric',
+        'brand'             => 'required|string|max:255',
+        'proof_photo'       => 'nullable|image|mimes:jpeg,png,jpg|max:5120', // Max 5MB
+    ]);
 
-        $purchase = Purchase::findOrFail($id);
+    // 2. Cari Data
+    $purchase = Purchase::findOrFail($id);
 
-        // 2. UPDATE DATA PURCHASE
-        // Kita simpan harga asli dan ubah status
-        $purchase->actual_unit_price = $request->actual_unit_price; 
-        $purchase->brand = $request->brand;
+    // 3. UPDATE DATA
+    $purchase->actual_unit_price = $request->actual_unit_price;
+    $purchase->brand = $request->brand;
+    
+    // Update status (sesuaikan dengan alur Anda, misal jadi 'verifying' atau 'completed')
+    $purchase->status = 'verifying'; 
+
+    // 4. LOGIKA SIMPAN GAMBAR (Ini yang kemarin mungkin kurang)
+    if ($request->hasFile('proof_photo')) {
+        // Hapus foto lama jika ada (agar server tidak penuh sampah)
+        if ($purchase->proof_photo) {
+            Storage::disk('public')->delete($purchase->proof_photo);
+        }
+
+        // Simpan foto baru ke folder "evidence"
+        $path = $request->file('proof_photo')->store('evidence', 'public');
         
-        // Simpan Foto
-        if ($request->hasFile('proof_photo')) {
-            // Hapus foto lama jika ada
-            if ($purchase->transaction_proof_photo) {
-                Storage::disk('public')->delete($purchase->transaction_proof_photo);
-            }
-            $path = $request->file('proof_photo')->store('evidence', 'public');
-            $purchase->transaction_proof_photo = $path;
-        }
-
-        $purchase->status = 'completed';
-        $purchase->is_purchased = true;
-        $purchase->save();
-
-        // ============================================================
-        // 3. LOGIKA MASUK TOOLS (ASET GENERATOR) - KODE ANDA
-        // ============================================================
-        
-        // A. Tentukan Prefix Kode (Misal: LAP untu Laptop)
-        $prefix = 'GEN'; 
-        if ($purchase->category && !empty($purchase->category->category_name)) {
-            // Ambil 3 huruf pertama kategori, uppercase
-            $prefix = strtoupper(substr($purchase->category->category_name, 0, 3));
-        }
-
-        // B. Cari Nomor Urut Terakhir di Database
-        // Kita ambil angka terakhir SEKALI saja sebelum loop agar lebih cepat
-        $lastTool = Tool::where('tool_code', 'like', $prefix . '-%')
-                        ->orderByRaw('LENGTH(tool_code) DESC') // Urutkan panjang string dulu
-                        ->orderBy('tool_code', 'desc')         // Baru urutkan kodenya
-                        ->first();
-        
-        $nextNumber = 1;
-        if ($lastTool) {
-            $parts = explode('-', $lastTool->tool_code);
-            // Ambil angka paling belakang
-            if (count($parts) >= 2) {
-                $nextNumber = intval(end($parts)) + 1;
-            }
-        }
-
-        // C. Looping Sebanyak Quantity (Beli 5 = Buat 5 Baris)
-        for ($i = 0; $i < $purchase->quantity; $i++) {
-            
-            // Format Kode: ABC-001, ABC-002, dst
-            $generatedCode = $prefix . '-' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
-
-            // Create Data Tool
-            Tool::create([
-                'tool_code'           => $generatedCode,
-                'tool_name'           => $purchase->tool_name,
-                'brand'               => $request->brand,      // Dari Input User
-                'purchase_date'       => $purchase->date,      // Dari Tanggal Beli
-                'category_id'         => $purchase->category_id,
-                // 'purchase_item_id' => $purchase->id,        // (Opsional: Kalau di tabel tools ada kolom ini, nyalakan)
-                'quantity'            => 1,                    // Karena aset, qty per baris selalu 1
-                'current_condition'   => 'Baik',               // Default
-                'availability_status' => 'available',          // Default
-                'description'         => $purchase->specification,
-                'image'               => $purchase->transaction_proof_photo, // Opsional: Foto nota jadi foto aset
-            ]);
-
-            // Naikkan nomor urut untuk putaran berikutnya
-            $nextNumber++;
-        }
-
-        return redirect()->back()->with('success', 'Transaksi Selesai! ' . $purchase->quantity . ' item telah masuk ke Inventaris.');
+        // Masukkan path ke database
+        $purchase->proof_photo = $path;
     }
+
+    $purchase->save();
+
+    return redirect()->back()->with('success', 'Transaksi berhasil diproses & Nota tersimpan!');
+}
 }

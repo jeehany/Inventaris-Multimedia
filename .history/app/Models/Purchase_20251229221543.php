@@ -27,7 +27,7 @@ class Purchase extends Model
         'unit_price',    // Baru
         'actual_unit_price',
         'subtotal',      // Baru
-        'brand',         // Baru
+        'status'
         
         // 3. Status & Eksekusi
         'status',                  // pending, approved, rejected

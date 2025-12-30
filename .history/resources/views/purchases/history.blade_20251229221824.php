@@ -23,7 +23,7 @@
                         {{-- FILTER (DI KIRI) --}}
                         <form action="{{ url()->current() }}" method="GET" class="flex flex-col md:flex-row gap-2 w-full md:w-auto items-center">
     
-                            {{-- Filter Status --}}
+                            {{-- BARU: Filter Status --}}
                             <select name="status" class="rounded-md border-gray-300 text-sm focus:ring-blue-500 focus:border-blue-500 py-2 w-full md:w-auto">
                                 <option value="">- Semua Status -</option>
                                 <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Selesai</option>
@@ -83,9 +83,7 @@
                                     <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Tanggal</th>
                                     <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Item</th>
                                     <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Vendor</th>
-                                    {{-- PERUBAHAN DI SINI: MEMISAHKAN BUDGET DAN REALISASI --}}
-                                    <th class="px-4 py-3 text-right text-xs font-bold text-gray-500 uppercase">Budget (Rencana)</th>
-                                    <th class="px-4 py-3 text-right text-xs font-bold text-gray-500 uppercase">Realisasi (Bayar)</th>
+                                    <th class="px-4 py-3 text-right text-xs font-bold text-gray-500 uppercase">Total Akhir</th>
                                     <th class="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">Status</th>
                                     <th class="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">Bukti</th>
                                 </tr>
@@ -104,46 +102,26 @@
                                     </td>
                                     <td class="px-4 py-4 text-sm text-gray-600">
                                         {{ $h->vendor->name }}
-                                        <div class="text-xs text-gray-400 italic mt-1">
-                                            Merk: {{ $h->brand ?? '-' }}
-                                        </div>
                                     </td>
-                                    
-                                    {{-- KOLOM 1: HARGA RENCANA (BUDGET) --}}
-                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-right text-gray-500">
-                                        Rp {{ number_format($h->unit_price * $h->quantity, 0, ',', '.') }}
-                                    </td>
-
-                                    {{-- KOLOM 2: HARGA REALISASI (AKHIR) --}}
                                     <td class="px-4 py-4 whitespace-nowrap text-sm text-right">
                                         @if($h->status == 'rejected')
-                                            <span class="text-gray-400">-</span>
+                                            <span class="text-gray-400 line-through decoration-red-500 decoration-2">
+                                                Rp {{ number_format($h->subtotal, 0, ',', '.') }}
+                                            </span>
                                         @else
                                             @php
-                                                // Gunakan actual_unit_price yang sudah kita fix di database
-                                                $actualPrice = $h->actual_unit_price ?? $h->unit_price;
-                                                $totalReal = $actualPrice * $h->quantity;
-                                                $totalPlan = $h->unit_price * $h->quantity;
-                                                $diff = $totalPlan - $totalReal;
+                                                // Gunakan harga real jika ada, jika tidak pakai harga estimasi awal
+                                                $finalPrice = $h->real_price ? $h->real_price : $h->unit_price;
+                                                $finalTotal = $finalPrice * $h->quantity;
                                             @endphp
-                                            
                                             <div class="font-bold text-gray-900">
-                                                Rp {{ number_format($totalReal, 0, ',', '.') }}
+                                                Rp {{ number_format($finalTotal, 0, ',', '.') }}
                                             </div>
-
-                                            {{-- Indikator Hemat/Lebih --}}
-                                            @if($diff > 0)
-                                                <span class="text-xs text-green-600 font-medium">
-                                                    (Hemat {{ number_format($diff, 0, ',', '.') }})
-                                                </span>
-                                            @elseif($diff < 0)
-                                                <span class="text-xs text-red-600 font-medium">
-                                                    (Lebih {{ number_format(abs($diff), 0, ',', '.') }})
-                                                </span>
+                                            @if($h->real_price && $h->real_price != $h->unit_price)
+                                                <div class="text-xs text-blue-600 italic">(Realisasi)</div>
                                             @endif
                                         @endif
                                     </td>
-
                                     <td class="px-4 py-4 text-center">
                                         @if($h->status == 'rejected')
                                             <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
@@ -152,35 +130,26 @@
                                             <div class="text-xs text-red-500 mt-1 max-w-[150px] mx-auto truncate" title="{{ $h->rejection_note }}">
                                                 "{{ $h->rejection_note }}"
                                             </div>
-                                        @elseif($h->status == 'approved' || $h->is_purchased)
+                                        @elseif($h->is_purchased)
                                             <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                                                 Selesai
                                             </span>
-                                        @else
-                                            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                                {{ $h->status }}
-                                            </span>
                                         @endif
                                     </td>
-                                    <td class="px-4 py-4 text-center">
-                                        {{-- Cek kolom proof_photo ATAU transaction_proof_photo sesuai database --}}
-                                        @php
-                                            $proof = $h->proof_photo ?? $h->transaction_proof_photo;
-                                        @endphp
-
-                                        @if($proof)
-                                            <button onclick="showImage('{{ asset('storage/' . $proof) }}', '{{ addslashes($h->tool_name) }}')" 
-                                                class="text-blue-600 hover:text-blue-900 text-xs font-bold border border-blue-200 bg-blue-50 px-3 py-1 rounded transition hover:bg-blue-100">
+                                   <td class="px-4 py-4 text-center">
+                                        @if($h->transaction_proof_photo)
+                                            <button onclick="showImage('{{ asset('storage/' . str_replace('public/', '', $h->transaction_proof_photo)) }}', '{{ addslashes($h->tool_name) }}')" 
+                                                class="text-blue-600 hover:text-blue-900 text-xs font-bold border border-blue-200 bg-blue-50 px-3 py-1 rounded">
                                                 Lihat Nota
                                             </button>
                                         @else
-                                            <span class="text-gray-400 text-xs italic">-</span>
+                                            <span class="text-gray-400 text-xs">-</span>
                                         @endif
                                     </td>
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="7" class="px-6 py-10 text-center text-gray-500">
+                                    <td colspan="6" class="px-6 py-10 text-center text-gray-500">
                                         Belum ada riwayat transaksi.
                                     </td>
                                 </tr>
