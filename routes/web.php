@@ -76,6 +76,10 @@ Route::middleware('auth')->group(function () {
     Route::put('/purchases/{id}/process', [PurchaseController::class, 'process'])->name('purchases.process');
 
     // 2. Action Routes (Tombol Aksi)
+    // List Pengajuan (Pending, Approved, Rejected)
+    Route::get('/purchases/request', [PurchaseController::class, 'requestList'])->name('purchases.request');
+    Route::get('/purchases/request/export', [PurchaseController::class, 'exportRequestExcel'])->name('purchases.request.export'); // <--- BARU
+    Route::get('/purchases/create', [PurchaseController::class, 'create'])->name('purchases.create');
     // Approve & Reject (Kepala)
     Route::patch('/purchases/{id}/approve', [PurchaseController::class, 'approve'])->name('purchases.approve');
     Route::patch('/purchases/{id}/reject', [PurchaseController::class, 'reject'])->name('purchases.reject');
@@ -84,7 +88,7 @@ Route::middleware('auth')->group(function () {
     
     // 3. Resource Purchases (CRUD Dasar)
     // Menggunakan except 'index' karena kita sudah buat custom index di atas (requests, todos, history)
-    Route::resource('purchases', PurchaseController::class)->except(['index', 'update', 'edit']);
+    Route::resource('purchases', PurchaseController::class)->except(['index', 'update', 'edit', 'create']);
 
 
     // --- Maintenance Routes ---

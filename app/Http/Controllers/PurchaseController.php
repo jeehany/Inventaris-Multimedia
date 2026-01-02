@@ -150,6 +150,40 @@ class PurchaseController extends Controller
     }
 
     /**
+     * [BARU] Export Excel untuk Halaman Request (Pengajuan)
+     */
+    public function exportRequestExcel(Request $request) 
+    {
+        $query = Purchase::with(['vendor', 'user', 'category']);
+
+        // --- FILTER (Replikasi Logic requestList) ---
+        
+        // 1. STATUS
+        if ($request->filled('status') && $request->status != 'all') {
+            $query->where('status', $request->status);
+        }
+
+        // 2. SEARCH
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('purchase_code', 'LIKE', "%{$search}%")
+                  ->orWhere('tool_name', 'LIKE', "%{$search}%")
+                  ->orWhereHas('vendor', function($v) use ($search) {
+                      $v->where('name', 'LIKE', "%{$search}%");
+                  });
+            });
+        }
+
+        $query->orderBy('created_at', 'desc');
+
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\PurchaseRequestExport($query),
+            'laporan-pengajuan-request-' . now()->format('Y-m-d') . '.xlsx'
+        );
+    }
+
+    /**
      * [BARU] Export Excel Riwayat Pembelian (Audit)
      */
     public function exportHistoryExcel(Request $request)
