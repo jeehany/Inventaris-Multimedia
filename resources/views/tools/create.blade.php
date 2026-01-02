@@ -44,7 +44,7 @@
                                 <label class="block text-sm font-semibold text-slate-700 mb-2">Nama Aset</label>
                                 <input type="text" name="tool_name" 
                                     class="w-full border-slate-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 placeholder-slate-400" 
-                                    placeholder="Contoh: Obeng Plus, Kamera DSLR Canon 5D" required>
+                                    placeholder="Contoh: Kamera DSLR Canon 5D" required>
                             </div>
 
                             {{-- Merk --}}
