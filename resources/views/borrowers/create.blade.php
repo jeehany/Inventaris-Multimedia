@@ -38,7 +38,7 @@
                         </div>
 
                         <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-2">ID Anggota / NIS / NIP</label>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">No KTP</label>
                             <input type="text" name="code" 
                                 class="w-full border-slate-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 placeholder-slate-400 transition font-mono" 
                                 placeholder="Contoh: 12345678" required>
