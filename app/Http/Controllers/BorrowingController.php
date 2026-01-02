@@ -10,7 +10,9 @@ use App\Models\MaintenanceType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB; 
 use Illuminate\Support\Facades\Auth;
-use Barryvdh\DomPDF\Facade\Pdf; // <--- TAMBAHAN PENTING
+use Barryvdh\DomPDF\Facade\Pdf; 
+use Maatwebsite\Excel\Facades\Excel; 
+use App\Exports\BorrowingExport; // <--- TAMBAHAN PENTING
 
 class BorrowingController extends Controller
 {
@@ -51,6 +53,15 @@ class BorrowingController extends Controller
         
         // 4. Download file
         return $pdf->download('laporan-peminjaman-' . now()->format('Y-m-d') . '.pdf');
+    }
+
+    /**
+     * [BARU] Export Laporan ke Excel
+     */
+    public function exportExcel(Request $request)
+    {
+        $query = $this->getFilteredQuery($request);
+        return Excel::download(new BorrowingExport($query), 'laporan-peminjaman-' . now()->format('Y-m-d') . '.xlsx');
     }
 
     /**

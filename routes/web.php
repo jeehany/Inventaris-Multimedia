@@ -55,6 +55,7 @@ Route::middleware('auth')->group(function () {
     
     // Custom Routes Peminjaman
     Route::get('/borrowings/export-pdf', [BorrowingController::class, 'exportPdf'])->name('borrowings.exportPdf');
+    Route::get('/borrowings/export-excel', [BorrowingController::class, 'exportExcel'])->name('borrowings.exportExcel');
     Route::put('/borrowings/{id}/return', [BorrowingController::class, 'returnItem'])->name('borrowings.return');
     Route::get('/get-tools/{categoryId}', [BorrowingController::class, 'getToolsByCategory'])->name('tools.getByCategory');
     
