@@ -27,55 +27,71 @@
                         <p class="text-sm text-slate-500 mt-1">Selesaikan proses pengadaan dengan mengupload bukti pembayaran dan nota.</p>
                     </div>
 
-                    {{-- FILTER SECTION --}}
+                    {{-- FILTER SECTION (MODERN TOOLBAR) --}}
                     <div class="mb-8">
-                        <form action="{{ url()->current() }}" method="GET" class="flex flex-col md:flex-row gap-3 w-full md:w-auto items-center justify-start">
+                        <form action="{{ url()->current() }}" method="GET" class="w-full md:w-fit flex flex-col md:flex-row gap-2 items-center bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-all">
                             
                             {{-- Search Input --}}
-                            <div class="relative w-full md:w-56">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                            <div class="relative w-full md:w-48 group">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 group-focus-within:text-indigo-600 transition-colors">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                                 </span>
                                 <input type="text" name="search" value="{{ request('search') }}" 
-                                    placeholder="Cari Kode / Vendor..." 
-                                    class="pl-10 w-full border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                                    placeholder="Cari Kode..." 
+                                    class="pl-10 pr-4 py-2 w-full border-none bg-transparent rounded-lg text-sm placeholder-slate-400 focus:ring-0 focus:text-slate-800 font-medium"
+                                    onblur="this.form.submit()">
                             </div>
 
+                            {{-- Divider --}}
+                            <div class="hidden md:block h-6 w-px bg-slate-200 mx-1"></div>
+
                             {{-- Filter Bulan --}}
-                            @php
-                                $indoMonths = [
-                                    1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 
-                                    5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus', 
-                                    9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
-                                ];
-                            @endphp
-                            <select name="month" class="w-full md:w-auto border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm">
-                                <option value="">- Semua Bulan -</option>
-                                @foreach($indoMonths as $key => $val)
-                                    <option value="{{ $key }}" {{ request('month') == $key ? 'selected' : '' }}>
-                                        {{ $val }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            <div class="w-full md:w-auto relative group">
+                                <div class="absolute inset-y-0 left-0 flex items-center pl-2 pointer-events-none">
+                                    <svg class="w-4 h-4 text-slate-400 group-hover:text-indigo-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                </div>
+                                @php
+                                    $indoMonths = [
+                                        1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 
+                                        5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus', 
+                                        9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                                    ];
+                                @endphp
+                                <select name="month" onchange="this.form.submit()" class="w-full md:w-32 pl-8 pr-8 py-2 border-none bg-transparent rounded-lg text-sm text-slate-600 font-medium focus:ring-0 cursor-pointer hover:text-indigo-700 transition-colors appearance-none">
+                                    <option value="">- Bulan -</option>
+                                    @foreach($indoMonths as $key => $val)
+                                        <option value="{{ $key }}" {{ request('month') == $key ? 'selected' : '' }}>
+                                            {{ $val }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400 group-hover:text-indigo-600 transition-colors">
+                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                </div>
+                            </div>
+
+                            {{-- Divider --}}
+                            <div class="hidden md:block h-6 w-px bg-slate-200 mx-1"></div>
 
                             {{-- Filter Tahun --}}
-                            <select name="year" class="w-full md:w-auto border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm">
-                                <option value="">- Semua Tahun -</option>
-                                @for($y = date('Y'); $y >= date('Y') - 5; $y--)
-                                    <option value="{{ $y }}" {{ request('year') == $y ? 'selected' : '' }}>
-                                        {{ $y }}
-                                    </option>
-                                @endfor
-                            </select>
-
-                            {{-- Tombol --}}
-                            <button type="submit" class="w-full md:w-auto bg-slate-800 text-white px-5 py-2 rounded-lg hover:bg-slate-700 text-sm font-medium transition shadow-md">
-                                Filter
-                            </button>
+                            <div class="w-full md:w-auto relative group">
+                                <select name="year" onchange="this.form.submit()" class="w-full md:w-24 pl-3 pr-8 py-2 border-none bg-transparent rounded-lg text-sm text-slate-600 font-medium focus:ring-0 cursor-pointer hover:text-indigo-700 transition-colors appearance-none">
+                                    <option value="">- Thn -</option>
+                                    @for($y = date('Y'); $y >= date('Y') - 5; $y--)
+                                        <option value="{{ $y }}" {{ request('year') == $y ? 'selected' : '' }}>
+                                            {{ $y }}
+                                        </option>
+                                    @endfor
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400 group-hover:text-indigo-600 transition-colors">
+                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                </div>
+                            </div>
                             
+                            {{-- Reset Button --}}
                             @if(request('search') || request('month') || request('year'))
-                                <a href="{{ url()->current() }}" class="w-full md:w-auto bg-white border border-slate-300 text-slate-600 px-4 py-2 rounded-lg hover:bg-slate-50 text-sm transition font-medium text-center">
-                                    Reset
+                                <a href="{{ url()->current() }}" class="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors" title="Reset Filter">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                                 </a>
                             @endif
                         </form>

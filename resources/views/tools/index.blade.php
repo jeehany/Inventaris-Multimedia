@@ -23,50 +23,71 @@
             <div class="bg-white overflow-hidden shadow-xl sm:rounded-xl border border-slate-200">
                 <div class="p-6 md:p-8 text-slate-800">
 
+                    {{-- HEADER TEXT --}}
+                    <div class="mb-8 border-b border-slate-100 pb-4">
+                        <h3 class="text-lg font-bold text-slate-800">Daftar Aset</h3>
+                        <p class="text-sm text-slate-500 mt-1">Kelola inventaris, cek status ketersediaan, dan kategori aset.</p>
+                    </div>
+
                     {{-- A. BAGIAN FILTER & SEARCH --}}
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+                    <div class="flex flex-col md:flex-row justify-between items-end md:items-center gap-4 mb-8">
                         
-                        {{-- Form Filter --}}
-                        <form action="{{ route('tools.index') }}" method="GET" class="flex flex-col md:flex-row gap-3 w-full md:w-auto items-center">
+                        {{-- Form Filter (MODERN TOOLBAR) --}}
+                        <form id="filterForm" action="{{ route('tools.index') }}" method="GET" class="w-full md:w-auto flex flex-col md:flex-row gap-2 items-center bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-all">
                             
                             {{-- Input Search --}}
-                            <div class="relative w-full md:w-64">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                            <div class="relative w-full md:w-64 group">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 group-focus-within:text-indigo-600 transition-colors">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                                 </span>
                                 <input type="text" name="search" value="{{ request('search') }}" 
-                                    class="pl-10 w-full border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm"
-                                    placeholder="Cari Nama / Kode...">
+                                    class="pl-10 pr-4 py-2 w-full border-none bg-transparent rounded-lg text-sm placeholder-slate-400 focus:ring-0 focus:text-slate-800 font-medium"
+                                    placeholder="Cari Nama / Kode..."
+                                    onblur="this.form.submit()">
                             </div>
 
+                            {{-- Divider --}}
+                            <div class="hidden md:block h-6 w-px bg-slate-200 mx-1"></div>
+
                             {{-- Dropdown Status Ketersediaan --}}
-                            <select name="status" class="w-full md:w-auto border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm">
-                                <option value="">- Semua Status -</option>
-                                <option value="available" {{ request('status') == 'available' ? 'selected' : '' }}>Tersedia</option>
-                                <option value="borrowed" {{ request('status') == 'borrowed' ? 'selected' : '' }}>Dipinjam</option>
-                                <option value="maintenance" {{ request('status') == 'maintenance' ? 'selected' : '' }}>Maintenance</option>
-                                <option value="missing" {{ request('status') == 'missing' ? 'selected' : '' }}>Hilang/Rusak</option>
-                            </select>
+                            <div class="w-full md:w-auto relative group">
+                                <select name="status" onchange="this.form.submit()" class="w-full md:w-40 pl-3 pr-8 py-2 border-none bg-transparent rounded-lg text-sm text-slate-600 font-medium focus:ring-0 cursor-pointer hover:text-indigo-700 transition-colors appearance-none">
+                                    <option value="">- Semua Status -</option>
+                                    <option value="available" {{ request('status') == 'available' ? 'selected' : '' }}>Tersedia</option>
+                                    <option value="borrowed" {{ request('status') == 'borrowed' ? 'selected' : '' }}>Dipinjam</option>
+                                    <option value="maintenance" {{ request('status') == 'maintenance' ? 'selected' : '' }}>Maintenance</option>
+                                    <option value="missing" {{ request('status') == 'missing' ? 'selected' : '' }}>Hilang/Rusak</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400 group-hover:text-indigo-600 transition-colors">
+                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                </div>
+                            </div>
+
+                            {{-- Divider --}}
+                            <div class="hidden md:block h-6 w-px bg-slate-200 mx-1"></div>
 
                             {{-- Dropdown Kategori --}}
-                            <select name="category_id" class="w-full md:w-auto border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm">
-                                <option value="all">- Semua Kategori -</option>
-                                @foreach($categories as $cat)
-                                    <option value="{{ $cat->id }}" {{ request('category_id') == $cat->id ? 'selected' : '' }}>
-                                        {{ $cat->category_name }}
-                                    </option>
-                                @endforeach
-                            </select>
-
-                            {{-- Tombol Filter --}}
-                            <button type="submit" class="w-full md:w-auto bg-slate-800 text-white px-5 py-2 rounded-lg hover:bg-slate-700 text-sm font-medium transition shadow-md">
-                                Filter
-                            </button>
+                            <div class="w-full md:w-auto relative group">
+                                <div class="absolute inset-y-0 left-0 flex items-center pl-2 pointer-events-none">
+                                    <svg class="w-4 h-4 text-slate-400 group-hover:text-indigo-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
+                                </div>
+                                <select name="category_id" onchange="this.form.submit()" class="w-full md:w-48 pl-8 pr-8 py-2 border-none bg-transparent rounded-lg text-sm text-slate-600 font-medium focus:ring-0 cursor-pointer hover:text-indigo-700 transition-colors appearance-none">
+                                    <option value="all">- Semua Kategori -</option>
+                                    @foreach($categories as $cat)
+                                        <option value="{{ $cat->id }}" {{ request('category_id') == $cat->id ? 'selected' : '' }}>
+                                            {{ $cat->category_name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400 group-hover:text-indigo-600 transition-colors">
+                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                </div>
+                            </div>
 
                             {{-- Tombol Reset --}}
                             @if(request('search') || request('status') || request('category_id'))
-                                <a href="{{ route('tools.index') }}" class="w-full md:w-auto bg-white border border-slate-300 text-slate-600 px-4 py-2 rounded-lg hover:bg-slate-50 text-sm transition font-medium text-center">
-                                    Reset
+                                <a href="{{ route('tools.index') }}" class="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors" title="Reset Filter">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                                 </a>
                             @endif
                         </form>

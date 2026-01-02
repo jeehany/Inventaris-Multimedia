@@ -29,13 +29,38 @@
 
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-xl border border-slate-200">
                 <div class="p-6 md:p-8 text-slate-800">
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-                        <div>
-                            <h3 class="text-lg font-bold text-slate-800">Daftar Mitra / Supplier</h3>
-                            <p class="text-sm text-slate-500 mt-1">Kelola data vendor penyedia aset multimedia.</p>
-                        </div>
+                    {{-- HEADER TEXT --}}
+                    <div class="mb-8 border-b border-slate-100 pb-4">
+                        <h3 class="text-lg font-bold text-slate-800">Daftar Mitra / Supplier</h3>
+                        <p class="text-sm text-slate-500 mt-1">Kelola data vendor penyedia aset multimedia.</p>
+                    </div>
+
+                    {{-- TOOLBAR: PENCARIAN & TOMBOL --}}
+                    <div class="flex flex-col md:flex-row justify-between items-end md:items-center gap-4 mb-8">
+
+
+                    {{-- FORM PENCARIAN (MODERN TOOLBAR) --}}
+                        <form action="{{ route('vendors.index') }}" method="GET" class="w-full md:w-auto flex flex-col md:flex-row gap-2 items-center bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-all">
+                            <div class="relative w-full md:w-96 group">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 group-focus-within:text-indigo-600 transition-colors">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                                </span>
+                                <input type="text" 
+                                       name="search" 
+                                       value="{{ request('search') }}"
+                                       placeholder="Cari Nama, Email, HP, atau Alamat..." 
+                                       class="pl-10 border-none bg-transparent rounded-lg w-full text-sm py-2 placeholder-slate-400 focus:ring-0 focus:text-slate-800 font-medium"
+                                       onblur="this.form.submit()">
+                            </div>
+                            
+                            @if(request('search'))
+                                <a href="{{ route('vendors.index') }}" class="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors" title="Reset Filter">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                </a>
+                            @endif
+                        </form>
                         
-                        {{-- TOMBOL TAMBAH (Hanya tampil jika bukan HEAD) --}}
+                        {{-- TOMBOL TAMBAH --}}
                         @auth
                             @if(!auth()->user()->isHead())
                                 <a href="{{ route('vendors.create') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:border-indigo-900 focus:ring ring-indigo-300 disabled:opacity-25 transition ease-in-out duration-150 shadow-md">
@@ -44,33 +69,6 @@
                                 </a>
                             @endif
                         @endauth
-                    </div>
-
-                    {{-- FORM PENCARIAN (FILTER) --}}
-                    <div class="mb-8">
-                        <form action="{{ route('vendors.index') }}" method="GET" class="flex flex-col md:flex-row gap-3">
-                            <div class="relative w-full md:w-96">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                                </span>
-                                <input type="text" 
-                                       name="search" 
-                                       value="{{ request('search') }}"
-                                       placeholder="Cari Nama, Email, HP, atau Alamat..." 
-                                       class="pl-10 border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-lg shadow-sm w-full text-sm py-2.5">
-                            </div>
-                            
-                            <button type="submit" class="bg-slate-800 hover:bg-slate-700 text-white font-medium py-2 px-5 rounded-lg transition shadow-sm text-sm">
-                                Cari
-                            </button>
-
-                            @if(request('search'))
-                                <a href="{{ route('vendors.index') }}" class="bg-rose-100 hover:bg-rose-200 text-rose-700 font-medium py-2 px-5 rounded-lg transition text-sm flex items-center border border-rose-200">
-                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                    Reset
-                                </a>
-                            @endif
-                        </form>
                     </div>
 
                     {{-- TABEL --}}

@@ -21,37 +21,39 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-xl border border-slate-200">
                 <div class="p-6 md:p-8 text-slate-800">
                     
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-                        <div>
-                            <h3 class="text-lg font-bold text-slate-800">Daftar Anggota Tim</h3>
-                            <p class="text-sm text-slate-500 mt-1">Kelola data peminjam / anggota yang terdaftar.</p>
-                        </div>
+                    {{-- HEADER TEXT --}}
+                    <div class="mb-8 border-b border-slate-100 pb-4">
+                        <h3 class="text-lg font-bold text-slate-800">Daftar Anggota Tim</h3>
+                        <p class="text-sm text-slate-500 mt-1">Kelola data peminjam / anggota yang terdaftar.</p>
+                    </div>
 
-                        <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
-                            <form action="{{ route('borrowers.index') }}" method="GET" class="flex w-full md:w-auto relative">
-                                <div class="relative w-full md:w-64">
-                                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                                    </span>
-                                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari Nama / ID Anggota..." 
-                                        class="pl-10 border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-lg shadow-sm w-full text-sm py-2">
-                                </div>
-                                @if(request('search'))
-                                    <a href="{{ route('borrowers.index') }}" class="ml-2 bg-rose-100 text-rose-600 px-3 py-2 rounded-lg text-sm font-medium hover:bg-rose-200 flex items-center">
-                                        &times;
-                                    </a>
-                                @endif
-                            </form>
-                            
-                            @auth
-                                @if(!auth()->user()->isHead())
-                                    <a href="{{ route('borrowers.create') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:border-indigo-900 focus:ring ring-indigo-300 disabled:opacity-25 transition ease-in-out duration-150 shadow-md whitespace-nowrap">
-                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                                        Tambah Anggota
-                                    </a>
-                                @endif
-                            @endauth
-                        </div>
+                    {{-- TOOLBAR: FILTER & ACTIONS --}}
+                    <div class="flex flex-col md:flex-row justify-between items-end md:items-center gap-4 mb-8">
+                        {{-- MODERN TOOLBAR --}}
+                        <form action="{{ route('borrowers.index') }}" method="GET" class="flex w-full md:w-auto relative bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-all">
+                            <div class="relative w-full md:w-64 group">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 group-focus-within:text-indigo-600 transition-colors">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                                </span>
+                                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari Nama / ID Anggota..." 
+                                    class="pl-10 border-none bg-transparent rounded-lg w-full text-sm placeholder-slate-400 focus:ring-0 focus:text-slate-800 font-medium"
+                                    onblur="this.form.submit()">
+                            </div>
+                            @if(request('search'))
+                                <a href="{{ route('borrowers.index') }}" class="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors flex items-center">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                </a>
+                            @endif
+                        </form>
+                        
+                        @auth
+                            @if(!auth()->user()->isHead())
+                                <a href="{{ route('borrowers.create') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:border-indigo-900 focus:ring ring-indigo-300 disabled:opacity-25 transition ease-in-out duration-150 shadow-md whitespace-nowrap">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                    Tambah Anggota
+                                </a>
+                            @endif
+                        @endauth
                     </div>
 
                     <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">

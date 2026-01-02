@@ -31,31 +31,33 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-xl border border-slate-200">
                 <div class="p-6 md:p-8 text-slate-800">
                     
+                    {{-- HEADER TEXT --}}
+                    <div class="mb-8 border-b border-slate-100 pb-4">
+                        <h3 class="text-lg font-bold text-slate-800">Jenis Perawatan</h3>
+                        <p class="text-sm text-slate-500 mt-1">Kelola kategori dan tipe perawatan aset.</p>
+                    </div>
+
                     {{-- A. BAGIAN FILTER & SEARCH --}}
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+                    <div class="flex flex-col md:flex-row justify-between items-end md:items-center gap-4 mb-8">
                         
-                        {{-- Form Filter --}}
-                        <form action="{{ route('maintenance-types.index') }}" method="GET" class="flex flex-col md:flex-row gap-3 w-full md:w-auto items-center">
+                        {{-- Form Filter (MODERN TOOLBAR) --}}
+                        <form action="{{ route('maintenance-types.index') }}" method="GET" class="w-full md:w-auto flex flex-col md:flex-row gap-2 items-center bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-all">
                             
                             {{-- Input Search --}}
-                            <div class="relative w-full md:w-64">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                            <div class="relative w-full md:w-64 group">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 group-focus-within:text-indigo-600 transition-colors">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                                 </span>
                                 <input type="text" name="search" value="{{ request('search') }}" 
-                                    class="pl-10 w-full border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm"
-                                    placeholder="Cari Jenis / Deskripsi...">
+                                    class="pl-10 pr-4 py-2 w-full border-none bg-transparent rounded-lg text-sm placeholder-slate-400 focus:ring-0 focus:text-slate-800 font-medium"
+                                    placeholder="Cari Jenis / Deskripsi..."
+                                    onblur="this.form.submit()">
                             </div>
-
-                            {{-- Tombol Filter --}}
-                            <button type="submit" class="w-full md:w-auto bg-slate-800 text-white px-5 py-2 rounded-lg hover:bg-slate-700 text-sm font-medium transition shadow-md">
-                                Filter
-                            </button>
 
                             {{-- Tombol Reset --}}
                             @if(request('search'))
-                                <a href="{{ route('maintenance-types.index') }}" class="w-full md:w-auto bg-white border border-slate-300 text-slate-600 px-4 py-2 rounded-lg hover:bg-slate-50 text-sm transition font-medium text-center">
-                                    Reset
+                                <a href="{{ route('maintenance-types.index') }}" class="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors" title="Reset Filter">
+                                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                                 </a>
                             @endif
                         </form>
