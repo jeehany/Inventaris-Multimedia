@@ -280,7 +280,7 @@
                                         <div class="font-bold text-indigo-900 text-sm">Laporan Peminjaman</div>
                                         <div class="text-xs text-indigo-600">Riwayat sirkulasi aset</div>
                                     </div>
-                                </a>
+                                </a>p;
                             @else
                                 <a href="{{ route('borrowings.create') }}" class="w-full group flex items-center p-3 rounded-lg bg-indigo-50 hover:bg-indigo-100 border border-indigo-100 transition-all duration-200 text-left">
                                     <div class="p-2 bg-indigo-500 rounded-md shadow-md text-white mr-3 group-hover:scale-110 transition-transform">
