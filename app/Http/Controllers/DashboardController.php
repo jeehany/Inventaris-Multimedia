@@ -42,6 +42,10 @@ class DashboardController extends Controller
                 'total_tools'       => Tool::count(), // Pastikan model Tool ada
                 'active_borrowings' => Borrowing::where('borrowing_status', 'active')->count(),
                 'returned_today'    => Borrowing::whereDate('actual_return_date', today())->count(),
+                'recent_activities' => Borrowing::with('borrower', 'items.tool')
+                                        ->latest()
+                                        ->take(5)
+                                        ->get(),
             ];
         }
 

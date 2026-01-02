@@ -113,8 +113,7 @@
                                                         </form>
                                                     </div>
                                                 @else
-                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800">
-                                                        Read Only
+                                                    <span class="text-slate-400 text-xs italic bg-slate-100 px-2 py-1 rounded">View Only
                                                     </span>
                                                 @endif
                                             @endauth
