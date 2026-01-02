@@ -149,6 +149,19 @@ class PurchaseController extends Controller
         return view('purchases.history', compact('history'));
     }
 
+    /**
+     * [BARU] Export Excel Riwayat Pembelian (Audit)
+     */
+    public function exportHistoryExcel(Request $request)
+    {
+        // Langsung oper semua filter ke Class Export
+        // Biar class Export yang handle logic 2 sheet terpisah (Success & Rejected)
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\PurchaseHistoryExport($request->all()), 
+            'laporan-pengadaan-audit-' . now()->format('Y-m-d') . '.xlsx'
+        );
+    }
+
     // ----------------------------------------------------------------------
     // CREATE & STORE (Pengajuan Baru)
     // ----------------------------------------------------------------------
