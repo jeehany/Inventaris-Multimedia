@@ -304,4 +304,10 @@ class ToolController extends Controller
     }
 
     
+    public function exportExcel(Request $request)
+    {
+        $query = $this->getFilteredQuery($request);
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\ToolsExport($query), 'laporan-inventaris-'.now()->format('Y-m-d').'.xlsx');
+    }
+    
 }

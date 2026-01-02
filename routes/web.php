@@ -41,6 +41,7 @@ Route::middleware('auth')->group(function () {
     
     // 2. Export & Custom
     Route::get('tools/export-pdf', [ToolController::class, 'exportPdf'])->name('tools.exportPdf');
+    Route::get('tools/export-excel', [ToolController::class, 'exportExcel'])->name('tools.exportExcel');
     
     // 3. Resource & Kategori
     Route::resource('categories', CategoryController::class);
