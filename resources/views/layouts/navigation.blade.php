@@ -18,21 +18,22 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden sm:flex sm:items-center gap-6">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="text-sm font-medium transition-colors">
+                    <!-- Dashboard -->
+                    <a href="{{ route('dashboard') }}" class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium leading-5 transition duration-150 ease-in-out {{ request()->routeIs('dashboard') ? 'border-indigo-500 text-white font-bold' : 'border-transparent text-slate-300 hover:text-white hover:border-slate-300' }}">
                         {{ __('Dashboard') }}
-                    </x-nav-link>
+                    </a>
 
                     @if(in_array(Auth::user()->role, ['admin', 'head']))
-                    <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')" class="text-sm font-medium transition-colors">
+                    <a href="{{ route('users.index') }}" class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium leading-5 transition duration-150 ease-in-out {{ request()->routeIs('users.*') ? 'border-indigo-500 text-white font-bold' : 'border-transparent text-slate-300 hover:text-white hover:border-slate-300' }}">
                         {{ __('Manajemen Pengguna') }}
-                    </x-nav-link>
+                    </a>
                     @endif
 
                     <!-- Dropdown: Aset & Perawatan -->
                     <div class="hidden sm:flex sm:items-center">
                         <x-dropdown align="right" width="48">
                             <x-slot name="trigger">
-                                <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-slate-300 hover:text-white focus:outline-none transition ease-in-out duration-150 gap-1 {{ request()->routeIs('tools.*') || request()->routeIs('categories.*') || request()->routeIs('maintenances.*') ? 'text-indigo-400' : '' }}">
+                                <button class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium leading-5 transition duration-150 ease-in-out gap-1 focus:outline-none {{ request()->routeIs('tools.*') || request()->routeIs('categories.*') || request()->routeIs('maintenances.*') ? 'border-indigo-500 text-white font-bold' : 'border-transparent text-slate-300 hover:text-white hover:border-slate-300' }}">
                                     <div>Aset & Perawatan</div>
                                     <div class="ms-1">
                                         <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
@@ -71,7 +72,7 @@
                     <div class="hidden sm:flex sm:items-center">
                         <x-dropdown align="right" width="48">
                             <x-slot name="trigger">
-                                <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-slate-300 hover:text-white focus:outline-none transition ease-in-out duration-150 gap-1 {{ request()->routeIs('borrowers.*') || request()->routeIs('borrowings.*') || request()->routeIs('purchases.*') || request()->routeIs('vendors.*') ? 'text-indigo-400' : '' }}">
+                                <button class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium leading-5 transition duration-150 ease-in-out gap-1 focus:outline-none {{ request()->routeIs('borrowers.*') || request()->routeIs('borrowings.*') || request()->routeIs('purchases.*') || request()->routeIs('vendors.*') ? 'border-indigo-500 text-white font-bold' : 'border-transparent text-slate-300 hover:text-white hover:border-slate-300' }}">
                                     <div>Sirkulasi & Pengadaan</div>
                                     <div class="ms-1">
                                         <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
