@@ -14,23 +14,33 @@ class DashboardController extends Controller
         $user = auth()->user();
 
         if ($user->isHead()) {
-            // === DATA UNTUK KEPALA (Monitoring) ===
+            // === DATA UNTUK KEPALA (Monitoring & Approval) ===
             $data = [
-                // Hitung total peminjaman bulan ini
+                // 1. ACTION NEEDED: Pengajuan Pembelian Menunggu
+                'pending_purchases_count' => \App\Models\Purchase::where('status', 'pending')->count(),
+
+                // 2. Monitoring: Peminjaman Bulan Ini
                 'monthly_borrowings' => Borrowing::whereMonth('borrow_date', now()->month)
                                         ->whereYear('borrow_date', now()->year)
                                         ->count(),
                 
-                // Hitung barang yang sedang dipinjam (Active)
+                // 3. Monitoring: Barang Sedang Dipinjam
                 'active_borrowings'  => Borrowing::where('borrowing_status', 'active')->count(),
 
-                // Hitung barang yang telat kembali (Lewat tanggal rencana & status masih active)
+                // 4. Monitoring: Telat Kembali
                 'overdue_items'      => Borrowing::where('borrowing_status', 'active')
                                         ->where('planned_return_date', '<', now())
                                         ->count(),
                 
-                // Ambil 5 riwayat terbaru untuk tabel ringkas
-                'recent_activities'  => Borrowing::with('borrower', 'items.tool')
+                // 5. Tabel Utama: Daftar Pengajuan Pending (Prioritas Utama Kepala)
+                'recent_activities'  => \App\Models\Purchase::with(['user', 'vendor'])
+                                        ->where('status', 'pending')
+                                        ->latest()
+                                        ->take(5)
+                                        ->get(),
+
+                // 6. Tabel Sekunder: Peminjaman Terakhir (Biar tetap ada info operasional)
+                'recent_borrowings'  => Borrowing::with('borrower', 'items.tool')
                                         ->latest()
                                         ->take(5)
                                         ->get(),

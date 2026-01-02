@@ -165,6 +165,11 @@
 
                                         <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                                             <div class="flex justify-center items-center space-x-2">
+
+                                                {{-- BUTTON "LIHAT" (SEMUA ROLE BISA LIHAT) --}}
+                                                <button onclick="openDetailModal({{ $purchase }})" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 p-2 rounded-lg transition" title="Lihat Detail">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                                </button>
                                                 
                                                 @if(in_array(auth()->user()->role, ['kepala', 'head']))
                                                     @if($purchase->status == 'pending')
@@ -190,7 +195,7 @@
                                                             <input type="hidden" name="note" id="note-{{ $purchase->id }}">
                                                         </form>
                                                     @else
-                                                        <span class="text-slate-400 text-xs italic bg-slate-100 px-2 py-1 rounded">Locked</span>
+                                                        {{-- <span class="text-slate-400 text-xs italic bg-slate-100 px-2 py-1 rounded">Locked</span> --}}
                                                     @endif
                                 
                                                 @else
@@ -205,7 +210,7 @@
                                                             </button>
                                                         </form>
                                                     @else
-                                                        <span class="text-slate-400 text-xs italic bg-slate-100 px-2 py-1 rounded">Locked</span>
+                                                        {{-- <span class="text-slate-400 text-xs italic bg-slate-100 px-2 py-1 rounded">Locked</span> --}}
                                                     @endif
                                                 @endif
 
@@ -236,6 +241,42 @@
         </div>
     </div>
 
+    {{-- MODAL DETAIL (Mirip Borrowings & Maintenance) --}}
+    <div id="detailModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            
+            <div class="fixed inset-0 bg-slate-900 bg-opacity-75 transition-opacity blur-sm" aria-hidden="true" onclick="closeDetailModal()"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+            <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl w-full">
+                
+                {{-- Header Modal --}}
+                <div class="bg-slate-800 px-4 py-3 sm:px-6 flex justify-between items-center">
+                    <h3 class="text-lg leading-6 font-bold text-white flex items-center gap-2" id="modal-title">
+                        <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Detail Pengajuan
+                    </h3>
+                    <button type="button" onclick="closeDetailModal()" class="text-slate-400 hover:text-white transition">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+
+                {{-- Content Modal --}}
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6">
+                    <div id="modalContent" class="space-y-4">
+                        {{-- Diisi via JS --}}
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t border-slate-100">
+                    <button type="button" onclick="closeDetailModal()" class="w-full inline-flex justify-center rounded-lg border border-slate-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition">
+                        Tutup
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         function rejectPurchase(id) {
             let reason = prompt("Masukkan alasan penolakan:");
@@ -243,6 +284,103 @@
                 document.getElementById('note-' + id).value = reason;
                 document.getElementById('reject-form-' + id).submit();
             }
+        }
+
+        function openDetailModal(data) {
+            const modal = document.getElementById('detailModal');
+            const content = document.getElementById('modalContent');
+            
+            // Format Rupiah
+            const formatter = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' });
+            
+            // Translate Status
+            let statusBadge = '';
+            if(data.status === 'pending') statusBadge = '<span class="px-2 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-bold border border-amber-200">Menunggu</span>';
+            else if(data.status === 'approved') statusBadge = '<span class="px-2 py-1 bg-indigo-100 text-indigo-800 rounded-full text-xs font-bold border border-indigo-200">Disetujui</span>';
+            else if(data.status === 'rejected') statusBadge = '<span class="px-2 py-1 bg-rose-100 text-rose-800 rounded-full text-xs font-bold border border-rose-200">Ditolak</span>';
+            else if(data.status === 'completed') statusBadge = '<span class="px-2 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-bold border border-emerald-200">Selesai</span>';
+
+            // Tanggal
+            const date = new Date(data.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+            // HTML Structure (Grid 2 Kolom)
+            content.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div class="col-span-2 border-b border-slate-100 pb-2 mb-2">
+                        <p class="text-xs text-slate-500 uppercase font-bold tracking-wider">Info Transaksi</p>
+                    </div>
+
+                    <div>
+                        <p class="text-xs text-slate-500">Kode Pengajuan</p>
+                        <p class="font-bold text-slate-800">${data.purchase_code}</p>
+                    </div>
+                     <div>
+                        <p class="text-xs text-slate-500">Tanggal</p>
+                        <p class="font-bold text-slate-800">${date}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-500">Pemohon (User)</p>
+                        <p class="font-bold text-slate-800">${data.user ? data.user.name : '-'}</p>
+                    </div>
+                     <div>
+                        <p class="text-xs text-slate-500">Status</p>
+                        <div class="mt-1">${statusBadge}</div>
+                    </div>
+
+                    <div class="col-span-2 border-b border-slate-100 pb-2 mb-2 mt-2">
+                        <p class="text-xs text-slate-500 uppercase font-bold tracking-wider">Detail Barang</p>
+                    </div>
+
+                    <div class="col-span-2">
+                        <p class="text-xs text-slate-500">Nama Barang</p>
+                        <p class="font-bold text-indigo-700 text-base">${data.tool_name}</p>
+                    </div>
+                    <div>
+                         <p class="text-xs text-slate-500">Vendor</p>
+                        <p class="font-bold text-slate-800">${data.vendor ? data.vendor.name : '-'}</p>
+                    </div>
+                    <div>
+                         <p class="text-xs text-slate-500">Kategori</p>
+                        <p class="font-bold text-slate-800">${data.category ? data.category.category_name : '-'}</p>
+                    </div>
+                    <div class="col-span-2">
+                         <p class="text-xs text-slate-500">Spesifikasi</p>
+                        <p class="font-medium text-slate-700 bg-slate-50 p-2 rounded border border-slate-100">${data.specification || '-'}</p>
+                    </div>
+
+                    <div class="col-span-2 border-b border-slate-100 pb-2 mb-2 mt-2">
+                        <p class="text-xs text-slate-500 uppercase font-bold tracking-wider">Estimasi Biaya</p>
+                    </div>
+
+                    <div>
+                        <p class="text-xs text-slate-500">Harga Satuan</p>
+                        <p class="font-mono font-medium text-slate-600">${formatter.format(data.unit_price)}</p>
+                    </div>
+                     <div>
+                        <p class="text-xs text-slate-500">Jumlah (Qty)</p>
+                        <p class="font-mono font-medium text-slate-600">${data.quantity} Unit</p>
+                    </div>
+                    <div class="col-span-2 bg-indigo-50 p-3 rounded-lg border border-indigo-100 mt-2">
+                        <div class="flex justify-between items-center">
+                            <p class="text-sm font-bold text-indigo-900">Total Estimasi</p>
+                            <p class="text-lg font-bold text-indigo-700">${formatter.format(data.subtotal)}</p>
+                        </div>
+                    </div>
+
+                    ${data.status === 'rejected' && data.rejection_note ? `
+                        <div class="col-span-2 bg-rose-50 p-3 rounded-lg border border-rose-100 mt-2">
+                            <p class="text-xs font-bold text-rose-800 uppercase mb-1">Alasan Penolakan</p>
+                            <p class="text-sm text-rose-700 italic">"${data.rejection_note}"</p>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeDetailModal() {
+            document.getElementById('detailModal').classList.add('hidden');
         }
     </script>
 </x-app-layout>
