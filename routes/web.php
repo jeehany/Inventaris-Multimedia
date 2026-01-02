@@ -36,6 +36,7 @@ Route::middleware('auth')->group(function () {
 
     // --- Manajemen Alat (Tools) ---
     // 1. Trash & Restore (WAJIB DI ATAS Resource)
+    Route::get('/tools/trash/export', [ToolController::class, 'exportTrash'])->name('tools.exportTrash');
     Route::get('/tools/trash', [ToolController::class, 'trash'])->name('tools.trash');
     Route::put('/tools/{id}/restore', [ToolController::class, 'restore'])->name('tools.restore');
     

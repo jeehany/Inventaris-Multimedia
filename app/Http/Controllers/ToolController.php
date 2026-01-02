@@ -309,5 +309,27 @@ class ToolController extends Controller
         $query = $this->getFilteredQuery($request);
         return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\ToolsExport($query), 'laporan-inventaris-'.now()->format('Y-m-d').'.xlsx');
     }
+
+    public function exportTrash(Request $request)
+    {
+        // 1. Query Dasar: Hanya ambil data yang sudah dihapus (onlyTrashed)
+        $query = \App\Models\Tool::onlyTrashed()->with('category');
+
+        // 2. Logika Search (Nama atau Kode) - Copy logic dari trash()
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('tool_name', 'like', '%' . $search . '%')
+                  ->orWhere('tool_code', 'like', '%' . $search . '%');
+            });
+        }
+
+        // 3. Logika Filter Kategori - Copy logic dari trash()
+        if ($request->has('category_id') && $request->category_id != '' && $request->category_id != 'all') {
+            $query->where('category_id', $request->category_id);
+        }
+
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\ToolsTrashExport($query), 'laporan-sampah-aset-'.now()->format('Y-m-d').'.xlsx');
+    }
     
 }

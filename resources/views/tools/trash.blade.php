@@ -61,11 +61,18 @@
                             @endif
                         </form>
 
-                        {{-- Link Kembali --}}
-                        <a href="{{ route('tools.index') }}" class="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-800 text-sm font-bold whitespace-nowrap bg-indigo-50 px-4 py-2 rounded-lg hover:bg-indigo-100 transition">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                            Kembali ke Daftar Aktif
-                        </a>
+                        {{-- Link Kembali / Export --}}
+                        @if(auth()->user()->isHead())
+                            <a href="{{ route('tools.exportTrash', request()->query()) }}" class="inline-flex items-center gap-2 text-white bg-emerald-600 hover:bg-emerald-700 text-sm font-bold whitespace-nowrap px-4 py-2 rounded-lg shadow-md transition">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                Export Laporan
+                            </a>
+                        @else 
+                            <a href="{{ route('tools.index') }}" class="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-800 text-sm font-bold whitespace-nowrap bg-indigo-50 px-4 py-2 rounded-lg hover:bg-indigo-100 transition">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                                Kembali ke Daftar Aktif
+                            </a>
+                        @endif
                     </div>
 
                     {{-- TABEL DATA --}}
