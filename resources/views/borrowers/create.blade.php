@@ -42,7 +42,7 @@
                             <input type="text" name="code" 
                                 class="w-full border-slate-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 placeholder-slate-400 transition font-mono" 
                                 placeholder="Contoh: 12345678" required>
-                            <p class="text-xs text-slate-500 mt-1">Gunakan nomor identitas unik.</p>
+                            <p class="text-xs text-slate-500 mt-1">Gunakan nomor identitas asli.</p>
                         </div>
 
                         <div>
