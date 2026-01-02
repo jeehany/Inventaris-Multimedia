@@ -1,39 +1,53 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Riwayat Transaksi') }}
+        <h2 class="font-bold text-xl text-slate-800 leading-tight">
+            {{ __('Riwayat Transaksi Pengadaan') }}
         </h2>
     </x-slot>
 
-    <div class="py-12">
+    <div class="py-12 bg-slate-50 min-h-screen">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             
             @if(session('success'))
-                <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
-                    {{ session('success') }}
+                <div class="mb-6 bg-emerald-50 border-l-4 border-emerald-500 text-emerald-700 p-4 shadow-sm rounded-r-lg">
+                    <p class="font-bold flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        Berhasil!
+                    </p>
+                    <p class="text-sm mt-1">{{ session('success') }}</p>
                 </div>
             @endif
 
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-xl border border-slate-200">
+                <div class="p-6 md:p-8 text-slate-800">
                     
                     {{-- HEADER & TOOLS SECTION --}}
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                    <div class="mb-8 border-b border-slate-100 pb-4">
+                        <h3 class="text-lg font-bold text-slate-800">Arsip & Riwayat Transaksi</h3>
+                        <p class="text-sm text-slate-500 mt-1">Daftar transaksi yang telah selesai atau dibatalkan.</p>
+                    </div>
+
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                         
                         {{-- FILTER (DI KIRI) --}}
-                        <form action="{{ url()->current() }}" method="GET" class="flex flex-col md:flex-row gap-2 w-full md:w-auto items-center">
+                        <form action="{{ url()->current() }}" method="GET" class="flex flex-col md:flex-row gap-3 w-full md:w-auto items-center">
     
                             {{-- Filter Status --}}
-                            <select name="status" class="rounded-md border-gray-300 text-sm focus:ring-blue-500 focus:border-blue-500 py-2 w-full md:w-auto">
+                            <select name="status" class="w-full md:w-auto border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm">
                                 <option value="">- Semua Status -</option>
                                 <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Selesai</option>
                                 <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Ditolak</option>
                             </select>
 
                             {{-- Filter Search --}}
-                            <input type="text" name="search" value="{{ request('search') }}" 
-                                placeholder="Cari Kode / Alat..." 
-                                class="rounded-md border-gray-300 text-sm focus:ring-blue-500 focus:border-blue-500 py-2 w-full md:w-40">
+                            <div class="relative w-full md:w-56">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                                </span>
+                                <input type="text" name="search" value="{{ request('search') }}" 
+                                    placeholder="Cari Kode / Aset..." 
+                                    class="pl-9 w-full border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                            </div>
 
                             {{-- Filter Bulan --}}
                             @php
@@ -43,7 +57,7 @@
                                     9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
                                 ];
                             @endphp
-                            <select name="month" class="rounded-md border-gray-300 text-sm focus:ring-blue-500 focus:border-blue-500 py-2 w-full md:w-auto">
+                            <select name="month" class="w-full md:w-auto border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm">
                                 <option value="">- Bulan -</option>
                                 @foreach($indoMonths as $key => $val)
                                     <option value="{{ $key }}" {{ request('month') == $key ? 'selected' : '' }}>
@@ -53,7 +67,7 @@
                             </select>
 
                             {{-- Filter Tahun --}}
-                            <select name="year" class="rounded-md border-gray-300 text-sm focus:ring-blue-500 focus:border-blue-500 py-2 w-full md:w-auto">
+                            <select name="year" class="w-full md:w-auto border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm">
                                 <option value="">- Tahun -</option>
                                 @for($y = date('Y'); $y >= date('Y') - 5; $y--)
                                     <option value="{{ $y }}" {{ request('year') == $y ? 'selected' : '' }}>
@@ -62,62 +76,60 @@
                                 @endfor
                             </select>
 
-                            <button type="submit" class="bg-gray-800 text-white px-3 py-2 rounded-md text-sm hover:bg-gray-700">
+                            <button type="submit" class="w-full md:w-auto bg-slate-800 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-slate-700 shadow-md transition">
                                 Filter
                             </button>
 
                             @if(request('search') || request('month') || request('year') || request('status'))
-                                <a href="{{ url()->current() }}" class="text-red-500 text-sm hover:underline ml-1">
+                                <a href="{{ url()->current() }}" class="text-rose-600 text-sm hover:text-rose-800 font-medium ml-2">
                                     Reset
                                 </a>
                             @endif
                         </form>
-
                     </div>
 
                     {{-- TABLE --}}
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200 border">
-                            <thead class="bg-gray-50">
+                    <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
+                        <table class="min-w-full divide-y divide-slate-200">
+                            <thead class="bg-slate-800 text-white">
                                 <tr>
-                                    <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Tanggal</th>
-                                    <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Item</th>
-                                    <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Vendor</th>
-                                    {{-- PERUBAHAN DI SINI: MEMISAHKAN BUDGET DAN REALISASI --}}
-                                    <th class="px-4 py-3 text-right text-xs font-bold text-gray-500 uppercase">Budget (Rencana)</th>
-                                    <th class="px-4 py-3 text-right text-xs font-bold text-gray-500 uppercase">Realisasi (Bayar)</th>
-                                    <th class="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">Status</th>
-                                    <th class="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">Bukti</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">Tanggal</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">Detail Aset</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">Vendor</th>
+                                    <th scope="col" class="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider">Budget (Rencana)</th>
+                                    <th scope="col" class="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider">Realisasi (Bayar)</th>
+                                    <th scope="col" class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider">Status</th>
+                                    <th scope="col" class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider">Bukti</th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
+                            <tbody class="bg-white divide-y divide-slate-100">
                                 @forelse($history as $h)
-                                <tr class="hover:bg-gray-50 transition">
-                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        <div class="font-bold">{{ $h->purchase_code }}</div>
-                                        <div class="text-xs text-gray-500">{{ \Carbon\Carbon::parse($h->updated_at)->format('d M Y') }}</div>
+                                <tr class="hover:bg-slate-50 transition-colors duration-150">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                                        <div class="font-bold text-slate-800">{{ $h->purchase_code }}</div>
+                                        <div class="text-xs mt-0.5">{{ \Carbon\Carbon::parse($h->updated_at)->format('d M Y') }}</div>
                                     </td>
-                                    <td class="px-4 py-4 text-sm text-gray-900">
-                                        <div class="font-bold">{{ $h->tool_name }}</div>
-                                        <div class="text-xs text-gray-500">{{ $h->category->category_name ?? '-' }}</div>
-                                        <div class="text-xs mt-1">Qty: {{ $h->quantity }}</div>
+                                    <td class="px-6 py-4 text-sm text-slate-900">
+                                        <div class="font-bold text-indigo-700">{{ $h->tool_name }}</div>
+                                        <div class="text-xs text-slate-500 mt-0.5">{{ $h->category->category_name ?? '-' }}</div>
+                                        <div class="text-xs mt-1 font-medium bg-slate-100 px-1.5 py-0.5 rounded inline-block">Qty: {{ $h->quantity }}</div>
                                     </td>
-                                    <td class="px-4 py-4 text-sm text-gray-600">
-                                        {{ $h->vendor->name }}
-                                        <div class="text-xs text-gray-400 italic mt-1">
+                                    <td class="px-6 py-4 text-sm text-slate-600">
+                                        <div class="font-medium">{{ $h->vendor->name }}</div>
+                                        <div class="text-xs text-slate-400 mt-0.5">
                                             Merk: {{ $h->brand ?? '-' }}
                                         </div>
                                     </td>
                                     
                                     {{-- KOLOM 1: HARGA RENCANA (BUDGET) --}}
-                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-slate-500">
                                         Rp {{ number_format($h->unit_price * $h->quantity, 0, ',', '.') }}
                                     </td>
 
                                     {{-- KOLOM 2: HARGA REALISASI (AKHIR) --}}
-                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-right">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
                                         @if($h->status == 'rejected')
-                                            <span class="text-gray-400">-</span>
+                                            <span class="text-slate-400 italic">-</span>
                                         @else
                                             @php
                                                 // Gunakan actual_unit_price yang sudah kita fix di database
@@ -127,42 +139,49 @@
                                                 $diff = $totalPlan - $totalReal;
                                             @endphp
                                             
-                                            <div class="font-bold text-gray-900">
+                                            <div class="font-bold text-slate-800">
                                                 Rp {{ number_format($totalReal, 0, ',', '.') }}
                                             </div>
 
                                             {{-- Indikator Hemat/Lebih --}}
                                             @if($diff > 0)
-                                                <span class="text-xs text-green-600 font-medium">
-                                                    (Hemat {{ number_format($diff, 0, ',', '.') }})
-                                                </span>
+                                                <div class="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-1.5 py-0.5 rounded inline-block mt-1 border border-emerald-100">
+                                                    Hemat: {{ number_format($diff, 0, ',', '.') }}
+                                                </div>
                                             @elseif($diff < 0)
-                                                <span class="text-xs text-red-600 font-medium">
-                                                    (Lebih {{ number_format(abs($diff), 0, ',', '.') }})
-                                                </span>
+                                                <div class="text-[10px] text-rose-600 font-bold bg-rose-50 px-1.5 py-0.5 rounded inline-block mt-1 border border-rose-100">
+                                                    Over: {{ number_format(abs($diff), 0, ',', '.') }}
+                                                </div>
                                             @endif
                                         @endif
                                     </td>
 
-                                    <td class="px-4 py-4 text-center">
+                                    <td class="px-6 py-4 text-center">
                                         @if($h->status == 'rejected')
-                                            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                                Ditolak
-                                            </span>
-                                            <div class="text-xs text-red-500 mt-1 max-w-[150px] mx-auto truncate" title="{{ $h->rejection_note }}">
-                                                "{{ $h->rejection_note }}"
+                                            <div class="flex flex-col items-center">
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-100 text-rose-800 border border-rose-200 mb-1">
+                                                    Ditolak
+                                                </span>
+                                                <div class="group relative cursor-help">
+                                                    <span class="text-[10px] text-rose-500 border-b border-dotted border-rose-400">Lihat Alasan</span>
+                                                    <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 p-2 bg-slate-800 text-white text-xs rounded shadow-lg w-48 text-center hidden group-hover:block z-10">
+                                                        {{ $h->rejection_note }}
+                                                        <div class="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-slate-800"></div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         @elseif($h->status == 'approved' || $h->is_purchased)
-                                            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                                                 Selesai
                                             </span>
                                         @else
-                                            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 border border-amber-200">
                                                 {{ $h->status }}
                                             </span>
                                         @endif
                                     </td>
-                                    <td class="px-4 py-4 text-center">
+                                    <td class="px-6 py-4 text-center">
                                         {{-- Cek kolom proof_photo ATAU transaction_proof_photo sesuai database --}}
                                         @php
                                             $proof = $h->proof_photo ?? $h->transaction_proof_photo;
@@ -170,18 +189,22 @@
 
                                         @if($proof)
                                             <button onclick="showImage('{{ asset('storage/' . $proof) }}', '{{ addslashes($h->tool_name) }}')" 
-                                                class="text-blue-600 hover:text-blue-900 text-xs font-bold border border-blue-200 bg-blue-50 px-3 py-1 rounded transition hover:bg-blue-100">
-                                                Lihat Nota
+                                                class="inline-flex items-center px-2.5 py-1.5 border border-indigo-200 text-xs font-semibold rounded text-indigo-700 bg-indigo-50 hover:bg-indigo-100 transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                                Lihat Bukti
                                             </button>
                                         @else
-                                            <span class="text-gray-400 text-xs italic">-</span>
+                                            <span class="text-slate-300 text-xs italic">Tidak ada</span>
                                         @endif
                                     </td>
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="7" class="px-6 py-10 text-center text-gray-500">
-                                        Belum ada riwayat transaksi.
+                                    <td colspan="7" class="px-6 py-12 text-center text-slate-400">
+                                        <div class="flex flex-col items-center justify-center">
+                                            <svg class="w-12 h-12 mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                            <p class="text-base font-medium">Belum ada riwayat transaksi.</p>
+                                        </div>
                                     </td>
                                 </tr>
                                 @endforelse
@@ -190,7 +213,7 @@
                     </div>
                     
                     {{-- PAGINATION --}}
-                    <div class="mt-4">
+                    <div class="mt-8">
                         {{ $history->withQueryString()->links() }}
                     </div>
 
@@ -202,23 +225,24 @@
     {{-- MODAL IMAGE --}}
     <div id="imageModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
         <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeImageModal()"></div>
+            
+            <div class="fixed inset-0 bg-slate-900 bg-opacity-80 transition-opacity blur-sm" aria-hidden="true" onclick="closeImageModal()"></div>
 
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl w-full">
+            <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl w-full">
                 <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                    <div class="flex justify-between items-center mb-4 border-b pb-2">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modalTitle">Bukti Pembayaran</h3>
-                        <button type="button" onclick="closeImageModal()" class="text-gray-400 hover:text-gray-500">
-                            <span class="text-2xl">&times;</span>
+                    <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
+                        <h3 class="text-lg leading-6 font-bold text-slate-900" id="modalTitle">Bukti Pembayaran</h3>
+                        <button type="button" onclick="closeImageModal()" class="text-slate-400 hover:text-slate-500 transition">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                         </button>
                     </div>
-                    <div class="mt-2 flex justify-center bg-gray-100 p-2 rounded">
-                        <img id="modalImage" src="" alt="Bukti Transaksi" class="max-h-[70vh] object-contain">
+                    <div class="mt-2 flex justify-center bg-slate-50 p-4 rounded-lg border border-state-100 min-h-[300px] items-center">
+                        <img id="modalImage" src="" alt="Bukti Transaksi" class="max-h-[70vh] object-contain shadow-sm rounded">
                     </div>
                 </div>
-                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                    <button type="button" onclick="closeImageModal()" class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                <div class="bg-slate-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t border-slate-100">
+                    <button type="button" onclick="closeImageModal()" class="w-full inline-flex justify-center rounded-lg border border-slate-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-slate-700 hover:bg-slate-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition">
                         Tutup
                     </button>
                 </div>

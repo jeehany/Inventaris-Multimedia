@@ -203,7 +203,19 @@ class BorrowingController extends Controller
                         
                         $maintenanceType = MaintenanceType::where('name', $request->return_condition)->first();
                         
-                        $typeIdToUse = $maintenanceType ? $maintenanceType->id : (MaintenanceType::first()->id ?? 1);
+                        if (!$maintenanceType) {
+                            // Jika tidak ada, ambil yang pertama apa saja yang ada di database
+                            $maintenanceType = MaintenanceType::first();
+
+                            // Jika tabel kosong sama sekali, buat baru agar tidak error constraint
+                            if (!$maintenanceType) {
+                                $maintenanceType = MaintenanceType::create([
+                                    'name' => 'Perbaikan Umum'
+                                ]);
+                            }
+                        }
+                        
+                        $typeIdToUse = $maintenanceType->id;
 
                         Maintenance::create([
                             'tool_id'       => $item->tool_id,

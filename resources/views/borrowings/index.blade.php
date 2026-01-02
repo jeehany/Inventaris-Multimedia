@@ -1,353 +1,316 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Daftar Peminjaman') }}
+        <h2 class="font-bold text-xl text-slate-800 leading-tight">
+            {{ __('Sirkulasi & Peminjaman') }}
         </h2>
     </x-slot>
 
-    <div class="py-12">
+    <div class="py-12 bg-slate-50 min-h-screen">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
             {{-- 1. PESAN SUKSES --}}
             @if (session('success'))
-                <div class="mb-4 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 shadow-sm" role="alert">
-                    <p class="font-bold">Berhasil!</p>
-                    <p>{{ session('success') }}</p>
+                <div class="mb-6 bg-emerald-50 border-l-4 border-emerald-500 text-emerald-700 p-4 shadow-sm rounded-r-lg">
+                    <p class="font-bold flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        Berhasil!
+                    </p>
+                    <p class="text-sm mt-1">{{ session('success') }}</p>
                 </div>
             @endif
 
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-xl border border-slate-200">
+                <div class="p-6 md:p-8 text-slate-800">
 
-                    {{-- A. BAGIAN ATAS: FILTER & TOMBOL (TETAP SAMA) --}}
-                    <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
-                        <form action="{{ route('borrowings.index') }}" method="GET" class="flex flex-col md:flex-row gap-2 w-full md:w-auto items-center">
-                            <input type="text" name="search" value="{{ request('search') }}" class="border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm w-full md:w-auto" placeholder="Cari Nama / ID...">
-                            <select name="status" class="border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm w-full md:w-auto">
-                                <option value="">- Semua Status -</option>
+                    {{-- A. BAGIAN FILTER --}}
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+                        <form action="{{ route('borrowings.index') }}" method="GET" class="flex flex-col md:flex-row gap-3 w-full md:w-auto items-center">
+                            
+                            {{-- Search --}}
+                            <div class="relative w-full md:w-64">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                                </span>
+                                <input type="text" name="search" value="{{ request('search') }}" class="pl-10 w-full border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm" placeholder="Cari Nama / ID...">
+                            </div>
+
+                            {{-- Filter Status --}}
+                            <select name="status" class="w-full md:w-auto border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                                <option value="">- Status -</option>
                                 <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Dipinjam</option>
                                 <option value="returned" {{ request('status') == 'returned' ? 'selected' : '' }}>Kembali</option>
                             </select>
-                            <select name="period" class="border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm w-full md:w-auto">
-                                <option value="all">- Semua Periode -</option>
+
+                            {{-- Filter Periode --}}
+                            <select name="period" class="w-full md:w-auto border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                                <option value="all">- Periode -</option>
                                 <option value="week" {{ request('period') == 'week' ? 'selected' : '' }}>Minggu Terakhir</option>
                                 <option value="month" {{ request('period') == 'month' ? 'selected' : '' }}>Bulan Terakhir</option>
                             </select>
-                            <button type="submit" class="bg-gray-800 text-white px-4 py-2 rounded-md hover:bg-gray-700 text-sm w-full md:w-auto">Filter</button>
+
+                            {{-- Tombol Filter --}}
+                            <button type="submit" class="w-full md:w-auto bg-slate-800 text-white px-5 py-2 rounded-lg hover:bg-slate-700 text-sm font-medium transition shadow-md">Filter</button>
+                            
+                            {{-- Reset --}}
                             @if(request('search') || request('status') || (request('period') && request('period') !== 'all'))
-                                <a href="{{ route('borrowings.index') }}" class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 text-sm transition flex items-center justify-center w-full md:w-auto">Reset</a>
+                                <a href="{{ route('borrowings.index') }}" class="w-full md:w-auto bg-white border border-slate-300 text-slate-600 px-4 py-2 rounded-lg hover:bg-slate-50 text-sm transition font-medium text-center">Reset</a>
                             @endif
                         </form>
+
                         @auth
                             @if(!auth()->user()->isHead())
-                                <a href="{{ route('borrowings.create') }}" class="w-full md:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded shadow-sm text-center text-sm">+ Peminjaman Baru</a>
+                                <a href="{{ route('borrowings.create') }}" class="w-full md:w-auto inline-flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-5 rounded-lg shadow-lg hover:shadow-indigo-500/30 transition duration-150 ease-in-out text-sm gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                    Peminjaman Baru
+                                </a>
                             @endif
                         @endauth
                     </div>
 
                     {{-- B. TABEL DATA --}}
-                    <div class="overflow-x-auto border rounded-lg">
-                        <table class="min-w-full table-auto text-sm text-left">
-                            <thead class="bg-gray-50 text-gray-600 uppercase font-medium">
+                    <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
+                        <table class="min-w-full divide-y divide-slate-200">
+                            <thead class="bg-slate-800 text-white">
                                 <tr>
-                                    <th class="px-4 py-3 text-center">No</th>
-                                    <th class="px-4 py-3">Peminjam</th>
-                                    <th class="px-4 py-3">Tgl Pinjam</th>
-                                    <th class="px-4 py-3">Rencana Kembali</th>
-                                    <th class="px-4 py-3">Barang</th>
-                                    <th class="px-4 py-3 text-center">Status</th>
-                                    <th class="px-4 py-3 text-center">Aksi</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">No</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">Anggota Tim</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">Tgl Pinjam</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">Rencana Kembali</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">Aset Multimedia</th>
+                                    <th scope="col" class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider">Status</th>
+                                    <th scope="col" class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider">Aksi</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-gray-200">
+                            <tbody class="bg-white divide-y divide-slate-100">
                                 @forelse ($borrowings as $index => $borrowing)
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-4 py-3 text-center font-medium text-gray-500">{{ $borrowings->firstItem() + $index }}</td>
+                                    <tr class="hover:bg-slate-50 transition-colors duration-150">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500 text-center">{{ $borrowings->firstItem() + $index }}</td>
                                         
-                                        <td class="px-4 py-3">
-                                            <div class="font-bold text-gray-800">{{ $borrowing->borrower->name }}</div>
-                                            <div class="text-xs text-gray-500">{{ $borrowing->borrower->code }}</div>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="h-10 w-10 flex-shrink-0">
+                                                     @if($borrowing->borrower->photo)
+                                                        <img class="h-10 w-10 rounded-full object-cover border border-slate-200" src="{{ asset('storage/' . $borrowing->borrower->photo) }}" alt="{{ $borrowing->borrower->name }}">
+                                                    @else
+                                                        <div class="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold border border-indigo-200">
+                                                            {{ substr($borrowing->borrower->name, 0, 1) }}
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                                <div class="ml-4">
+                                                    <div class="text-sm font-bold text-slate-800 title-font">{{ $borrowing->borrower->name }}</div>
+                                                    <div class="text-xs text-slate-500">{{ $borrowing->borrower->code }}</div>
+                                                </div>
+                                            </div>
                                         </td>
 
-                                        <td class="px-4 py-3">{{ \Carbon\Carbon::parse($borrowing->borrow_date)->format('d M Y') }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">{{ \Carbon\Carbon::parse($borrowing->borrow_date)->format('d M Y') }}</td>
                                         
-                                        <td class="px-4 py-3 text-red-600 font-medium">{{ \Carbon\Carbon::parse($borrowing->planned_return_date)->format('d M Y') }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-rose-600 font-medium">{{ \Carbon\Carbon::parse($borrowing->planned_return_date)->format('d M Y') }}</td>
 
-                                        <td class="px-4 py-3">
-                                            <ul class="list-disc list-inside text-gray-700">
+                                        <td class="px-6 py-4">
+                                            <ul class="list-disc list-inside text-sm text-slate-700 space-y-1">
                                                 @foreach($borrowing->items as $item)
-                                                    <li>{{ $item->tool->tool_name ?? 'Alat Dihapus' }}</li>
+                                                    <li>{{ $item->tool->tool_name ?? 'Item Dihapus' }}</li>
                                                 @endforeach
                                             </ul>
                                             @if($borrowing->notes)
-                                                <div class="text-xs text-gray-500 italic mt-1">"{{ $borrowing->notes }}"</div>
+                                                <div class="text-xs text-slate-400 italic mt-1 pl-1">"{{ $borrowing->notes }}"</div>
                                             @endif
                                         </td>
 
-                                        <td class="px-4 py-3 text-center">
+                                        <td class="px-6 py-4 whitespace-nowrap text-center">
                                             @if($borrowing->borrowing_status == 'active')
-                                                <span class="bg-yellow-100 text-yellow-800 py-1 px-2 rounded-full text-xs font-bold border border-yellow-200">Sedang Dipinjam</span>
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 border border-amber-200">
+                                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                    Dipinjam
+                                                </span>
                                             @else
-                                                <span class="bg-green-100 text-green-800 py-1 px-2 rounded-full text-xs font-bold border border-green-200">Dikembalikan</span>
-                                                <div class="text-[10px] text-gray-500 mt-1">
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                                    Kembali
+                                                </span>
+                                                <div class="text-[10px] text-slate-400 mt-1">
                                                     {{ $borrowing->final_status }} ({{ $borrowing->return_condition }})
                                                 </div>
                                             @endif
                                         </td>
 
-                                        <td class="px-4 py-3 text-center">
+                                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                                             <div class="flex justify-center items-center space-x-2">
-                                                {{-- 1. TOMBOL DETAIL (BISA DILIHAT SEMUA ROLE) --}}
-                                                <button onclick="toggleModal('modal-detail-{{ $borrowing->id }}')" class="text-gray-600 hover:text-gray-900 bg-gray-100 p-1 rounded" title="Lihat Detail">
+                                                {{-- DETAIL --}}
+                                                <button onclick="toggleModal('modal-detail-{{ $borrowing->id }}')" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 p-2 rounded-lg transition" title="Lihat Detail">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                                     </svg>
                                                 </button>
-                                                {{-- ======================= MODAL DETAIL (BARU) ======================= --}}
-                                                <div id="modal-detail-{{ $borrowing->id }}" class="fixed inset-0 z-50 hidden overflow-y-auto text-left" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-                                                    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                                                        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="toggleModal('modal-detail-{{ $borrowing->id }}')"></div>
-                                                        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-                                                        
-                                                        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
-                                                            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                                                                
-                                                                {{-- Header Modal --}}
-                                                                <div class="flex justify-between items-center border-b pb-3 mb-4">
-                                                                    <h3 class="text-xl font-semibold text-gray-900">Detail Peminjaman</h3>
-                                                                    <button onclick="toggleModal('modal-detail-{{ $borrowing->id }}')" class="text-gray-400 hover:text-gray-500">
-                                                                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                                                    </button>
-                                                                </div>
 
-                                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                                    
-                                                                    {{-- Kolom Kiri: Info Peminjam & Admin --}}
-                                                                    <div>
-                                                                        <h4 class="font-bold text-gray-700 mb-2 border-b border-gray-200 pb-1">Informasi Umum</h4>
-                                                                        <dl class="space-y-2 text-sm">
-                                                                            <div class="flex justify-between">
-                                                                                <dt class="text-gray-500">Peminjam:</dt>
-                                                                                <dd class="font-medium text-gray-900">{{ $borrowing->borrower->name }}</dd>
-                                                                            </div>
-                                                                            <div class="flex justify-between">
-                                                                                <dt class="text-gray-500">ID/NIP:</dt>
-                                                                                <dd class="font-medium text-gray-900">{{ $borrowing->borrower->code }}</dd>
-                                                                            </div>
-                                                                            <div class="flex justify-between">
-                                                                                <dt class="text-gray-500">Diproses Oleh:</dt>
-                                                                                <dd class="font-medium text-gray-900">{{ $borrowing->user->name ?? 'System' }}</dd>
-                                                                            </div>
-                                                                            <div class="flex justify-between mt-2">
-                                                                                <dt class="text-gray-500">Status Saat Ini:</dt>
-                                                                                <dd>
-                                                                                    @if($borrowing->borrowing_status == 'active')
-                                                                                        <span class="bg-yellow-100 text-yellow-800 py-0.5 px-2 rounded-full text-xs font-bold">Sedang Dipinjam</span>
-                                                                                    @else
-                                                                                        <span class="bg-green-100 text-green-800 py-0.5 px-2 rounded-full text-xs font-bold">Selesai</span>
-                                                                                    @endif
-                                                                                </dd>
-                                                                            </div>
-                                                                        </dl>
-                                                                    </div>
-
-                                                                    {{-- Kolom Kanan: Tanggal --}}
-                                                                    <div>
-                                                                        <h4 class="font-bold text-gray-700 mb-2 border-b border-gray-200 pb-1">Timeline</h4>
-                                                                        <dl class="space-y-2 text-sm">
-                                                                            <div class="flex justify-between">
-                                                                                <dt class="text-gray-500">Tgl Pinjam:</dt>
-                                                                                <dd class="font-medium text-gray-900">{{ \Carbon\Carbon::parse($borrowing->borrow_date)->format('d F Y') }}</dd>
-                                                                            </div>
-                                                                            <div class="flex justify-between">
-                                                                                <dt class="text-gray-500">Rencana Kembali:</dt>
-                                                                                <dd class="font-medium text-red-600">{{ \Carbon\Carbon::parse($borrowing->planned_return_date)->format('d F Y') }}</dd>
-                                                                            </div>
-                                                                            @if($borrowing->actual_return_date)
-                                                                                <div class="flex justify-between bg-green-50 p-1 rounded">
-                                                                                    <dt class="text-green-700 font-bold">Dikembalikan:</dt>
-                                                                                    <dd class="font-bold text-green-700">{{ \Carbon\Carbon::parse($borrowing->actual_return_date)->format('d F Y') }}</dd>
-                                                                                </div>
-                                                                            @endif
-                                                                        </dl>
-                                                                    </div>
-                                                                </div>
-
-                                                                {{-- Bagian Bawah: Daftar Barang --}}
-                                                                <div class="mt-6">
-                                                                    <h4 class="font-bold text-gray-700 mb-2 border-b border-gray-200 pb-1">Daftar Barang Dipinjam</h4>
-                                                                    <div class="overflow-x-auto border rounded-md">
-                                                                        <table class="min-w-full divide-y divide-gray-200">
-                                                                            <thead class="bg-gray-50 text-xs">
-                                                                                <tr>
-                                                                                    <th class="px-3 py-2 text-left text-gray-500 uppercase">Nama Alat</th>
-                                                                                    <th class="px-3 py-2 text-left text-gray-500 uppercase">Kode Alat</th>
-                                                                                    <th class="px-3 py-2 text-center text-gray-500 uppercase">Kondisi Awal</th>
-                                                                                </tr>
-                                                                            </thead>
-                                                                            <tbody class="bg-white divide-y divide-gray-200 text-sm">
-                                                                                @foreach($borrowing->items as $item)
-                                                                                    <tr>
-                                                                                        <td class="px-3 py-2 text-gray-900 font-medium">{{ $item->tool->tool_name ?? 'Item Dihapus' }}</td>
-                                                                                        <td class="px-3 py-2 text-gray-500">{{ $item->tool->tool_code ?? '-' }}</td>
-                                                                                        <td class="px-3 py-2 text-center text-gray-500">{{ $item->tool->condition ?? 'Baik' }}</td>
-                                                                                    </tr>
-                                                                                @endforeach
-                                                                            </tbody>
-                                                                        </table>
-                                                                    </div>
-                                                                </div>
-
-                                                                {{-- Bagian Bawah: Catatan & Status Akhir (Jika Ada) --}}
-                                                                <div class="mt-4 bg-gray-50 p-3 rounded-lg text-sm border border-gray-200">
-                                                                    <p class="font-bold text-gray-700">Catatan:</p>
-                                                                    <p class="text-gray-600 italic mb-2">"{{ $borrowing->notes ?? 'Tidak ada catatan' }}"</p>
-                                                                    
-                                                                    @if($borrowing->borrowing_status == 'returned')
-                                                                        <div class="border-t border-gray-300 mt-2 pt-2 grid grid-cols-2 gap-4">
-                                                                            <div>
-                                                                                <span class="block text-xs text-gray-500 uppercase">Kondisi Akhir</span>
-                                                                                <span class="font-bold text-gray-800">{{ $borrowing->return_condition }}</span>
-                                                                            </div>
-                                                                            <div>
-                                                                                <span class="block text-xs text-gray-500 uppercase">Status Penyelesaian</span>
-                                                                                <span class="font-bold text-gray-800">{{ $borrowing->final_status }}</span>
-                                                                            </div>
-                                                                        </div>
-                                                                    @endif
-                                                                </div>
-
-                                                            </div>
-                                                            
-                                                            {{-- Footer Modal --}}
-                                                            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                                                                <button type="button" onclick="toggleModal('modal-detail-{{ $borrowing->id }}')" class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:w-auto sm:text-sm">
-                                                                    Tutup
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                
                                                 @auth
                                                     @if(!auth()->user()->isHead())
-                                                        
-                                                        {{-- 1. Tombol Edit --}}
+                                                        {{-- EDIT (Active Only) --}}
                                                         @if($borrowing->borrowing_status == 'active')
-                                                            <button onclick="toggleModal('modal-edit-{{ $borrowing->id }}')" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 p-1 rounded" title="Edit Data">
+                                                            <button onclick="toggleModal('modal-edit-{{ $borrowing->id }}')" class="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 p-2 rounded-lg transition" title="Edit Data">
                                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                                                 </svg>
                                                             </button>
-                                                        @endif
 
-                                                        {{-- 2. Tombol Kembalikan (Trigger Modal Return) --}}
-                                                        @if($borrowing->borrowing_status == 'active')
-                                                            <button onclick="toggleModal('modal-return-{{ $borrowing->id }}')" class="text-blue-600 hover:text-blue-900 bg-blue-50 p-1 rounded" title="Proses Pengembalian">
+                                                            {{-- RETURN (Active Only) --}}
+                                                            <button onclick="toggleModal('modal-return-{{ $borrowing->id }}')" class="text-emerald-600 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 p-2 rounded-lg transition" title="Proses Pengembalian">
                                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                                                                 </svg>
                                                             </button>
                                                         @else
-                                                            {{-- Tombol Hapus (Hanya jika sudah kembali) --}}
+                                                            {{-- DELETE (Returned Only) --}}
                                                             <form action="{{ route('borrowings.destroy', $borrowing->id) }}" method="POST" onsubmit="return confirm('Hapus riwayat ini?');">
                                                                 @csrf @method('DELETE')
-                                                                <button type="submit" class="text-red-600 hover:text-red-900 bg-red-50 p-1 rounded" title="Hapus Riwayat">
+                                                                <button type="submit" class="text-rose-600 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 p-2 rounded-lg transition" title="Hapus Riwayat">
                                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                                     </svg>
                                                                 </button>
                                                             </form>
                                                         @endif
-
-                                                    @else
-                                                        <span class="text-gray-400 text-xs italic">Read-only</span>
                                                     @endif
                                                 @endauth
                                             </div>
 
-                                            {{-- ======================= MODAL PENGEMBALIAN (BARU) ======================= --}}
+                                            {{-- MODAL DETAIL --}}
+                                            <div id="modal-detail-{{ $borrowing->id }}" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-hidden="true">
+                                                <div class="flex items-center justify-center min-h-screen px-4 text-center">
+                                                    <div class="fixed inset-0 bg-slate-900 bg-opacity-75 transition-opacity" onclick="toggleModal('modal-detail-{{ $borrowing->id }}')"></div>
+                                                    <div class="inline-block bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:max-w-2xl sm:w-full border border-slate-200">
+                                                        <div class="bg-white px-6 py-6">
+                                                            <div class="flex justify-between items-center border-b border-slate-100 pb-4 mb-4">
+                                                                <h3 class="text-xl font-bold text-slate-800">Detail Transaksi</h3>
+                                                                <button onclick="toggleModal('modal-detail-{{ $borrowing->id }}')" class="text-slate-400 hover:text-slate-600 transition">
+                                                                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                                                </button>
+                                                            </div>
+                                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                                <div>
+                                                                    <h4 class="font-bold text-indigo-900 text-sm uppercase tracking-wider mb-3">Informasi Peminjam</h4>
+                                                                    <div class="space-y-3">
+                                                                        <div class="flex justify-between text-sm"><span class="text-slate-500">Nama:</span> <span class="font-medium text-slate-800">{{ $borrowing->borrower->name }}</span></div>
+                                                                        <div class="flex justify-between text-sm"><span class="text-slate-500">ID Anggota:</span> <span class="font-medium text-slate-800">{{ $borrowing->borrower->code }}</span></div>
+                                                                        <div class="flex justify-between text-sm"><span class="text-slate-500">Admin:</span> <span class="font-medium text-slate-800">{{ $borrowing->user->name ?? 'System' }}</span></div>
+                                                                    </div>
+                                                                </div>
+                                                                <div>
+                                                                    <h4 class="font-bold text-indigo-900 text-sm uppercase tracking-wider mb-3">Timeline</h4>
+                                                                    <div class="space-y-3">
+                                                                        <div class="flex justify-between text-sm"><span class="text-slate-500">Mulai:</span> <span class="font-medium text-slate-800">{{ \Carbon\Carbon::parse($borrowing->borrow_date)->format('d F Y') }}</span></div>
+                                                                        <div class="flex justify-between text-sm"><span class="text-slate-500">Rencana Kembali:</span> <span class="font-bold text-rose-600">{{ \Carbon\Carbon::parse($borrowing->planned_return_date)->format('d F Y') }}</span></div>
+                                                                        @if($borrowing->actual_return_date)
+                                                                            <div class="flex justify-between text-sm bg-emerald-50 p-1 -mx-1 rounded"><span class="text-emerald-700">Dikembalikan:</span> <span class="font-bold text-emerald-700">{{ \Carbon\Carbon::parse($borrowing->actual_return_date)->format('d F Y') }}</span></div>
+                                                                        @endif
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="mt-6">
+                                                                <h4 class="font-bold text-indigo-900 text-sm uppercase tracking-wider mb-3">Aset Multimedia</h4>
+                                                                <div class="bg-slate-50 rounded-lg border border-slate-200 overflow-hidden">
+                                                                    <table class="min-w-full divide-y divide-slate-200">
+                                                                        <thead class="bg-slate-100">
+                                                                            <tr><th class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase">Aset</th><th class="px-4 py-2 text-center text-xs font-semibold text-slate-500 uppercase">Kode</th><th class="px-4 py-2 text-center text-xs font-semibold text-slate-500 uppercase">Kondisi Awal</th></tr>
+                                                                        </thead>
+                                                                        <tbody class="divide-y divide-slate-200">
+                                                                            @foreach($borrowing->items as $item)
+                                                                                <tr>
+                                                                                    <td class="px-4 py-2 text-sm text-slate-800 font-medium">{{ $item->tool->tool_name ?? 'Dihapus' }}</td>
+                                                                                    <td class="px-4 py-2 text-sm text-center text-slate-500">{{ $item->tool->tool_code ?? '-' }}</td>
+                                                                                    <td class="px-4 py-2 text-sm text-center text-slate-500">{{ $item->tool->condition ?? 'Baik' }}</td>
+                                                                                </tr>
+                                                                            @endforeach
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="bg-slate-50 px-6 py-4 flex justify-end">
+                                                            <button type="button" onclick="toggleModal('modal-detail-{{ $borrowing->id }}')" class="bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-50 text-sm font-medium shadow-sm transition">Tutup</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {{-- MODAL RETURN (Active Only) --}}
                                             @if($borrowing->borrowing_status == 'active')
-                                                <div id="modal-return-{{ $borrowing->id }}" class="fixed inset-0 z-50 hidden overflow-y-auto text-left" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-                                                    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                                                        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="toggleModal('modal-return-{{ $borrowing->id }}')"></div>
-                                                        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-                                                        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                                                            
+                                                <div id="modal-return-{{ $borrowing->id }}" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-hidden="true">
+                                                    <div class="flex items-center justify-center min-h-screen px-4 text-center">
+                                                        <div class="fixed inset-0 bg-slate-900 bg-opacity-75 transition-opacity" onclick="toggleModal('modal-return-{{ $borrowing->id }}')"></div>
+                                                        <div class="inline-block bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full border border-slate-200">
                                                             <form action="{{ route('borrowings.return', $borrowing->id) }}" method="POST">
                                                                 @csrf @method('PUT')
-                                                                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                                                                    <h3 class="text-lg font-medium text-gray-900 mb-4 border-b pb-2">Konfirmasi Pengembalian</h3>
-                                                                    
-                                                                    <div class="space-y-4">
-                                                                        {{-- Tanggal --}}
-                                                                        <div>
-                                                                            <label class="block text-gray-700 text-sm font-bold mb-2">Tanggal Realisasi Kembali</label>
-                                                                            <input type="date" name="returned_at" value="{{ date('Y-m-d') }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5">
+                                                                <div class="bg-white px-6 py-6">
+                                                                    <div class="flex items-center gap-3 mb-4 border-b border-slate-100 pb-4">
+                                                                        <div class="p-2 bg-emerald-100 rounded-full text-emerald-600">
+                                                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                                                                         </div>
-
-                                                                        {{-- Kondisi --}}
+                                                                        <h3 class="text-xl font-bold text-slate-800">Proses Pengembalian</h3>
+                                                                    </div>
+                                                                    <div class="space-y-4">
                                                                         <div>
-                                                                            <label class="block text-gray-700 text-sm font-bold mb-2">Kondisi Barang</label>
-                                                                            <select name="return_condition" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5">
+                                                                            <label class="block text-sm font-medium text-slate-700 mb-1">Tanggal Dikembalikan</label>
+                                                                            <input type="date" name="returned_at" value="{{ date('Y-m-d') }}" class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-emerald-500 focus:border-emerald-500 text-sm">
+                                                                        </div>
+                                                                        <div>
+                                                                            <label class="block text-sm font-medium text-slate-700 mb-1">Kondisi Aset</label>
+                                                                            <select name="return_condition" class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-emerald-500 focus:border-emerald-500 text-sm">
                                                                                 <option value="Baik">Baik / Normal</option>
                                                                                 <option value="Rusak Ringan">Rusak Ringan / Lecet</option>
                                                                                 <option value="Rusak Berat">Rusak Berat (Maintenance)</option>
                                                                             </select>
                                                                         </div>
-
-                                                                        {{-- Status Akhir --}}
                                                                         <div>
-                                                                            <label class="block text-gray-700 text-sm font-bold mb-2">Status Akhir Transaksi</label>
-                                                                            <select name="final_status" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5">
-                                                                                <option value="Selesai">Selesai (Dikembalikan)</option>
-                                                                                <option value="Hilang">Hilang (Stok Dihapus)</option>
+                                                                            <label class="block text-sm font-medium text-slate-700 mb-1">Status Akhir</label>
+                                                                            <select name="final_status" class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-emerald-500 focus:border-emerald-500 text-sm">
+                                                                                <option value="Selesai">Selesai (Kembali ke Stok)</option>
+                                                                                <option value="Hilang">Hilang (Stok Berkurang)</option>
                                                                                 <option value="Diganti">Diganti (Ganti Rugi)</option>
                                                                             </select>
-                                                                            <p class="text-[10px] text-red-500 mt-1">*Jika "Hilang", stok alat akan otomatis diubah statusnya.</p>
+                                                                            <p class="text-xs text-slate-500 mt-1">*Jika "Rusak Berat", otomatis terjadwal maintenance.</p>
                                                                         </div>
                                                                     </div>
                                                                 </div>
-                                                                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-2">
-                                                                    <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 sm:w-auto sm:text-sm">Proses</button>
-                                                                    <button type="button" onclick="toggleModal('modal-return-{{ $borrowing->id }}')" class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:w-auto sm:text-sm">Batal</button>
+                                                                <div class="bg-slate-50 px-6 py-4 flex flex-row-reverse gap-3">
+                                                                    <button type="submit" class="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 text-sm font-medium shadow-sm transition">Simpan & Selesai</button>
+                                                                    <button type="button" onclick="toggleModal('modal-return-{{ $borrowing->id }}')" class="bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-50 text-sm font-medium transition">Batal</button>
                                                                 </div>
                                                             </form>
-
                                                         </div>
                                                     </div>
                                                 </div>
                                             @endif
 
-                                            {{-- ======================= MODAL EDIT (EXISTING) ======================= --}}
+                                            {{-- MODAL EDIT (Active Only) --}}
                                             @if($borrowing->borrowing_status == 'active')
-                                                <div id="modal-edit-{{ $borrowing->id }}" class="fixed inset-0 z-50 hidden overflow-y-auto text-left" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-                                                    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                                                        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="toggleModal('modal-edit-{{ $borrowing->id }}')"></div>
-                                                        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-                                                        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                                                <div id="modal-edit-{{ $borrowing->id }}" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-hidden="true">
+                                                    <div class="flex items-center justify-center min-h-screen px-4 text-center">
+                                                        <div class="fixed inset-0 bg-slate-900 bg-opacity-75 transition-opacity" onclick="toggleModal('modal-edit-{{ $borrowing->id }}')"></div>
+                                                        <div class="inline-block bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full border border-slate-200">
                                                             <form action="{{ route('borrowings.update', $borrowing->id) }}" method="POST">
                                                                 @csrf @method('PUT')
-                                                                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                                                                    <h3 class="text-lg font-medium text-gray-900 mb-4">Edit Peminjaman</h3>
+                                                                <div class="bg-white px-6 py-6">
+                                                                    <h3 class="text-lg font-bold text-slate-800 mb-4 border-b border-slate-100 pb-3">Edit Peminjaman</h3>
                                                                     <div class="mb-4">
-                                                                        <label class="block text-gray-700 text-sm font-bold mb-2">Nama Peminjam</label>
-                                                                        <input type="text" value="{{ $borrowing->borrower->name }}" disabled class="bg-gray-200 border border-gray-300 text-gray-700 text-sm rounded-lg block w-full p-2.5 cursor-not-allowed">
+                                                                        <label class="block text-sm font-medium text-slate-700 mb-1">Anggota Tim</label>
+                                                                        <input type="text" value="{{ $borrowing->borrower->name }}" disabled class="w-full bg-slate-100 border-slate-300 rounded-lg text-slate-500 text-sm cursor-not-allowed">
                                                                     </div>
                                                                     <div class="mb-4">
-                                                                        <label class="block text-gray-700 text-sm font-bold mb-2">Rencana Kembali (Baru)</label>
-                                                                        <input type="date" name="planned_return_date" value="{{ $borrowing->planned_return_date }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                                                                        <label class="block text-sm font-medium text-slate-700 mb-1">Perpanjang / Ubah Tanggal Kembali</label>
+                                                                        <input type="date" name="planned_return_date" value="{{ $borrowing->planned_return_date }}" class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm">
                                                                     </div>
                                                                     <div class="mb-2">
-                                                                        <label class="block text-gray-700 text-sm font-bold mb-2">Catatan</label>
-                                                                        <textarea name="notes" rows="3" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">{{ $borrowing->notes }}</textarea>
+                                                                        <label class="block text-sm font-medium text-slate-700 mb-1">Catatan</label>
+                                                                        <textarea name="notes" rows="3" class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm">{{ $borrowing->notes }}</textarea>
                                                                     </div>
                                                                 </div>
-                                                                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-2">
-                                                                    <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 sm:w-auto sm:text-sm">Simpan</button>
-                                                                    <button type="button" onclick="toggleModal('modal-edit-{{ $borrowing->id }}')" class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:w-auto sm:text-sm">Batal</button>
+                                                                <div class="bg-slate-50 px-6 py-4 flex flex-row-reverse gap-3">
+                                                                    <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 text-sm font-medium shadow-sm transition">Simpan Perubahan</button>
+                                                                    <button type="button" onclick="toggleModal('modal-edit-{{ $borrowing->id }}')" class="bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-50 text-sm font-medium transition">Batal</button>
                                                                 </div>
                                                             </form>
                                                         </div>
@@ -359,14 +322,20 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="7" class="text-center py-8 text-gray-400">Tidak ada data peminjaman yang ditemukan.</td>
+                                        <td colspan="7" class="text-center py-12">
+                                            <div class="flex flex-col items-center justify-center text-slate-400">
+                                                <svg class="w-12 h-12 mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                                                <p class="text-base font-medium">Belum ada sirkulasi peminjaman.</p>
+                                                <p class="text-sm mt-1">Silakan buat peminjaman baru.</p>
+                                            </div>
+                                        </td>
                                     </tr>
                                 @endforelse
                             </tbody>
                         </table>
                     </div>
                     
-                    <div class="mt-6">{{ $borrowings->links() }}</div>
+                    <div class="mt-8">{{ $borrowings->links() }}</div>
 
                 </div>
             </div>
@@ -376,12 +345,12 @@
     <script>
         function toggleModal(modalID){
             const modal = document.getElementById(modalID);
-            const body = document.querySelector('body');
-            modal.classList.toggle("hidden");
-            if (!modal.classList.contains('hidden')) {
-                body.style.overflow = 'hidden';
-            } else {
-                body.style.overflow = 'auto';
+            if (modal) {
+                if (modal.classList.contains('hidden')) {
+                    modal.classList.remove('hidden');
+                } else {
+                    modal.classList.add('hidden');
+                }
             }
         }
     </script>
