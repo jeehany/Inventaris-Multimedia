@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-bold text-xl text-slate-800 leading-tight">
-            {{ __('Manajemen Kategori Aset') }}
+            {{ __('Kategori Aset') }}
         </h2>
     </x-slot>
 
