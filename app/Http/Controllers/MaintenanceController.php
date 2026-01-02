@@ -192,4 +192,33 @@ class MaintenanceController extends Controller
         $maintenance->delete();
         return redirect()->route('maintenances.index')->with('success', 'Data dihapus.');
     }
+
+    public function exportExcel(Request $request)
+    {
+        // Query Dasar dengan Eager Loading
+        $query = Maintenance::with(['tool', 'user', 'type']);
+
+        // 1. Logic Pencarian (Berdasarkan Nama Alat atau Catatan)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('note', 'like', "%{$search}%")
+                  ->orWhereHas('tool', function (Builder $query) use ($search) {
+                      $query->where('tool_name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        // 2. Logic Filter Status (In Progress / Completed)
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // 3. Logic Filter Tipe Maintenance
+        if ($request->filled('type_id')) {
+            $query->where('maintenance_type_id', $request->type_id);
+        }
+
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\MaintenanceExport($query), 'laporan-perawatan-'.now()->format('Y-m-d').'.xlsx');
+    }
 }

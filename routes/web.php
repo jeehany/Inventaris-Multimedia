@@ -86,6 +86,7 @@ Route::middleware('auth')->group(function () {
 
 
     // --- Maintenance Routes ---
+    Route::get('maintenances/export', [MaintenanceController::class, 'exportExcel'])->name('maintenances.export');
     Route::resource('maintenances', MaintenanceController::class);
     Route::resource('maintenance-types', MaintenanceTypeController::class);
 

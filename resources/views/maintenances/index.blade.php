@@ -81,7 +81,12 @@
 
                         {{-- Tombol Tambah --}}
                         @auth
-                            @if(!auth()->user()->isHead())
+                            @if(auth()->user()->isHead())
+                                <a href="{{ route('maintenances.export', request()->query()) }}" class="w-full md:w-auto inline-flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-lg shadow-lg hover:shadow-emerald-500/30 transition duration-150 ease-in-out text-sm gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                    Export Laporan
+                                </a>
+                            @else
                                 <a href="{{ route('maintenances.create') }}" class="w-full md:w-auto inline-flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-5 rounded-lg shadow-lg hover:shadow-indigo-500/30 transition duration-150 ease-in-out text-sm gap-2">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                                     Catat Perbaikan
@@ -91,7 +96,27 @@
                     </div>
 
                     {{-- B. TABEL DATA --}}
-                    <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
+                    {{-- Kita bungkus tabel dengan x-data untuk state modal --}}
+                    <div x-data="{ 
+                        showModal: false, 
+                        modalData: {
+                            tool_name: '',
+                            tool_code: '',
+                            reporter: '',
+                            type: '',
+                            start_date: '',
+                            end_date: '',
+                            cost: '',
+                            status: '',
+                            note: '',
+                            action_taken: ''
+                        },
+                        openModal(data) {
+                            this.modalData = data;
+                            this.showModal = true;
+                        }
+                    }" class="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
+                        
                         <table class="min-w-full divide-y divide-slate-200">
                             <thead class="bg-slate-800 text-white">
                                 <tr>
@@ -107,6 +132,7 @@
                             <tbody class="bg-white divide-y divide-slate-100">
                                 @forelse ($maintenances as $index => $item)
                                     <tr class="hover:bg-slate-50 transition-colors duration-150">
+                                        {{-- ... (Columns 1-6 same as before) ... --}}
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500 text-center">
                                             {{ $maintenances->firstItem() + $index }}
                                         </td>
@@ -126,7 +152,7 @@
                                                 <span class="text-sm text-slate-600 truncate max-w-xs" title="{{ $item->note }}">
                                                     {{ Str::limit($item->note, 30) }}
                                                 </span>
-                                                <span class="text-xs text-slate-400">Teknisi: {{ $item->user->name ?? '-' }}</span>
+                                                <span class="text-xs text-slate-400">Pelapor: {{ $item->user->name ?? '-' }}</span>
                                             </div>
                                         </td>
 
@@ -155,8 +181,28 @@
                                             @endif
                                         </td>
 
+                                        {{-- Column Aksi --}}
                                         <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                                             <div class="flex justify-center items-center space-x-3">
+                                                {{-- Tombol View (Available for All) --}}
+                                                <button 
+                                                    @click="openModal({
+                                                        tool_name: '{{ addslashes($item->tool->tool_name ?? '-') }}',
+                                                        tool_code: '{{ $item->tool->tool_code ?? '-' }}',
+                                                        reporter: '{{ addslashes($item->user->name ?? '-') }}',
+                                                        type: '{{ addslashes($item->type->name ?? '-') }}',
+                                                        start_date: '{{ \Carbon\Carbon::parse($item->start_date)->translatedFormat('d F Y') }}',
+                                                        end_date: '{{ $item->end_date ? \Carbon\Carbon::parse($item->end_date)->translatedFormat('d F Y') : '-' }}',
+                                                        cost: '{{ number_format($item->cost, 0, ',', '.') }}',
+                                                        status: '{{ $item->status }}',
+                                                        note: `{{ addslashes(preg_replace( "/\r|\n/", " ", $item->note ?? '')) }}`,
+                                                        action_taken: `{{ addslashes(preg_replace( "/\r|\n/", " ", $item->action_taken ?? '-')) }}`
+                                                    })"
+                                                    class="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 p-2 rounded-lg transition" 
+                                                    title="Lihat Detail">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                                </button>
+
                                                 @auth
                                                     @if(!auth()->user()->isHead())
                                                         {{-- Tombol Edit --}}
@@ -176,8 +222,6 @@
                                                                 </svg>
                                                             </button>
                                                         </form>
-                                                    @else
-                                                        <span class="text-slate-400 text-xs italic bg-slate-100 px-2 py-1 rounded">View Only</span>
                                                     @endif
                                                 @endauth
                                             </div>
@@ -196,6 +240,101 @@
                                 @endforelse
                             </tbody>
                         </table>
+
+                        {{-- MODAL DETAIL --}}
+                        <div x-show="showModal" style="display: none;" 
+                             class="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true">
+                             
+                            {{-- Backdrop --}}
+                            <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                                <div x-show="showModal" 
+                                     x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                                     x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                                     class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" @click="showModal = false"></div>
+                                
+                                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+                                {{-- Modal Panel --}}
+                                <div x-show="showModal"
+                                     x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                                     x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                                     class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full">
+                                    
+                                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                                        <div class="sm:flex sm:items-start">
+                                            <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
+                                                <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                            </div>
+                                            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                                                <h3 class="text-lg leading-6 font-medium text-slate-900" id="modal-title">
+                                                    Detail Perawatan
+                                                </h3>
+                                                <div class="mt-4 border-t border-slate-100 pt-4 space-y-3 text-sm">
+                                                    
+                                                    <div class="grid grid-cols-3 gap-2">
+                                                        <span class="font-bold text-slate-500">Nama Alat:</span>
+                                                        <span class="col-span-2 text-slate-800" x-text="modalData.tool_name"></span>
+                                                    </div>
+                                                    <div class="grid grid-cols-3 gap-2">
+                                                        <span class="font-bold text-slate-500">Kode Aset:</span>
+                                                        <span class="col-span-2 text-slate-800" x-text="modalData.tool_code"></span>
+                                                    </div>
+                                                    <div class="grid grid-cols-3 gap-2">
+                                                        <span class="font-bold text-slate-500">Pelapor:</span>
+                                                        <span class="col-span-2 text-slate-800" x-text="modalData.reporter"></span>
+                                                    </div>
+                                                    
+                                                    <hr class="my-2 border-slate-100">
+
+                                                    <div class="grid grid-cols-3 gap-2">
+                                                        <span class="font-bold text-slate-500">Jenis:</span>
+                                                        <span class="col-span-2 font-semibold text-indigo-600" x-text="modalData.type"></span>
+                                                    </div>
+                                                    <div class="grid grid-cols-3 gap-2">
+                                                        <span class="font-bold text-slate-500">Status:</span>
+                                                        <span class="col-span-2" x-text="modalData.status == 'in_progress' ? 'Sedang Proses' : 'Selesai'"></span>
+                                                    </div>
+                                                    
+                                                    <hr class="my-2 border-slate-100">
+
+                                                    <div class="grid grid-cols-3 gap-2">
+                                                        <span class="font-bold text-slate-500">Tanggal Mulai:</span>
+                                                        <span class="col-span-2 text-slate-800" x-text="modalData.start_date"></span>
+                                                    </div>
+                                                    <div class="grid grid-cols-3 gap-2">
+                                                        <span class="font-bold text-slate-500">Tanggal Selesai:</span>
+                                                        <span class="col-span-2 text-slate-800" x-text="modalData.end_date"></span>
+                                                    </div>
+                                                    <div class="grid grid-cols-3 gap-2">
+                                                        <span class="font-bold text-slate-500">Biaya:</span>
+                                                        <span class="col-span-2 font-semibold text-emerald-600" x-text="'Rp ' + modalData.cost"></span>
+                                                    </div>
+
+                                                    <hr class="my-2 border-slate-100">
+
+                                                    <div>
+                                                        <span class="block font-bold text-slate-500 mb-1">Keluhan / Catatan Awal:</span>
+                                                        <p class="bg-amber-50 p-2 rounded text-slate-700 italic border border-amber-100" x-text="modalData.note"></p>
+                                                    </div>
+
+                                                    <div>
+                                                        <span class="block font-bold text-slate-500 mb-1">Tindakan Perbaikan:</span>
+                                                        <p class="bg-slate-50 p-2 rounded text-slate-700 border border-slate-100" x-text="modalData.action_taken || '-'"></p>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                                        <button type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm" @click="showModal = false">
+                                            Tutup
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
 
                     {{-- C. PAGINATION --}}
