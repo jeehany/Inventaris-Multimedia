@@ -25,7 +25,7 @@ class VendorController extends Controller
         }
 
         // PENTING: Pakai paginate(10) supaya ->links() di view berfungsi
-        $vendors = $query->latest()->paginate(10)->withQueryString();
+        $vendors = $query->latest()->paginate(5)->withQueryString();
 
         return view('vendors.index', compact('vendors'));
     }

@@ -22,7 +22,7 @@ class MaintenanceTypeController extends Controller
 
         // Gunakan paginate() agar cocok dengan "$maintenanceTypes->links()" di View
         // withQueryString() agar saat pindah halaman, filter pencarian tidak hilang
-        $maintenanceTypes = $query->latest()->paginate(10)->withQueryString();
+        $maintenanceTypes = $query->latest()->paginate(5)->withQueryString();
 
         // Pastikan nama view ini sesuai dengan nama folder/file kamu (maintenance_types atau maintenance-types)
         return view('maintenance_types.index', compact('maintenanceTypes'));

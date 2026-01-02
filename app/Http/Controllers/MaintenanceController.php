@@ -41,7 +41,7 @@ class MaintenanceController extends Controller
         }
 
         // Urutkan dari yang terbaru & Pagination
-        $maintenances = $query->latest()->paginate(10)->withQueryString();
+        $maintenances = $query->latest()->paginate(5)->withQueryString();
 
         return view('maintenances.index', compact('maintenances', 'types'));
     }

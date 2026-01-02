@@ -20,7 +20,7 @@ class ToolController extends Controller
     {
         $categories = Category::all();
         $query = $this->getFilteredQuery($request);
-        $tools = $query->latest()->paginate(10)->withQueryString();
+        $tools = $query->latest()->paginate(5)->withQueryString();
 
         return view('tools.index', compact('tools', 'categories'));
     }

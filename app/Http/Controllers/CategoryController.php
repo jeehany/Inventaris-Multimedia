@@ -26,7 +26,7 @@ class CategoryController extends Controller
         }
 
         // Tetap menggunakan paginate(15) dan latest() sesuai kode asli Anda
-        $categories = $query->latest()->paginate(15);
+        $categories = $query->latest()->paginate(5);
         
         return view('categories.index', compact('categories'));
     }

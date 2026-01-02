@@ -21,7 +21,7 @@ class BorrowerController extends Controller
         }
 
         // Pagination + Query String (agar search tidak hilang saat pindah halaman)
-        $borrowers = $query->latest()->paginate(10)->withQueryString();
+        $borrowers = $query->latest()->paginate(5)->withQueryString();
         
         return view('borrowers.index', compact('borrowers'));
     }

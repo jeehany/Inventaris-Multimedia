@@ -22,7 +22,7 @@ class UserController extends Controller
     public function index()
     {
         // Ambil semua data user, urutkan dari yang terbaru
-        $users = User::orderBy('created_at', 'desc')->paginate(10);
+        $users = User::orderBy('created_at', 'desc')->paginate(5);
         return view('users.index', compact('users'));
     }
 

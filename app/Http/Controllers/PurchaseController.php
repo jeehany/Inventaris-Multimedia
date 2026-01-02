@@ -46,7 +46,7 @@ class PurchaseController extends Controller
 
         // Eksekusi dengan Pagination
         $purchases = $query->orderBy('created_at', 'desc')
-                           ->paginate(10)
+                           ->paginate(5)
                            ->withQueryString();
 
         return view('purchases.requests', compact('purchases'));
@@ -86,7 +86,7 @@ class PurchaseController extends Controller
         }
 
         $purchases = $query->orderBy('date', 'asc')
-                           ->paginate(10)
+                           ->paginate(5)
                            ->withQueryString();
 
         return view('purchases.transaction', compact('purchases'));
@@ -143,7 +143,7 @@ class PurchaseController extends Controller
         }
 
         $history = $query->orderBy('updated_at', 'desc')
-                         ->paginate(10)
+                         ->paginate(5)
                          ->withQueryString();
 
         return view('purchases.history', compact('history'));
