@@ -95,9 +95,14 @@ class MaintenanceController extends Controller
             'status' => 'in_progress',
         ]);
 
-        // Update Status Alat menjadi 'maintenance'
+        // Update Status Alat menjadi 'maintenance' & Sesuaikan Kondisi
         $tool = Tool::find($request->tool_id);
-        $tool->update(['availability_status' => 'maintenance']);
+        $maintenanceType = MaintenanceType::find($request->maintenance_type_id);
+        
+        $tool->update([
+            'availability_status' => 'maintenance',
+            'current_condition'   => $maintenanceType->name ?? 'Rusak'
+        ]);
 
         return redirect()->route('maintenances.index')->with('success', 'Data berhasil disimpan.');
     }

@@ -35,12 +35,6 @@
     <!-- Main Content Centered -->
     <main class="flex-grow flex flex-col items-center justify-center text-center px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto pb-20">
         
-        <!-- Badge / Label -->
-        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-50 text-indigo-700 border border-indigo-100 mb-8">
-            <span class="w-2 h-2 rounded-full bg-indigo-500 mr-2"></span>
-            Sistem Manajemen Aset V2.0
-        </span>
-
         <!-- Hero Title -->
         <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight mb-6 leading-tight">
             Kelola Aset Multimedia <br class="hidden sm:block" />

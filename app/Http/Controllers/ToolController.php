@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Tool;
 use App\Models\Category;
+use App\Models\MaintenanceType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf; 
@@ -19,10 +20,11 @@ class ToolController extends Controller
     public function index(Request $request)
     {
         $categories = Category::all();
+        $maintenanceTypes = MaintenanceType::all();
         $query = $this->getFilteredQuery($request);
         $tools = $query->latest()->paginate(5)->withQueryString();
 
-        return view('tools.index', compact('tools', 'categories'));
+        return view('tools.index', compact('tools', 'categories', 'maintenanceTypes'));
     }
 
     public function exportPdf(Request $request)
