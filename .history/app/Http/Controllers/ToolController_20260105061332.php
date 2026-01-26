@@ -24,15 +24,7 @@ class ToolController extends Controller
         $query = $this->getFilteredQuery($request);
         $tools = $query->latest()->paginate(5)->withQueryString();
 
-        // STATISTICS
-        // Kita hitung dari ALAT AKTIF (tidak termasuk soft deleted)
-        $totalTools = Tool::count();
-        $availableTools = Tool::where('availability_status', 'available')->count();
-        $borrowedTools = Tool::where('availability_status', 'borrowed')->count();
-        $maintenanceTools = Tool::where('availability_status', 'maintenance')->count();
-        $disposedTools = Tool::where('availability_status', 'disposed')->count(); // Optional: kalau mau ditampilkan
-
-        return view('tools.index', compact('tools', 'categories', 'maintenanceTypes', 'totalTools', 'availableTools', 'borrowedTools', 'maintenanceTools', 'disposedTools'));
+        return view('tools.index', compact('tools', 'categories', 'maintenanceTypes'));
     }
 
     public function exportPdf(Request $request)

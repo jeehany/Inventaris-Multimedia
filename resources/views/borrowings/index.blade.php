@@ -19,6 +19,42 @@
                 </div>
             @endif
 
+            {{-- STATISTICS CARDS --}}
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                {{-- Card 1: Sedang Dipinjam --}}
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-slate-500">Sedang Dipinjam</p>
+                        <p class="text-2xl font-bold text-slate-800">{{ $activeBorrowings }}</p>
+                    </div>
+                    <div class="p-3 bg-amber-50 rounded-full text-amber-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                </div>
+
+                 {{-- Card 2: Sudah Kembali --}}
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-slate-500">Sudah Kembali</p>
+                        <p class="text-2xl font-bold text-slate-800">{{ $returnedBorrowings }}</p>
+                    </div>
+                    <div class="p-3 bg-emerald-50 rounded-full text-emerald-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                </div>
+
+                 {{-- Card 3: Terlambat --}}
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-slate-500">Terlambat</p>
+                        <p class="text-2xl font-bold text-rose-600">{{ $overdueBorrowings }}</p>
+                    </div>
+                    <div class="p-3 bg-rose-50 rounded-full text-rose-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                </div>
+            </div>
+
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-xl border border-slate-200">
                 <div class="p-6 md:p-8 text-slate-800">
 

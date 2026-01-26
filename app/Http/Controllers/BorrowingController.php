@@ -30,8 +30,15 @@ class BorrowingController extends Controller
         // [BARU] Ambil jenis maintenance buat dropdown
         $maintenanceTypes = MaintenanceType::all(); 
 
+        // STATISTICS
+        $activeBorrowings = Borrowing::where('borrowing_status', 'active')->count();
+        $returnedBorrowings = Borrowing::where('borrowing_status', 'returned')->count();
+        $overdueBorrowings = Borrowing::where('borrowing_status', 'active')
+                                      ->where('planned_return_date', '<', now()->startOfDay())
+                                      ->count();
+
         // [UBAH] Tambahkan compact 'maintenanceTypes'
-        return view('borrowings.index', compact('borrowings', 'maintenanceTypes'));
+        return view('borrowings.index', compact('borrowings', 'maintenanceTypes', 'activeBorrowings', 'returnedBorrowings', 'overdueBorrowings'));
     }
 
     /**

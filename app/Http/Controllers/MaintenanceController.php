@@ -43,7 +43,13 @@ class MaintenanceController extends Controller
         // Urutkan dari yang terbaru & Pagination
         $maintenances = $query->latest()->paginate(5)->withQueryString();
 
-        return view('maintenances.index', compact('maintenances', 'types'));
+        // STATISTICS
+        $totalMaintenance = Maintenance::count();
+        $minProgress = Maintenance::where('status', 'in_progress')->count();
+        $completed = Maintenance::where('status', 'completed')->count();
+        $totalCost = Maintenance::where('status', 'completed')->sum('cost');
+
+        return view('maintenances.index', compact('maintenances', 'types', 'totalMaintenance', 'minProgress', 'completed', 'totalCost'));
     }
 
     public function create()

@@ -49,7 +49,11 @@ class PurchaseController extends Controller
                            ->paginate(5)
                            ->withQueryString();
 
-        return view('purchases.requests', compact('purchases'));
+        // STATISTICS (REQUEST PAGE)
+        $pendingRequests = Purchase::where('status', 'pending')->count();
+        $rejectedRequests = Purchase::where('status', 'rejected')->count();
+
+        return view('purchases.requests', compact('purchases', 'pendingRequests', 'rejectedRequests'));
     }
 
     // ----------------------------------------------------------------------
@@ -89,7 +93,11 @@ class PurchaseController extends Controller
                            ->paginate(5)
                            ->withQueryString();
 
-        return view('purchases.transaction', compact('purchases'));
+        // STATISTICS (TRANSACTION PAGE)
+        $approvedTransactions = Purchase::where('status', 'approved')->where('is_purchased', false)->count();
+        $totalPlanCost = Purchase::where('status', 'approved')->where('is_purchased', false)->sum('subtotal');
+
+        return view('purchases.transaction', compact('purchases', 'approvedTransactions', 'totalPlanCost'));
     }
 
     // ----------------------------------------------------------------------
@@ -146,7 +154,17 @@ class PurchaseController extends Controller
                          ->paginate(5)
                          ->withQueryString();
 
-        return view('purchases.history', compact('history'));
+        // STATISTICS (HISTORY PAGE)
+        $completedPurchases = Purchase::where('is_purchased', true)->count();
+        
+        // Menghitung total expense dari barang yang sudah dibeli (completed)
+        // Kita gunakan subtotal yang sudah diupdate dengan harga realisasi (jika ada logic update subtotal waktu completed)
+        // Atau hitung manual: quantity * actual_unit_price (jika disimpan)
+        // Tapi di controller storeEvidence ada logic: $purchase->subtotal = $request->real_price * $purchase->quantity;
+        // Jadi aman pakai sum('subtotal') untuk yang is_purchased=true.
+        $totalExpense = Purchase::where('is_purchased', true)->sum('subtotal');
+
+        return view('purchases.history', compact('history', 'completedPurchases', 'totalExpense'));
     }
 
     /**

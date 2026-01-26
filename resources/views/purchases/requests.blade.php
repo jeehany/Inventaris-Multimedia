@@ -29,6 +29,31 @@
                 </div>
             @endif
 
+            {{-- STATISTICS CARDS --}}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                {{-- Card 1: Pengajuan Pending --}}
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-slate-500">Menunggu Persetujuan</p>
+                        <p class="text-2xl font-bold text-slate-800">{{ $pendingRequests }}</p>
+                    </div>
+                    <div class="p-3 bg-amber-50 rounded-full text-amber-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                </div>
+
+                 {{-- Card 2: Ditolak --}}
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-slate-500">Ditolak</p>
+                        <p class="text-2xl font-bold text-slate-800">{{ $rejectedRequests }}</p>
+                    </div>
+                    <div class="p-3 bg-rose-50 rounded-full text-rose-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                </div>
+            </div>
+
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-xl border border-slate-200">
                 <div class="p-6 md:p-8 text-slate-800">
 
