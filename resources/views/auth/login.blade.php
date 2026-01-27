@@ -26,7 +26,7 @@
         {{-- Logo Area --}}
         <div class="mb-8 text-center">
             <a href="/" class="flex flex-col items-center gap-2">
-                <div class="p-3 bg-indigo-600 rounded-2xl shadow-lg shadow-indigo-600/20">
+                <div class="p-3 bg-white rounded-2xl shadow-lg shadow-indigo-600/20">
                     <x-application-logo class="w-10 h-10 fill-current text-white" />
                 </div>
                 <span class="text-2xl font-bold text-slate-800 tracking-tight">HM Inventory</span>
