@@ -15,7 +15,7 @@
 
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th, td { border: 1px solid #444; padding: 6px; text-align: left; vertical-align: top; }
-        th { background-color: #e0f2fe; font-weight: bold; text-align: center; color: #0369a1; }
+        th { background-color: #e5e7eb; font-weight: bold; text-align: center; color: #1f2937; }
         
         .text-center { text-align: center; }
         .text-right { text-align: right; }

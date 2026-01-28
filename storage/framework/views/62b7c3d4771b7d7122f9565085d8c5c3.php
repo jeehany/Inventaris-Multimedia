@@ -28,7 +28,7 @@
         <table style="width: 100%; border: none; margin-bottom: 0;">
             <tr>
                 <td style="width: 60px; border: none; text-align: center; vertical-align: middle;">
-                    <img src="{{ $logo }}" style="height: 60px; width: auto;">
+                    <img src="<?php echo e($logo); ?>" style="height: 60px; width: auto;">
                 </td>
                 <td style="border: none; text-align: center; vertical-align: middle;">
                     <h1 style="margin: 0; font-size: 18px; text-transform: uppercase;">HM COMPANY</h1>
@@ -47,15 +47,15 @@
                 <td>Data Peminjaman Aset (Borrowing)</td>
                 <td style="width: 15%"><strong>Dicetak Oleh</strong></td>
                 <td style="width: 2%">:</td>
-                <td>{{ optional(auth()->user())->name ?? 'Admin' }}</td>
+                <td><?php echo e(optional(auth()->user())->name ?? 'Admin'); ?></td>
             </tr>
             <tr>
                 <td><strong>Tanggal Cetak</strong></td>
                 <td>:</td>
-                <td>{{ now()->translatedFormat('d F Y, H:i') }}</td>
+                <td><?php echo e(now()->translatedFormat('d F Y, H:i')); ?></td>
                 <td><strong>Total Record</strong></td>
                 <td>:</td>
-                <td>{{ $borrowings->count() }} Data</td>
+                <td><?php echo e($borrowings->count()); ?> Data</td>
             </tr>
         </table>
     </div>
@@ -73,36 +73,37 @@
             </tr>
         </thead>
         <tbody>
-            @forelse($borrowings as $index => $b)
+            <?php $__empty_1 = true; $__currentLoopData = $borrowings; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $b): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
             <tr>
-                <td class="text-center">{{ $index + 1 }}</td>
-                <td class="text-center">{{ $b->borrowing_code ?? '-' }}</td>
+                <td class="text-center"><?php echo e($index + 1); ?></td>
+                <td class="text-center"><?php echo e($b->borrowing_code ?? '-'); ?></td>
                 <td>
-                    <strong>{{ $b->borrower->name ?? 'Umum' }}</strong><br>
-                    <small>{{ $b->borrower->department ?? '-' }}</small>
+                    <strong><?php echo e($b->borrower->name ?? 'Umum'); ?></strong><br>
+                    <small><?php echo e($b->borrower->department ?? '-'); ?></small>
                 </td>
-                <td class="text-center">{{ \Carbon\Carbon::parse($b->borrow_date)->translatedFormat('d M Y') }}</td>
-                <td class="text-center">{{ $b->planned_return_date ? \Carbon\Carbon::parse($b->planned_return_date)->translatedFormat('d M Y') : '-' }}</td>
+                <td class="text-center"><?php echo e(\Carbon\Carbon::parse($b->borrow_date)->translatedFormat('d M Y')); ?></td>
+                <td class="text-center"><?php echo e($b->planned_return_date ? \Carbon\Carbon::parse($b->planned_return_date)->translatedFormat('d M Y') : '-'); ?></td>
                 <td>
                    <ul style="margin: 0; padding-left: 15px;">
-                       @foreach($b->items as $item)
-                        <li>{{ $item->tool->tool_name ?? '?' }}</li>
-                       @endforeach
+                       <?php $__currentLoopData = $b->items; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <li><?php echo e($item->tool->tool_name ?? '?'); ?></li>
+                       <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                    </ul>
                 </td>
                 <td class="text-center">
-                    @if($b->borrowing_status == 'active') <span style="color: blue;">Dipinjam</span>
-                    @elseif($b->borrowing_status == 'returned') <span style="color: green;">Kembali</span>
-                    @elseif($b->borrowing_status == 'overdue') <span style="color: red;">Terlambat</span>
-                    @else {{ $b->borrowing_status }}
-                    @endif
+                    <?php if($b->borrowing_status == 'active'): ?> <span style="color: blue;">Dipinjam</span>
+                    <?php elseif($b->borrowing_status == 'returned'): ?> <span style="color: green;">Kembali</span>
+                    <?php elseif($b->borrowing_status == 'overdue'): ?> <span style="color: red;">Terlambat</span>
+                    <?php else: ?> <?php echo e($b->borrowing_status); ?>
+
+                    <?php endif; ?>
                 </td>
             </tr>
-            @empty
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
             <tr>
                 <td colspan="7" class="text-center">Tidak ada data peminjaman.</td>
             </tr>
-            @endforelse
+            <?php endif; ?>
         </tbody>
     </table>
 
@@ -110,9 +111,10 @@
         <div class="signature-box">
             <p>Mengetahui,</p>
             <p>Admin Peminjaman</p>
-            <div class="signature-line">{{ optional(auth()->user())->name ?? '(..........................)' }}</div>
+            <div class="signature-line"><?php echo e(optional(auth()->user())->name ?? '(..........................)'); ?></div>
             <p>NIP. ..........................</p>
         </div>
     </div>
 </body>
 </html>
+<?php /**PATH C:\laragon\www\app-inventaris\resources\views/borrowings/pdf.blade.php ENDPATH**/ ?>

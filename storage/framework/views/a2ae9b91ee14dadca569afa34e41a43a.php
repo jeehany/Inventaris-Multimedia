@@ -31,7 +31,7 @@
         <table style="width: 100%; border: none; margin-bottom: 0;">
             <tr>
                 <td style="width: 60px; border: none; text-align: center; vertical-align: middle;">
-                    <img src="{{ public_path('images/logo.png') }}" style="height: 60px; width: auto;">
+                    <img src="<?php echo e(public_path('images/logo.png')); ?>" style="height: 60px; width: auto;">
                 </td>
                 <td style="border: none; text-align: center; vertical-align: middle;">
                     <h1 style="margin: 0; font-size: 18px; text-transform: uppercase;">HM COMPANY</h1>
@@ -50,15 +50,15 @@
                 <td>Data Aset (Inventaris)</td>
                 <td style="width: 15%"><strong>Dicetak Oleh</strong></td>
                 <td style="width: 2%">:</td>
-                <td>{{ optional(auth()->user())->name ?? 'Admin' }}</td>
+                <td><?php echo e(optional(auth()->user())->name ?? 'Admin'); ?></td>
             </tr>
             <tr>
                 <td><strong>Tanggal Cetak</strong></td>
                 <td>:</td>
-                <td>{{ now()->translatedFormat('d F Y, H:i') }}</td>
+                <td><?php echo e(now()->translatedFormat('d F Y, H:i')); ?></td>
                 <td><strong>Filter</strong></td>
                 <td>:</td>
-                <td>{{ request('category_id') ? 'Kategori Tertentu' : 'Semua Kategori' }}</td>
+                <td><?php echo e(request('category_id') ? 'Kategori Tertentu' : 'Semua Kategori'); ?></td>
             </tr>
         </table>
     </div>
@@ -76,31 +76,32 @@
             </tr>
         </thead>
         <tbody>
-            @forelse($tools as $index => $tool)
+            <?php $__empty_1 = true; $__currentLoopData = $tools; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $tool): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
             <tr>
-                <td class="text-center">{{ $index + 1 }}</td>
-                <td class="text-center">{{ $tool->tool_code }}</td>
+                <td class="text-center"><?php echo e($index + 1); ?></td>
+                <td class="text-center"><?php echo e($tool->tool_code); ?></td>
                 <td>
-                    <strong>{{ $tool->tool_name }}</strong><br>
-                    <small>{{ $tool->brand ?? '-' }}</small>
+                    <strong><?php echo e($tool->tool_name); ?></strong><br>
+                    <small><?php echo e($tool->brand ?? '-'); ?></small>
                 </td>
-                <td class="text-center">{{ $tool->category->category_name ?? '-' }}</td>
-                <td class="text-center">{{ $tool->purchase_date ? \Carbon\Carbon::parse($tool->purchase_date)->translatedFormat('d/m/Y') : '-' }}</td>
-                <td class="text-center">{{ $tool->current_condition }}</td>
+                <td class="text-center"><?php echo e($tool->category->category_name ?? '-'); ?></td>
+                <td class="text-center"><?php echo e($tool->purchase_date ? \Carbon\Carbon::parse($tool->purchase_date)->translatedFormat('d/m/Y') : '-'); ?></td>
+                <td class="text-center"><?php echo e($tool->current_condition); ?></td>
                 <td class="text-center">
-                    @if($tool->availability_status == 'available') Tersedia
-                    @elseif($tool->availability_status == 'borrowed') Dipinjam
-                    @elseif($tool->availability_status == 'maintenance') Perbaikan
-                    @elseif($tool->availability_status == 'disposed') Dihapus
-                    @else {{ $tool->availability_status }}
-                    @endif
+                    <?php if($tool->availability_status == 'available'): ?> Tersedia
+                    <?php elseif($tool->availability_status == 'borrowed'): ?> Dipinjam
+                    <?php elseif($tool->availability_status == 'maintenance'): ?> Perbaikan
+                    <?php elseif($tool->availability_status == 'disposed'): ?> Dihapus
+                    <?php else: ?> <?php echo e($tool->availability_status); ?>
+
+                    <?php endif; ?>
                 </td>
             </tr>
-            @empty
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
             <tr>
                 <td colspan="7" class="text-center">Tidak ada data aset.</td>
             </tr>
-            @endforelse
+            <?php endif; ?>
         </tbody>
     </table>
 
@@ -108,9 +109,10 @@
         <div class="signature-box">
             <p>Mengetahui,</p>
             <p>Kepala Laboratorium</p>
-            <div class="signature-line">{{ auth()->user()->name ?? '(..........................)' }}</div>
+            <div class="signature-line"><?php echo e(auth()->user()->name ?? '(..........................)'); ?></div>
             <p>NIP. ..........................</p>
         </div>
     </div>
 </body>
 </html>
+<?php /**PATH C:\laragon\www\app-inventaris\resources\views/tools/pdf.blade.php ENDPATH**/ ?>

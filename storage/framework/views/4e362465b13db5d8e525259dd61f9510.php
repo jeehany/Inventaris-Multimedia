@@ -31,7 +31,7 @@
         <table style="width: 100%; border: none; margin-bottom: 0;">
             <tr>
                 <td style="width: 60px; border: none; text-align: center; vertical-align: middle;">
-                    <img src="{{ public_path('images/logo.png') }}" style="height: 60px; width: auto;">
+                    <img src="<?php echo e(public_path('images/logo.png')); ?>" style="height: 60px; width: auto;">
                 </td>
                 <td style="border: none; text-align: center; vertical-align: middle;">
                     <h1 style="margin: 0; font-size: 18px; text-transform: uppercase;">HM COMPANY</h1>
@@ -50,15 +50,15 @@
                 <td>Pengajuan Pengadaan Barang (Requests)</td>
                 <td style="width: 15%"><strong>Dicetak Oleh</strong></td>
                 <td style="width: 2%">:</td>
-                <td>{{ optional(auth()->user())->name ?? 'Admin' }}</td>
+                <td><?php echo e(optional(auth()->user())->name ?? 'Admin'); ?></td>
             </tr>
             <tr>
                 <td><strong>Tanggal Cetak</strong></td>
                 <td>:</td>
-                <td>{{ now()->translatedFormat('d F Y, H:i') }}</td>
+                <td><?php echo e(now()->translatedFormat('d F Y, H:i')); ?></td>
                 <td><strong>Filter Vendor</strong></td>
                 <td>:</td>
-                <td>{{ request('vendor_id') ? 'Vendor Tertentu' : 'Semua Vendor' }}</td>
+                <td><?php echo e(request('vendor_id') ? 'Vendor Tertentu' : 'Semua Vendor'); ?></td>
             </tr>
         </table>
     </div>
@@ -78,32 +78,33 @@
             </tr>
         </thead>
         <tbody>
-            @forelse($purchases as $index => $req)
+            <?php $__empty_1 = true; $__currentLoopData = $purchases; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $req): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
             <tr>
-                <td class="text-center">{{ $index + 1 }}</td>
-                <td class="text-center">{{ $req->purchase_code }}</td>
-                <td class="text-center">{{ \Carbon\Carbon::parse($req->date)->translatedFormat('d M Y') }}</td>
+                <td class="text-center"><?php echo e($index + 1); ?></td>
+                <td class="text-center"><?php echo e($req->purchase_code); ?></td>
+                <td class="text-center"><?php echo e(\Carbon\Carbon::parse($req->date)->translatedFormat('d M Y')); ?></td>
                 <td>
-                    <strong>{{ $req->tool_name }}</strong><br>
-                    <small style="color:#666;">{{ $req->specification ?? '-' }}</small>
+                    <strong><?php echo e($req->tool_name); ?></strong><br>
+                    <small style="color:#666;"><?php echo e($req->specification ?? '-'); ?></small>
                 </td>
-                <td class="text-center">{{ $req->vendor->name ?? '-' }}</td>
-                <td class="text-center">{{ $req->quantity }}</td>
-                <td class="text-right">Rp {{ number_format($req->unit_price, 0, ',', '.') }}</td>
-                <td class="text-right"><strong>Rp {{ number_format($req->subtotal, 0, ',', '.') }}</strong></td>
+                <td class="text-center"><?php echo e($req->vendor->name ?? '-'); ?></td>
+                <td class="text-center"><?php echo e($req->quantity); ?></td>
+                <td class="text-right">Rp <?php echo e(number_format($req->unit_price, 0, ',', '.')); ?></td>
+                <td class="text-right"><strong>Rp <?php echo e(number_format($req->subtotal, 0, ',', '.')); ?></strong></td>
                 <td class="text-center">
-                    @if($req->status == 'pending') <span style="color:#d97706; font-weight:bold;">PENDING</span>
-                    @elseif($req->status == 'approved') <span style="color:#059669; font-weight:bold;">APPROVED</span>
-                    @elseif($req->status == 'rejected') <span style="color:#dc2626; font-weight:bold;">REJECTED</span>
-                    @else {{ $req->status }}
-                    @endif
+                    <?php if($req->status == 'pending'): ?> <span style="color:#d97706; font-weight:bold;">PENDING</span>
+                    <?php elseif($req->status == 'approved'): ?> <span style="color:#059669; font-weight:bold;">APPROVED</span>
+                    <?php elseif($req->status == 'rejected'): ?> <span style="color:#dc2626; font-weight:bold;">REJECTED</span>
+                    <?php else: ?> <?php echo e($req->status); ?>
+
+                    <?php endif; ?>
                 </td>
             </tr>
-            @empty
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
             <tr>
                 <td colspan="9" class="text-center">Tidak ada data pengajuan.</td>
             </tr>
-            @endforelse
+            <?php endif; ?>
         </tbody>
     </table>
 
@@ -111,9 +112,10 @@
         <div class="signature-box">
             <p>Mengetahui,</p>
             <p>Kepala Jurusan</p>
-            <div class="signature-line">{{ auth()->user()->name ?? '(..........................)' }}</div>
+            <div class="signature-line"><?php echo e(auth()->user()->name ?? '(..........................)'); ?></div>
             <p>NIP. ..........................</p>
         </div>
     </div>
 </body>
 </html>
+<?php /**PATH C:\laragon\www\app-inventaris\resources\views/purchases/requests_pdf.blade.php ENDPATH**/ ?>

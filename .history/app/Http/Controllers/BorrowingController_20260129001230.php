@@ -194,12 +194,16 @@ class BorrowingController extends Controller
     /**
      * [BARU] Export Laporan ke PDF
      */
+    /**
+     * [BARU] Export Laporan ke PDF
+     */
     public function exportPdf(Request $request)
     {
         // 1. Gunakan logika filter yang sama
         $query = $this->getFilteredQuery($request);
 
         // 2. Load Relationship 'borrower' dan 'items.tool'
+        // PENTING: Tanpa 'with', PDF tidak bisa membaca data relasi (sering kosong)
         $borrowings = $query->with(['borrower', 'items.tool']) 
                             ->latest()
                             ->get();
@@ -214,18 +218,15 @@ class BorrowingController extends Controller
              } else {
                  $logo = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
              }
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
               $logo = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
         }
 
         // 3. Load View PDF
-        try {
-            if (ob_get_length()) ob_end_clean(); // [CLEAN BUFFER] Agar PDF tidak ERR_FAILED
-            $pdf = Pdf::loadView('borrowings.pdf', compact('borrowings', 'logo'));
-            return $pdf->download('laporan-peminjaman-' . now()->format('Y-m-d') . '.pdf');
-        } catch (\Throwable $e) {
-            return response()->json(['error' => 'Gagal membuat PDF: ' . $e->getMessage()], 500);
-        }
+        $pdf = Pdf::loadView('borrowings.pdf', compact('borrowings', 'logo'));
+        
+        // 4. Download file
+        return $pdf->download('laporan-peminjaman-' . now()->format('Y-m-d') . '.pdf');
     }
 
     /**
@@ -239,30 +240,33 @@ class BorrowingController extends Controller
 
     public function analysisPdf(Request $request)
     {
-        $query = $this->getFilteredQuery($request);
-        $borrowings = $query->with(['borrower', 'items.tool'])->get();
-        
-        // [FIX PDF IMAGE ROBUST] Convert Logo to Base64 with Error Handling
         try {
-            $path = public_path('images/logo.png');
-            if (file_exists($path)) {
-                $type = pathinfo($path, PATHINFO_EXTENSION);
-                $data = file_get_contents($path);
-                $logo = 'data:image/' . $type . ';base64,' . base64_encode($data);
-            } else {
-                $logo = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+            $query = $this->getFilteredQuery($request);
+            $borrowings = $query->with(['borrower', 'items.tool'])->get();
+            
+            // [FIX PDF IMAGE ROBUST] Convert Logo to Base64 with Error Handling
+            try {
+                $path = public_path('images/logo.png');
+                if (file_exists($path)) {
+                    $type = pathinfo($path, PATHINFO_EXTENSION);
+                    $data = file_get_contents($path);
+                    $logo = 'data:image/' . $type . ';base64,' . base64_encode($data);
+                } else {
+                    // Fallback 1x1 Transparent Pixel
+                    $logo = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+                }
+            } catch (\Exception $e) {
+                 $logo = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
             }
-        } catch (\Throwable $e) {
-             $logo = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
-        }
 
-        // Assuming analysis_pdf view exists or we use the main pdf for now if not
-        try {
-            if (ob_get_length()) ob_end_clean(); // [CLEAN BUFFER] Agar PDF tidak ERR_FAILED
-            $pdf = Pdf::loadView('borrowings.analysis_pdf', compact('borrowings', 'logo'));
+            // Generate PDF with error handling
+            $html = view('borrowings.analysis_pdf', compact('borrowings', 'logo'))->render();
+            $pdf = Pdf::loadHTML($html);
             return $pdf->download('laporan-analisa-peminjaman-' . now()->format('Y-m-d') . '.pdf');
-        } catch (\Throwable $e) {
-            return response()->json(['error' => 'Gagal membuat Laporan Analisa: ' . $e->getMessage()], 500);
+            
+        } catch (\Exception $e) {
+            \Log::error('PDF Generation Error: ' . $e->getMessage());
+            return back()->with('error', 'Gagal membuat PDF: ' . $e->getMessage());
         }
     }
 
