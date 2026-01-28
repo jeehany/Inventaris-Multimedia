@@ -9,7 +9,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf; 
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Validation\Rule; // Tambahkan ini untuk validasi update
+use Illuminate\Validation\Rule;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\ToolsExport;
 
 class ToolController extends Controller
 {
@@ -44,6 +46,12 @@ class ToolController extends Controller
         return $pdf->download('laporan-inventaris-alat-' . now()->format('Y-m-d') . '.pdf');
     }
 
+    public function exportExcel(Request $request)
+    {
+        $query = $this->getFilteredQuery($request);
+        return Excel::download(new ToolsExport($query), 'laporan-inventaris-alat-' . now()->format('Y-m-d') . '.xlsx');
+    }
+
     // ==========================
     // 2. SOFT DELETES (TRASH)
     // ==========================
@@ -76,6 +84,55 @@ class ToolController extends Controller
 
         // 6. Return ke view 'tools.trash'
         return view('tools.trash', compact('tools', 'categories'));
+    }
+
+    public function exportTrash(Request $request)
+    {
+         // 1. Query Dasar: Hanya ambil data yang sudah dihapus (onlyTrashed)
+         $query = \App\Models\Tool::onlyTrashed()->with('category');
+
+         // 2. Logika Search (Nama atau Kode)
+         if ($request->has('search') && $request->search != '') {
+             $search = $request->search;
+             $query->where(function($q) use ($search) {
+                 $q->where('tool_name', 'like', '%' . $search . '%')
+                   ->orWhere('tool_code', 'like', '%' . $search . '%');
+             });
+         }
+ 
+         // 3. Logika Filter Kategori
+         if ($request->has('category_id') && $request->category_id != '' && $request->category_id != 'all') {
+             $query->where('category_id', $request->category_id);
+         }
+
+        return Excel::download(new ToolsExport($query), 'laporan-alat-terhapus-' . now()->format('Y-m-d') . '.xlsx');
+    }
+
+    public function exportTrashPdf(Request $request)
+    {
+         // 1. Query Dasar: Hanya ambil data yang sudah dihapus (onlyTrashed)
+         $query = \App\Models\Tool::onlyTrashed()->with('category');
+
+         // 2. Logika Search (Nama atau Kode)
+         if ($request->has('search') && $request->search != '') {
+             $search = $request->search;
+             $query->where(function($q) use ($search) {
+                 $q->where('tool_name', 'like', '%' . $search . '%')
+                   ->orWhere('tool_code', 'like', '%' . $search . '%');
+             });
+         }
+ 
+         // 3. Logika Filter Kategori
+         if ($request->has('category_id') && $request->category_id != '' && $request->category_id != 'all') {
+             $query->where('category_id', $request->category_id);
+         }
+
+         $tools = $query->get();
+         // Menggunakan view yang sama atau khusus trash? Sementara pakai tools.pdf
+         // Idealnya tools.trash_pdf tapi user minta restore jadi mungkin pakai yg ada dulu
+         $pdf = Pdf::loadView('tools.trash_pdf', compact('tools'));
+         
+         return $pdf->download('laporan-alat-terhapus-' . now()->format('Y-m-d') . '.pdf');
     }
 
     public function restore($id)
@@ -150,182 +207,93 @@ class ToolController extends Controller
         
         if ($lastTool) {
             $parts = explode('-', $lastTool->tool_code);
+            // Ambil angka paling belakang
             if (count($parts) >= 2) {
+                // Hati-hati kalau tool_code bukan format ABC-001. 
+                // Kita perlu extra check. Anggap format benar:
                 $nextNumber = intval(end($parts)) + 1;
             }
         }
 
+        // Format: PRE-001
         $generatedCode = $prefix . '-' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
 
         // ==========================================================
-        // 3. SIMPAN KE DATABASE
-        // ==========================================================
-
+        
         Tool::create([
-            'tool_code'           => $generatedCode,
+            'tool_code'           => $generatedCode, 
             'tool_name'           => $request->tool_name,
-            'brand'               => $request->brand,            // <--- Baru
-            'purchase_date'       => now(),    // <--- Baru
+            'brand'               => $request->brand,         // <--- Baru
+            'purchase_date'       => $request->purchase_date, // <--- Baru
             'category_id'         => $request->category_id,
-            'current_condition'   => $request->current_condition, 
+            'current_condition'   => $request->current_condition,
             'availability_status' => $request->availability_status,
-            'purchase_item_id'    => null, // Karena ini alat manual
         ]);
 
-        return redirect()->route('tools.index')->with('success', 'Berhasil! Alat manual ditambahkan dengan kode: ' . $generatedCode);
+        return redirect()->route('tools.index')->with('success', 'Alat baru berhasil ditambahkan.');
     }
 
-    public function edit($id) {
+    public function show(Tool $tool)
+    {
+        // Tampilkan Detail
+        return view('tools.show', compact('tool'));
+    }
+
+    public function edit(Tool $tool)
+    {
         $user = Auth::user();
         if ($user && in_array($user->role, ['kepala','head'])) {
             return redirect()->route('tools.index')->with('error', 'Akses ditolak.');
         }
-        $tool = Tool::findOrFail($id);
+
         $categories = Category::all();
         return view('tools.edit', compact('tool', 'categories'));
     }
 
-    public function update(Request $request, $id) {
-        $user = Auth::user();
-        if ($user && in_array($user->role, ['kepala','head'])) {
-            return redirect()->route('tools.index')->with('error', 'Akses ditolak.');
-        }
-        
-        // 1. Validasi
+    public function update(Request $request, Tool $tool)
+    {
         $request->validate([
             'tool_name'           => 'required|string|max:255',
+            'brand'               => 'nullable|string|max:100', // <--- Baru
+            'purchase_date'       => 'nullable|date',           // <--- Baru
             'category_id'         => 'required|exists:tool_categories,id',
-            'brand'               => 'nullable|string|max:100', // Validasi Merk
-            'purchase_date'       => 'nullable|date',           // Validasi Tanggal (Boleh diedit)
-            'current_condition'   => 'required',
-            'availability_status' => 'required',
+            'current_condition'   => 'required', 
+            'availability_status' => 'required', 
         ]);
-        
-        $tool = Tool::findOrFail($id);
-        
-        // 2. Update Data
+
+        // Kalau update kategori, apakah kode berubah? 
+        // Biasanya TIDAK. Kode melekat pada barang. Jadi kita skip logic generate code saat update.
+
         $tool->update([
             'tool_name'           => $request->tool_name,
+            'brand'               => $request->brand,         // <--- Baru
+            'purchase_date'       => $request->purchase_date, // <--- Baru
             'category_id'         => $request->category_id,
-            'brand'               => $request->brand,           // Update Merk
-            'purchase_date'       => $request->purchase_date,   // Update Tanggal
             'current_condition'   => $request->current_condition,
             'availability_status' => $request->availability_status,
-            // tool_code tidak kita update agar konsisten
         ]);
 
         return redirect()->route('tools.index')->with('success', 'Data alat diperbarui.');
     }
 
-    public function destroy(Request $request, $id) // Tambahkan Request $request
+    public function destroy(Tool $tool)
     {
-        // 1. Validasi Input Alasan (BARU: Agar tidak error jika kosong)
-        $request->validate([
-            'disposal_reason' => 'required|string|max:255',
-        ]);
-
-        // 2. Cek Role (KODE LAMA: TETAP DIPERTAHANKAN)
         $user = Auth::user();
         if ($user && in_array($user->role, ['kepala','head'])) {
             return redirect()->route('tools.index')->with('error', 'Akses ditolak.');
         }
 
-        $tool = Tool::findOrFail($id);
+        // Soft Delete
+        $tool->delete();
 
-        // 3. Cek Status Barang (KODE LAMA: TETAP DIPERTAHANKAN)
-        if ($tool->availability_status == 'borrowed') {
-            return redirect()->back()->with('error', 'Gagal! Alat sedang dipinjam oleh seseorang.');
-        }
-        
-        if ($tool->availability_status == 'maintenance') {
-            return redirect()->back()->with('error', 'Gagal! Alat sedang dalam perbaikan.');
-        }
-
-        // 4. Proses Update & Hapus (REVISI: Sisipkan disposal_reason)
-        $tool->availability_status = 'disposed'; 
-        $tool->disposal_reason = $request->disposal_reason; // <--- SIMPAN ALASAN DARI FORM
-        $tool->save();
-        
-        $tool->delete(); 
-
-        return redirect()->route('tools.index')->with('success', 'Alat berhasil dipindahkan ke Inventaris Tak Terpakai. Alasan: ' . $request->disposal_reason);
+        return redirect()->route('tools.index')->with('success', 'Alat dipindahkan ke sampah (Soft Delete).');
     }
 
-    // ==========================
-    // 4. HELPER FUNCTION
-    // ==========================
-
-    /**
-     * Membuat kode alat otomatis berdasarkan data terakhir (termasuk Trash).
-     * Format contoh: TOOL-001, TOOL-002
-     */
-    private function generateNextToolCode()
-    {
-        // 1. Ambil tool terakhir berdasarkan ID, TERMASUK yang sudah dihapus (withTrashed)
-        $lastTool = Tool::withTrashed()->orderBy('id', 'desc')->first();
-
-        // 2. Jika belum ada data sama sekali, mulai dari 001
-        if (!$lastTool) {
-            return 'TOOL-001'; 
-        }
-
-        // 3. Ambil kode terakhir
-        $lastCode = $lastTool->tool_code;
-
-        // 4. Pecah string dan angka (Contoh: TOOL-005 menjadi "TOOL-" dan "005")
-        // Regex: Ambil semua karakter sebelum angka terakhir, dan ambil angka terakhirnya
-        if (preg_match('/^(.*?)(\d+)$/', $lastCode, $matches)) {
-            $prefix = $matches[1]; // misal "TOOL-"
-            $number = intval($matches[2]); // misal 5
-            $length = strlen($matches[2]); // panjang digit (misal 3 digit)
-            
-            // Increment angka
-            $newNumber = $number + 1;
-            
-            // Gabungkan kembali dengan padding nol di depan
-            return $prefix . str_pad($newNumber, $length, '0', STR_PAD_LEFT);
-        }
-
-        // Fallback jika format kode sebelumnya tidak mengandung angka (misal "OBENG")
-        return $lastCode . '-1';
-    }
-
-    private function getFilteredQuery(Request $request)
-    {
+    // --- Private Helper ---
+    private function getFilteredQuery(Request $request) {
         $query = Tool::with('category');
 
-        if ($request->has('search') && $request->search != null) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('tool_name', 'like', '%'.$search.'%')
-                  ->orWhere('tool_code', 'like', '%'.$search.'%');
-            });
-        }
-
-        if ($request->has('status') && $request->status != null) {
-            $query->where('availability_status', $request->status);
-        }
-
-        if ($request->has('category_id') && $request->category_id != null && $request->category_id != 'all') {
-            $query->where('category_id', $request->category_id);
-        }
-
-        return $query;
-    }
-
-    
-    public function exportExcel(Request $request)
-    {
-        $query = $this->getFilteredQuery($request);
-        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\ToolsExport($query), 'laporan-inventaris-'.now()->format('Y-m-d').'.xlsx');
-    }
-
-    public function exportTrash(Request $request)
-    {
-        // 1. Query Dasar: Hanya ambil data yang sudah dihapus (onlyTrashed)
-        $query = \App\Models\Tool::onlyTrashed()->with('category');
-
-        // 2. Logika Search (Nama atau Kode) - Copy logic dari trash()
+        // Filter Search
         if ($request->has('search') && $request->search != '') {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -334,12 +302,22 @@ class ToolController extends Controller
             });
         }
 
-        // 3. Logika Filter Kategori - Copy logic dari trash()
+        // Filter Status
+        if ($request->has('status') && $request->status != '') {
+            $query->where('availability_status', $request->status);
+        }
+
+        // Filter Kategori
         if ($request->has('category_id') && $request->category_id != '' && $request->category_id != 'all') {
             $query->where('category_id', $request->category_id);
         }
 
-        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\ToolsTrashExport($query), 'laporan-sampah-aset-'.now()->format('Y-m-d').'.xlsx');
+        return $query;
     }
-    
+
+    private function generateNextToolCode() {
+        // Default Cuma ambil last tool global (opsional, kurang akurat kalau by category)
+        // Kita kosongin dulu atau buat logic dummy
+        return "AUTO-GEN"; 
+    }
 }

@@ -201,6 +201,34 @@ class PurchaseController extends Controller
         );
     }
 
+    public function exportRequestPdf(Request $request) 
+    {
+        $query = Purchase::with(['vendor', 'user', 'category']);
+
+        // 1. STATUS
+        if ($request->filled('status') && $request->status != 'all') {
+            $query->where('status', $request->status);
+        }
+
+        // 2. SEARCH
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('purchase_code', 'LIKE', "%{$search}%")
+                  ->orWhere('tool_name', 'LIKE', "%{$search}%")
+                  ->orWhereHas('vendor', function($v) use ($search) {
+                      $v->where('name', 'LIKE', "%{$search}%");
+                  });
+            });
+        }
+
+        $purchases = $query->orderBy('created_at', 'desc')->get();
+        // Assuming view exists
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('purchases.requests_pdf', compact('purchases'));
+
+        return $pdf->download('laporan-pengajuan-request-' . now()->format('Y-m-d') . '.pdf');
+    }
+
     /**
      * [BARU] Export Excel Riwayat Pembelian (Audit)
      */

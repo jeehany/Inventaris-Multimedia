@@ -37,6 +37,7 @@ Route::middleware('auth')->group(function () {
     // --- Manajemen Alat (Tools) ---
     // 1. Trash & Restore (WAJIB DI ATAS Resource)
     Route::get('/tools/trash/export', [ToolController::class, 'exportTrash'])->name('tools.exportTrash');
+    Route::get('/tools/trash/export-pdf', [ToolController::class, 'exportTrashPdf'])->name('tools.exportTrashPdf'); // <--- ADDED
     Route::get('/tools/trash', [ToolController::class, 'trash'])->name('tools.trash');
     Route::put('/tools/{id}/restore', [ToolController::class, 'restore'])->name('tools.restore');
     
@@ -55,6 +56,7 @@ Route::middleware('auth')->group(function () {
     
     // Custom Routes Peminjaman
     Route::get('/borrowings/export-pdf', [BorrowingController::class, 'exportPdf'])->name('borrowings.exportPdf');
+    Route::get('/borrowings/analysis-pdf', [BorrowingController::class, 'analysisPdf'])->name('borrowings.analysis_pdf');
     Route::get('/borrowings/export-excel', [BorrowingController::class, 'exportExcel'])->name('borrowings.exportExcel');
     Route::put('/borrowings/{id}/return', [BorrowingController::class, 'returnItem'])->name('borrowings.return');
     Route::get('/get-tools/{categoryId}', [BorrowingController::class, 'getToolsByCategory'])->name('tools.getByCategory');
@@ -78,7 +80,8 @@ Route::middleware('auth')->group(function () {
     // 2. Action Routes (Tombol Aksi)
     // List Pengajuan (Pending, Approved, Rejected)
     Route::get('/purchases/request', [PurchaseController::class, 'requestList'])->name('purchases.request');
-    Route::get('/purchases/request/export', [PurchaseController::class, 'exportRequestExcel'])->name('purchases.request.export'); // <--- BARU
+    Route::get('/purchases/request/export', [PurchaseController::class, 'exportRequestExcel'])->name('purchases.request.export');
+    Route::get('/purchases/request/export-pdf', [PurchaseController::class, 'exportRequestPdf'])->name('purchases.request.exportPdf'); // <--- ADDED
     Route::get('/purchases/create', [PurchaseController::class, 'create'])->name('purchases.create');
     // Approve & Reject (Kepala)
     Route::patch('/purchases/{id}/approve', [PurchaseController::class, 'approve'])->name('purchases.approve');
@@ -93,6 +96,7 @@ Route::middleware('auth')->group(function () {
 
     // --- Maintenance Routes ---
     Route::get('maintenances/export', [MaintenanceController::class, 'exportExcel'])->name('maintenances.export');
+    Route::get('maintenances/export-pdf', [MaintenanceController::class, 'exportPdf'])->name('maintenances.exportPdf'); // <--- ADDED
     Route::resource('maintenances', MaintenanceController::class);
     Route::resource('maintenance-types', MaintenanceTypeController::class);
 

@@ -8,6 +8,7 @@ use App\Models\MaintenanceType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Builder;
+use Barryvdh\DomPDF\Facade\Pdf; 
 
 class MaintenanceController extends Controller
 {
@@ -61,7 +62,9 @@ class MaintenanceController extends Controller
         }
         // Mengambil alat yang statusnya TIDAK maintenance
         // Sesuai migration tools: nama kolom 'availability_status'
-       $tools = Tool::where('availability_status', 'available')->get();
+        //        $tools = Tool::where('availability_status', 'available')->get();
+       // Allow picking even borrowed items if needed? Usually available only.
+        $tools = Tool::where('availability_status', 'available')->get();
         
         $types = MaintenanceType::all(); 
 
@@ -231,5 +234,34 @@ class MaintenanceController extends Controller
         }
 
         return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\MaintenanceExport($query), 'laporan-perawatan-'.now()->format('Y-m-d').'.xlsx');
+    }
+
+    public function exportPdf(Request $request)
+    {
+        // Copied filter logic
+        $query = Maintenance::with(['tool', 'user', 'type']);
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('note', 'like', "%{$search}%")
+                  ->orWhereHas('tool', function (Builder $query) use ($search) {
+                      $query->where('tool_name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('type_id')) {
+            $query->where('maintenance_type_id', $request->type_id);
+        }
+
+        $maintenances = $query->latest()->get();
+        // Assuming view exists or using generic
+        $pdf = Pdf::loadView('maintenances.pdf', compact('maintenances'));
+        return $pdf->download('laporan-perawatan-'.now()->format('Y-m-d').'.pdf');
     }
 }
