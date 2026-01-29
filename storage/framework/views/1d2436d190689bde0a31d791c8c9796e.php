@@ -47,6 +47,7 @@
                         
                         <div class="bg-slate-50 p-6 rounded-xl border border-slate-200 mb-8">
                             <h4 class="font-bold text-indigo-900 text-sm uppercase tracking-wider mb-4 border-b border-indigo-100 pb-2">Informasi Peminjam</h4>
+                            
                             <div class="max-w-xl">
                                 <label for="borrower_id" class="block text-sm font-semibold text-slate-700 mb-2">Nama Anggota Tim</label>
                                 <select name="borrower_id" id="borrower_id" class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-slate-700 font-medium" required>
@@ -99,8 +100,8 @@
                                 <input type="date" name="borrow_date" id="borrow_date" value="<?php echo e(old('borrow_date', date('Y-m-d'))); ?>" class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500" required>
                             </div>
                             <div>
-                                <label for="planned_return_date" class="block text-sm font-semibold text-slate-700 mb-2">Rencana Kembali</label>
-                                <input type="date" name="planned_return_date" id="planned_return_date" value="<?php echo e(old('planned_return_date')); ?>" class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500" required>
+                                <label for="return_date" class="block text-sm font-semibold text-slate-700 mb-2">Rencana Kembali</label>
+                                <input type="date" name="return_date" id="return_date" value="<?php echo e(old('return_date')); ?>" class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500" required>
                             </div>
                         </div>
 

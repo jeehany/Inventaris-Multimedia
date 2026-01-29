@@ -6,6 +6,7 @@ use App\Models\Borrowing;
 use App\Models\Tool;
 use App\Models\Borrower;
 use App\Models\Maintenance;
+use App\Models\Category;
 use App\Models\MaintenanceType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB; 
@@ -49,10 +50,11 @@ class BorrowingController extends Controller
         $borrowers = Borrower::all();
         // Only show available tools
         $tools = Tool::where('availability_status', 'available')->orderBy('tool_name')->get(); 
-        
+        $categories = Category::all(); // <--- ADDED
+
         $nextCode = 'BRW-' . date('Ymd') . '-' . rand(100, 999); // Simple generator
 
-        return view('borrowings.create', compact('borrowers', 'tools', 'nextCode'));
+        return view('borrowings.create', compact('borrowers', 'tools', 'categories', 'nextCode'));
     }
 
     /**
@@ -62,7 +64,7 @@ class BorrowingController extends Controller
     {
         $request->validate([
             'borrower_id' => 'required|exists:borrowers,id',
-            'borrowing_code' => 'required|unique:borrowings,borrowing_code',
+            // 'borrowing_code' => 'required|unique:borrowings,borrowing_code', // Auto-generated now
             'borrow_date' => 'required|date',
             'return_date' => 'required|date|after_or_equal:borrow_date',
             'tool_ids' => 'required|array',
@@ -71,8 +73,11 @@ class BorrowingController extends Controller
         ]);
 
         DB::transaction(function () use ($request) {
+            // Generate Code Automatically
+            $generatedCode = 'BRW-' . date('Ymd') . '-' . rand(100, 999);
+
             $borrowing = Borrowing::create([
-                'borrowing_code' => $request->borrowing_code,
+                'borrowing_code' => $generatedCode,
                 'borrower_id' => $request->borrower_id,
                 'user_id' => auth()->id(),
                 'borrow_date' => $request->borrow_date,
@@ -264,6 +269,20 @@ class BorrowingController extends Controller
         } catch (\Throwable $e) {
             return response()->json(['error' => 'Gagal membuat Laporan Analisa: ' . $e->getMessage()], 500);
         }
+    }
+
+    /**
+     * [AJAX] Get Tools by Category
+     */
+    public function getToolsByCategory($categoryId)
+    {
+        $tools = Tool::where('category_id', $categoryId)
+                     ->where('availability_status', 'available')
+                     ->select('id', 'tool_name', 'tool_code')
+                     ->orderBy('tool_name')
+                     ->get();
+
+        return response()->json($tools);
     }
 
     /**
