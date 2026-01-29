@@ -81,7 +81,6 @@ class BorrowingController extends Controller
                 'borrower_id' => $request->borrower_id,
                 'user_id' => auth()->id(),
                 'borrow_date' => $request->borrow_date,
-                'return_date' => $request->return_date,
                 'planned_return_date' => $request->return_date,
                 'borrowing_status' => 'active', // Adjusted to match index query
                 'notes' => $request->notes,
@@ -93,7 +92,7 @@ class BorrowingController extends Controller
                 \App\Models\BorrowingItem::create([
                     'borrowing_id' => $borrowing->id,
                     'tool_id' => $toolId,
-                    'condition_before' => 'baik', // Default, or fetch from tool
+                    'tool_condition_before' => 'baik', // Default, or fetch from tool
                 ]);
 
                 // Update tool status
