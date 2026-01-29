@@ -175,9 +175,39 @@ class BorrowingController extends Controller
 
             // Update items and tools
             foreach ($borrowing->items as $item) {
-                // Update tool status back to available
                 if ($item->tool) {
-                    $item->tool->update(['availability_status' => 'available']);
+                    // Cek Kondisi
+                    if (in_array($request->return_condition, ['Rusak Ringan', 'Rusak Berat'])) {
+                        // 1. Update Status Alat -> Maintenance
+                        // [UPDATE] Gunakan kondisi spesifik dari input (Rusak Ringan/Berat), bukan cuma 'Rusak'
+                        $item->tool->update([
+                            'availability_status' => 'maintenance',
+                            'current_condition'   => $request->return_condition, 
+                        ]);
+
+                        // 2. Cari atau Buat Jenis Maintenance sesuai kondisi (misal: "Rusak Ringan")
+                        // Agar jenis maintenance menyesuaikan apa yang terjadi
+                        $type = \App\Models\MaintenanceType::firstOrCreate(
+                            ['name' => $request->return_condition],
+                            ['description' => 'Jenis perawatan otomatis dari pengembalian peminjaman']
+                        );
+
+                        // 3. Buat Tiket Maintenance Otomatis
+                        \App\Models\Maintenance::create([
+                            'tool_id'             => $item->tool_id,
+                            'user_id'             => auth()->id(),
+                            'maintenance_type_id' => $type->id, // [BARU] Assign Jenis Maintenance
+                            'start_date'          => now(),
+                            'note'                => "Auto-generated: " . $request->return_condition . " setelah peminjaman " . $borrowing->borrowing_code,
+                            'status'              => 'in_progress',
+                        ]);
+                    } else {
+                        // Jika Baik / Normal -> Kembali Available
+                        $item->tool->update([
+                            'availability_status' => 'available',
+                            'current_condition'   => 'Baik',
+                        ]);
+                    }
                 }
             }
         });
