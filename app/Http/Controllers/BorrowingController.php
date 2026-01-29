@@ -151,6 +151,15 @@ class BorrowingController extends Controller
         return redirect()->route('borrowings.index')->with('success', 'Data peminjaman diperbarui.');
     }
 
+    /**
+     * [ACTION] Return Borrowed Items
+     */
+    public function returnItem(Request $request, $id)
+    {
+        $borrowing = Borrowing::findOrFail($id);
+        return $this->processReturn($request, $borrowing);
+    }
+
     protected function processReturn(Request $request, Borrowing $borrowing)
     {
         // Validate return details (conditions of tools)
@@ -159,7 +168,9 @@ class BorrowingController extends Controller
         DB::transaction(function () use ($borrowing, $request) {
             $borrowing->update([
                 'borrowing_status' => 'returned',
-                'actual_return_date' => now(),
+                'actual_return_date' => $request->returned_at ?? now(),
+                'return_condition' => $request->return_condition,
+                'final_status' => $request->final_status,
             ]);
 
             // Update items and tools
