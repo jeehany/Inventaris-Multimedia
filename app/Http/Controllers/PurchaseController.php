@@ -514,34 +514,31 @@ class PurchaseController extends Controller
      */
     public function exportHistoryPdf(Request $request)
     {
-        // 1. LOGIKA QUERY (Sama dengan indexHistory)
-        // TAPI: Kita ambil SEMUA data (get) bukan paginate, agar laporan lengkap.
-        
-        $query = Purchase::with(['vendor', 'user', 'category'])
-            // Status: Rejected OR (Approved AND Purchased)
-            // Logic: (status == rejected) OR (status == approved AND is_purchased == 1)
-            ->where(function($q) {
-                $q->where('status', 'rejected')
-                  ->orWhere(function($sub) {
-                      $sub->where('status', 'approved')
-                          ->where('is_purchased', true);
-                  });
-            });
+        // 1. LOGIKA QUERY (Disamakan pesis dengan indexHistory)
+        $query = Purchase::with(['vendor', 'user', 'category']);
 
-        // ... FILTERING ...
+        // Filter Status Defaul (Completed / Rejected)
+        if ($request->filled('status') && $request->status == 'completed') {
+            $query->where('is_purchased', true);
+        } 
+        elseif ($request->filled('status') && $request->status == 'rejected') {
+            $query->where('status', 'rejected');
+        } 
+        else {
+            // Default: Tampilkan Keduanya (Selesai ATAU Ditolak)
+            $query->where(function($q) {
+                $q->where('is_purchased', true)
+                  ->orWhere('status', 'rejected');
+            });
+        }
+
+        // ... FILTERING LAIN ...
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('purchase_code', 'LIKE', "%{$search}%")
                   ->orWhere('tool_name', 'LIKE', "%{$search}%");
             });
-        }
-        if ($request->filled('status')) {
-            if ($request->status == 'completed') {
-               $query->where('status', 'approved')->where('is_purchased', true);
-            } elseif ($request->status == 'rejected') {
-               $query->where('status', 'rejected');
-            }
         }
         if ($request->filled('month')) {
             $query->whereMonth('updated_at', $request->month);
@@ -552,7 +549,7 @@ class PurchaseController extends Controller
 
         $purchases = $query->orderBy('updated_at', 'desc')->get();
 
-        // 2. GENERATE LOGO BASE64 (Robust)
+        // 2. GENERATE LOGO BASE64
         try {
              $path = public_path('images/logo.png');
              if (file_exists($path)) {
@@ -566,11 +563,11 @@ class PurchaseController extends Controller
               $logo = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
         }
 
-        // 3. RENDER PDF
+        // 3. RENDER PDF (PORTRAIT)
         try {
             if (ob_get_length()) ob_end_clean();
             $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('purchases.history_pdf', compact('purchases', 'logo'));
-            $pdf->setPaper('a4', 'landscape'); // Landscape agar kolom analisa muat
+            // $pdf->setPaper('a4', 'landscape'); // REMOVED: User request Portrait
             return $pdf->download('laporan-riwayat-pengadaan-' . now()->format('Y-m-d') . '.pdf');
         } catch (\Throwable $e) {
             return response()->json(['error' => 'Gagal export PDF: ' . $e->getMessage()], 500);
