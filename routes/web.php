@@ -79,7 +79,7 @@ Route::middleware('auth')->group(function () {
 
     // 2. Action Routes (Tombol Aksi)
     // List Pengajuan (Pending, Approved, Rejected)
-    Route::get('/purchases/request', [PurchaseController::class, 'requestList'])->name('purchases.request');
+    // Route::get('/purchases/request', [PurchaseController::class, 'requestList'])->name('purchases.request'); // REMOVED BROKEN DUPLICATE
     Route::get('/purchases/request/export', [PurchaseController::class, 'exportRequestExcel'])->name('purchases.request.export');
     Route::get('/purchases/request/export-pdf', [PurchaseController::class, 'exportRequestPdf'])->name('purchases.request.exportPdf'); // <--- ADDED
     Route::get('/purchases/create', [PurchaseController::class, 'create'])->name('purchases.create');
