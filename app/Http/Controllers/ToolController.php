@@ -199,7 +199,9 @@ class ToolController extends Controller
         }
 
         // Cari nomor urut terakhir
-        $lastTool = Tool::where('tool_code', 'like', $prefix . '-%')
+        // Cari nomor urut terakhir (termasuk yang soft deleted agar tidak duplikat)
+        $lastTool = Tool::withTrashed()
+                        ->where('tool_code', 'like', $prefix . '-%')
                         ->orderBy('id', 'desc')
                         ->first();
 

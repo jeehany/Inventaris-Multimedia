@@ -85,7 +85,8 @@ class CategoryController extends Controller
         }
 
         // Ambil semua kode yang cocok dengan prefix lalu cari suffix terbesar
-        $codes = Tool::where('category_id', $category->id)
+        $codes = Tool::withTrashed()
+            ->where('category_id', $category->id)
             ->where('tool_code', 'like', $prefix.'-%')
             ->pluck('tool_code')
             ->toArray();

@@ -31,8 +31,10 @@
                             {{-- Kategori --}}
                             <div>
                                 <label class="block text-sm font-semibold text-slate-500 mb-2">Kategori</label>
-                                <input type="text" value="{{ $tool->category->category_name }}" readonly 
+                                <input type="text" value="{{ $tool->category->category_name ?? '-' }}" readonly 
                                     class="w-full border-slate-200 rounded-lg shadow-sm bg-slate-100 text-slate-500 cursor-not-allowed">
+                                {{-- Hidden Input for Validation --}}
+                                <input type="hidden" name="category_id" value="{{ $tool->category_id }}">
                             </div>
 
                             {{-- Nama Alat --}}
