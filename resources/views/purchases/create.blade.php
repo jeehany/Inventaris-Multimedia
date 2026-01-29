@@ -48,7 +48,7 @@
                             <div class="space-y-4">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Nama Barang / Alat</label>
-                                    <input type="text" name="tool_name" value="{{ old('tool_name') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Contoh: Bor Listrik Makita" required>
+                                    <input type="text" name="tool_name" value="{{ old('tool_name') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Contoh: Laptop Asus Vivobook" required>
                                 </div>
 
                                 <div>

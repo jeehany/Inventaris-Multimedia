@@ -73,7 +73,8 @@ Route::middleware('auth')->group(function () {
     
     // Halaman Riwayat (Status Rejected & Completed/Purchased)
     Route::get('/purchases/transaction', [PurchaseController::class, 'indexTransaction'])->name('purchases.transaction');
-    Route::get('/purchases/history/export', [PurchaseController::class, 'exportHistoryExcel'])->name('purchases.history.export'); // <--- BARU
+    Route::get('/purchases/history/export', [PurchaseController::class, 'exportHistoryExcel'])->name('purchases.history.export');
+    Route::get('/purchases/history/export-pdf', [PurchaseController::class, 'exportHistoryPdf'])->name('purchases.history.exportPdf'); // <--- BARU (PDF Report)
     Route::get('/purchases/history', [PurchaseController::class, 'indexHistory'])->name('purchases.history');
     Route::put('/purchases/{id}/process', [PurchaseController::class, 'process'])->name('purchases.process');
 

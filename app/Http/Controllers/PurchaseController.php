@@ -508,4 +508,72 @@ class PurchaseController extends Controller
 
         return redirect()->back()->with('success', 'Transaksi Selesai! ' . $purchase->quantity . ' item telah masuk ke Inventaris.');
     }
+
+    /**
+     * [BARU] Export PDF History with Analysis
+     */
+    public function exportHistoryPdf(Request $request)
+    {
+        // 1. LOGIKA QUERY (Sama dengan indexHistory)
+        // TAPI: Kita ambil SEMUA data (get) bukan paginate, agar laporan lengkap.
+        
+        $query = Purchase::with(['vendor', 'user', 'category'])
+            // Status: Rejected OR (Approved AND Purchased)
+            // Logic: (status == rejected) OR (status == approved AND is_purchased == 1)
+            ->where(function($q) {
+                $q->where('status', 'rejected')
+                  ->orWhere(function($sub) {
+                      $sub->where('status', 'approved')
+                          ->where('is_purchased', true);
+                  });
+            });
+
+        // ... FILTERING ...
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('purchase_code', 'LIKE', "%{$search}%")
+                  ->orWhere('tool_name', 'LIKE', "%{$search}%");
+            });
+        }
+        if ($request->filled('status')) {
+            if ($request->status == 'completed') {
+               $query->where('status', 'approved')->where('is_purchased', true);
+            } elseif ($request->status == 'rejected') {
+               $query->where('status', 'rejected');
+            }
+        }
+        if ($request->filled('month')) {
+            $query->whereMonth('updated_at', $request->month);
+        }
+        if ($request->filled('year')) {
+            $query->whereYear('updated_at', $request->year);
+        }
+
+        $purchases = $query->orderBy('updated_at', 'desc')->get();
+
+        // 2. GENERATE LOGO BASE64 (Robust)
+        try {
+             $path = public_path('images/logo.png');
+             if (file_exists($path)) {
+                 $type = pathinfo($path, PATHINFO_EXTENSION);
+                 $data = file_get_contents($path);
+                 $logo = 'data:image/' . $type . ';base64,' . base64_encode($data);
+             } else {
+                 $logo = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+             }
+        } catch (\Throwable $e) {
+              $logo = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+        }
+
+        // 3. RENDER PDF
+        try {
+            if (ob_get_length()) ob_end_clean();
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('purchases.history_pdf', compact('purchases', 'logo'));
+            $pdf->setPaper('a4', 'landscape'); // Landscape agar kolom analisa muat
+            return $pdf->download('laporan-riwayat-pengadaan-' . now()->format('Y-m-d') . '.pdf');
+        } catch (\Throwable $e) {
+            return response()->json(['error' => 'Gagal export PDF: ' . $e->getMessage()], 500);
+        }
+    }
 }
