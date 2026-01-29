@@ -176,37 +176,55 @@ class BorrowingController extends Controller
             // Update items and tools
             foreach ($borrowing->items as $item) {
                 if ($item->tool) {
-                    // Cek Kondisi
-                    if (in_array($request->return_condition, ['Rusak Ringan', 'Rusak Berat'])) {
-                        // 1. Update Status Alat -> Maintenance
-                        // [UPDATE] Gunakan kondisi spesifik dari input (Rusak Ringan/Berat), bukan cuma 'Rusak'
+                    
+                    // A. KASUS BARANG HILANG
+                    if ($request->final_status == 'Hilang') {
                         $item->tool->update([
-                            'availability_status' => 'maintenance',
-                            'current_condition'   => $request->return_condition, 
+                            'availability_status' => 'disposed',
+                            'disposal_reason'     => 'Hilang saat dipinjam (' . $borrowing->borrowing_code . ')',
                         ]);
-
-                        // 2. Cari atau Buat Jenis Maintenance sesuai kondisi (misal: "Rusak Ringan")
-                        // Agar jenis maintenance menyesuaikan apa yang terjadi
-                        $type = \App\Models\MaintenanceType::firstOrCreate(
-                            ['name' => $request->return_condition],
-                            ['description' => 'Jenis perawatan otomatis dari pengembalian peminjaman']
-                        );
-
-                        // 3. Buat Tiket Maintenance Otomatis
-                        \App\Models\Maintenance::create([
-                            'tool_id'             => $item->tool_id,
-                            'user_id'             => auth()->id(),
-                            'maintenance_type_id' => $type->id, // [BARU] Assign Jenis Maintenance
-                            'start_date'          => now(),
-                            'note'                => "Auto-generated: " . $request->return_condition . " setelah peminjaman " . $borrowing->borrowing_code,
-                            'status'              => 'in_progress',
-                        ]);
-                    } else {
-                        // Jika Baik / Normal -> Kembali Available
+                        $item->tool->delete(); // Soft Delete (Masuk Sampah)
+                    
+                    // B. KASUS BARANG DIGANTI (Ganti Rugi)
+                    } elseif ($request->final_status == 'Diganti') {
                         $item->tool->update([
                             'availability_status' => 'available',
-                            'current_condition'   => 'Baik',
+                            'current_condition'   => 'Baik', // Asumsi barang pengganti kondisinya baik
                         ]);
+
+                    // C. KASUS NORMAL / SELESAI
+                    } else {
+                        // Cek Kondisi Fisik untuk Maintenance
+                        if (in_array($request->return_condition, ['Rusak Ringan', 'Rusak Berat'])) {
+                            // 1. Update Status Alat -> Maintenance
+                            $item->tool->update([
+                                'availability_status' => 'maintenance',
+                                'current_condition'   => $request->return_condition, 
+                            ]);
+
+                            // 2. Cari/Buat Jenis Maintenance
+                            $type = \App\Models\MaintenanceType::firstOrCreate(
+                                ['name' => $request->return_condition],
+                                ['description' => 'Jenis perawatan otomatis dari pengembalian peminjaman']
+                            );
+
+                            // 3. Buat Tiket Maintenance
+                            \App\Models\Maintenance::create([
+                                'tool_id'             => $item->tool_id,
+                                'user_id'             => auth()->id(),
+                                'maintenance_type_id' => $type->id,
+                                'start_date'          => now(),
+                                'note'                => "Auto-generated: " . $request->return_condition . " setelah peminjaman " . $borrowing->borrowing_code,
+                                'status'              => 'in_progress',
+                            ]);
+
+                        } else {
+                            // Jika Baik / Normal -> Kembali Available
+                            $item->tool->update([
+                                'availability_status' => 'available',
+                                'current_condition'   => 'Baik',
+                            ]);
+                        }
                     }
                 }
             }
