@@ -9,6 +9,10 @@
         .header h1 { margin: 0; font-size: 16px; text-transform: uppercase; }
         .header p { margin: 2px 0; font-size: 11px; }
 
+        .meta { margin-bottom: 15px; font-size: 11px; }
+        .meta table { border: none; width: 100%; margin: 0; }
+        .meta td { border: none; padding: 2px; }
+
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th, td { border: 1px solid #444; padding: 5px; text-align: left; vertical-align: top; }
         th { background-color: #f3f4f6; font-weight: bold; text-align: center; color: #111; }
@@ -30,34 +34,40 @@
     <div class="header">
         <table style="width: 100%; border: none; margin-bottom: 0;">
             <tr>
-                <td style="width: 50px; border: none; text-align: center;">
+                <td style="width: 60px; border: none; text-align: center; vertical-align: middle;">
                     @php $logoPath = public_path('images/logo.png'); @endphp
                     @if(file_exists($logoPath))
-                        <img src="data:image/png;base64,{{ base64_encode(file_get_contents($logoPath)) }}" style="height: 50px; width: auto;">
+                        <img src="data:image/png;base64,{{ base64_encode(file_get_contents($logoPath)) }}" style="height: 60px; width: auto;">
                     @else
                        <span style="font-weight:bold; font-size:12px;">LOGO</span>
                     @endif
                 </td>
-                <td style="border: none; text-align: center;">
-                    <h1>HM COMPANY</h1>
-                    <p>INVENTORY MANAGEMENT SYSTEM</p>
-                    <p><strong>LAPORAN RIWAYAT PENGADAAN & ANALISA BUDGET</strong></p>
+                <td style="border: none; text-align: center; vertical-align: middle;">
+                    <h1 style="margin: 0; font-size: 18px; text-transform: uppercase;">HM COMPANY</h1>
+                    <p style="margin: 2px 0; font-size: 12px;">INVENTORY MANAGEMENT SYSTEM</p>
+                    <p style="margin: 2px 0; font-size: 12px;">Laporan Resmi Sistem Informasi Inventaris</p>
                 </td>
             </tr>
         </table>
     </div>
 
-    <div style="margin-bottom: 15px;">
-        <table style="width: 100%; border:none;">
+    <div class="meta">
+        <table style="width: 100%">
             <tr>
-                <td style="border:none; width: 15%;"><strong>Periode Cetak</strong></td>
-                <td style="border:none;">: {{ now()->translatedFormat('d F Y') }}</td>
-                <td style="border:none; width: 15%;"><strong>Oleh</strong></td>
-                <td style="border:none;">: {{ auth()->user()->name }}</td>
+                <td style="width: 15%"><strong>Laporan</strong></td>
+                <td style="width: 2%">:</td>
+                <td>Riwayat Pengadaan & Analisa Budget</td>
+                <td style="width: 15%"><strong>Dicetak Oleh</strong></td>
+                <td style="width: 2%">:</td>
+                <td>{{ auth()->user()->name }}</td>
             </tr>
             <tr>
-                <td style="border:none;"><strong>Filter Status</strong></td>
-                <td style="border:none;">: {{ request('status') ?: 'Semua (Selesai/Ditolak)' }}</td>
+                <td><strong>Tanggal Cetak</strong></td>
+                <td>:</td>
+                <td>{{ now()->translatedFormat('d F Y') }}</td>
+                <td><strong>Filter Status</strong></td>
+                <td>:</td>
+                <td>{{ request('status') ?: 'Semua (Selesai/Ditolak)' }}</td>
             </tr>
         </table>
     </div>

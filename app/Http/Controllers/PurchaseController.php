@@ -518,6 +518,7 @@ class PurchaseController extends Controller
      */
     public function exportHistoryPdf(Request $request)
     {
+        set_time_limit(300);
         // 1. LOGIKA QUERY (Disamakan pesis dengan indexHistory)
         $query = Purchase::with(['vendor', 'user', 'category']);
 
@@ -569,7 +570,10 @@ class PurchaseController extends Controller
 
         // 3. RENDER PDF (PORTRAIT)
         try {
-            if (ob_get_length()) ob_end_clean();
+            // AGGRESSIVE BUFFER CLEAN
+            while (ob_get_level()) {
+                ob_end_clean();
+            }
             $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('purchases.history_pdf', compact('purchases', 'logo'));
             // $pdf->setPaper('a4', 'landscape'); // REMOVED: User request Portrait
             return $pdf->download('laporan-riwayat-pengadaan-' . now()->format('Y-m-d') . '.pdf');
