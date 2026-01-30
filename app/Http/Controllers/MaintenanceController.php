@@ -238,6 +238,7 @@ class MaintenanceController extends Controller
 
     public function exportPdf(Request $request)
     {
+        set_time_limit(300);
         // Copied filter logic
         $query = Maintenance::with(['tool', 'user', 'type']);
 
@@ -262,6 +263,10 @@ class MaintenanceController extends Controller
         $maintenances = $query->latest()->get();
         // Assuming view exists or using generic
         $pdf = Pdf::loadView('maintenances.pdf', compact('maintenances'));
+        
+        while (ob_get_level()) {
+            ob_end_clean();
+        }
         return $pdf->download('laporan-perawatan-'.now()->format('Y-m-d').'.pdf');
     }
 }

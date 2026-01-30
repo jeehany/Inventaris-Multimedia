@@ -283,7 +283,10 @@ class BorrowingController extends Controller
 
         // 3. Load View PDF
         try {
-            if (ob_get_length()) ob_end_clean(); // [CLEAN BUFFER] Agar PDF tidak ERR_FAILED
+            set_time_limit(300);
+            while (ob_get_level()) {
+                ob_end_clean();
+            }
             $pdf = Pdf::loadView('borrowings.pdf', compact('borrowings', 'logo'));
             return $pdf->download('laporan-peminjaman-' . now()->format('Y-m-d') . '.pdf');
         } catch (\Throwable $e) {

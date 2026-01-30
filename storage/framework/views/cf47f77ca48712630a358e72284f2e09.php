@@ -142,7 +142,7 @@
     <div class="footer">
         <div class="signature-box">
             <p>Mengetahui,</p>
-            <p>Kepala Laboratorium</p>
+            <p>Kepala Manajemen Inventaris</p>
             <div class="signature-line"><?php echo e(optional(auth()->user())->name ?? '(..........................)'); ?></div>
             <p>NIP. ..........................</p>
         </div>

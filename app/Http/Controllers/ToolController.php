@@ -39,9 +39,16 @@ class ToolController extends Controller
 
     public function exportPdf(Request $request)
     {
+        set_time_limit(300); // INI PENTING
         $query = $this->getFilteredQuery($request);
         $tools = $query->get();
+        // Render view to HTML first to debug if needed, but for now log load
         $pdf = Pdf::loadView('tools.pdf', compact('tools'));
+        
+        // AGGRESSIVE BUFFER CLEAN
+        while (ob_get_level()) {
+            ob_end_clean();
+        }
         
         return $pdf->download('laporan-inventaris-alat-' . now()->format('Y-m-d') . '.pdf');
     }
@@ -110,6 +117,7 @@ class ToolController extends Controller
 
     public function exportTrashPdf(Request $request)
     {
+         set_time_limit(300);
          // 1. Query Dasar: Hanya ambil data yang sudah dihapus (onlyTrashed)
          $query = \App\Models\Tool::onlyTrashed()->with('category');
 
@@ -128,10 +136,11 @@ class ToolController extends Controller
          }
 
          $tools = $query->get();
-         // Menggunakan view yang sama atau khusus trash? Sementara pakai tools.pdf
-         // Idealnya tools.trash_pdf tapi user minta restore jadi mungkin pakai yg ada dulu
          $pdf = Pdf::loadView('tools.trash_pdf', compact('tools'));
          
+         while (ob_get_level()) {
+            ob_end_clean();
+        }
          return $pdf->download('laporan-alat-terhapus-' . now()->format('Y-m-d') . '.pdf');
     }
 

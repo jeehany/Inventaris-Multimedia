@@ -31,7 +31,12 @@
         <table style="width: 100%; border: none; margin-bottom: 0;">
             <tr>
                 <td style="width: 50px; border: none; text-align: center;">
-                    <img src="data:image/png;base64,<?php echo e(base64_encode(file_get_contents(public_path('images/logo.png')))); ?>" style="height: 50px; width: auto;">
+                    <?php $logoPath = public_path('images/logo.png'); ?>
+                    <?php if(file_exists($logoPath)): ?>
+                        <img src="data:image/png;base64,<?php echo e(base64_encode(file_get_contents($logoPath))); ?>" style="height: 50px; width: auto;">
+                    <?php else: ?>
+                       <span style="font-weight:bold; font-size:12px;">LOGO</span>
+                    <?php endif; ?>
                 </td>
                 <td style="border: none; text-align: center;">
                     <h1>HM COMPANY</h1>
@@ -169,7 +174,7 @@
     <div class="footer">
         <div class="signature-box">
             <p>Mengetahui,</p>
-            <p>Pimpinan Bagian Pengadaan</p>
+            <p>Kepala Manajemen Inventaris</p>
             <div class="signature-line"><?php echo e(auth()->user()->name); ?></div>
             <p>NIP. ..........................</p>
         </div>

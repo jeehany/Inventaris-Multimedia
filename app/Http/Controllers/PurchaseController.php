@@ -203,6 +203,7 @@ class PurchaseController extends Controller
 
     public function exportRequestPdf(Request $request) 
     {
+        set_time_limit(300);
         $query = Purchase::with(['vendor', 'user', 'category']);
 
         // 1. STATUS
@@ -226,6 +227,9 @@ class PurchaseController extends Controller
         // Assuming view exists
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('purchases.requests_pdf', compact('purchases'));
 
+        while (ob_get_level()) {
+            ob_end_clean();
+        } 
         return $pdf->download('laporan-pengajuan-request-' . now()->format('Y-m-d') . '.pdf');
     }
 

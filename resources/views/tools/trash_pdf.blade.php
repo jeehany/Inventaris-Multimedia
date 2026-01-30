@@ -31,7 +31,12 @@
         <table style="width: 100%; border: none; margin-bottom: 0;">
             <tr>
                 <td style="width: 60px; border: none; text-align: center; vertical-align: middle;">
-                    <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/logo.png'))) }}" style="height: 60px; width: auto;">
+                    @php $logoPath = public_path('images/logo.png'); @endphp
+                    @if(file_exists($logoPath))
+                        <img src="data:image/png;base64,{{ base64_encode(file_get_contents($logoPath)) }}" style="height: 60px; width: auto;">
+                    @else
+                       <span style="font-weight:bold; font-size:12px;">LOGO</span>
+                    @endif
                 </td>
                 <td style="border: none; text-align: center; vertical-align: middle;">
                     <h1 style="margin: 0; font-size: 18px; text-transform: uppercase;">HM COMPANY</h1>
@@ -98,7 +103,7 @@
     <div class="footer">
         <div class="signature-box">
             <p>Mengetahui,</p>
-            <p>KKepala Manajemen Inventaris</p>
+            <p>Kepala Manajemen Inventaris</p>
             <div class="signature-line">{{ auth()->user()->name ?? '(..........................)' }}</div>
             <p>NIP. ..........................</p>
         </div>
