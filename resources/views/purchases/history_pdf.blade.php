@@ -31,7 +31,7 @@
         <table style="width: 100%; border: none; margin-bottom: 0;">
             <tr>
                 <td style="width: 50px; border: none; text-align: center;">
-                    <img src="{{ $logo }}" style="height: 50px; width: auto;">
+                    <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/logo.png'))) }}" style="height: 50px; width: auto;">
                 </td>
                 <td style="border: none; text-align: center;">
                     <h1>HM COMPANY</h1>
@@ -167,7 +167,7 @@
     <div class="footer">
         <div class="signature-box">
             <p>Mengetahui,</p>
-            <p>Pimpinan Bagian Pengadaan</p>
+            <p>Kepala Manajemen Inventaris</p>
             <div class="signature-line">{{ auth()->user()->name }}</div>
             <p>NIP. ..........................</p>
         </div>

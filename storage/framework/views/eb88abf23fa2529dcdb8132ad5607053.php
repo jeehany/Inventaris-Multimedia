@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <title>Laporan Aset Inventaris</title>
+    <title>Laporan Perawatan Aset</title>
     <style>
         body { font-family: sans-serif; font-size: 11px; color: #333; }
         .header { text-align: center; margin-bottom: 25px; border-bottom: 2px solid #333; padding-bottom: 10px; }
@@ -24,6 +24,8 @@
         .signature-box { float: right; width: 250px; text-align: center; }
         .signature-box p { margin: 5px 0; }
         .signature-line { margin-top: 60px; border-bottom: 1px solid #333; font-weight: bold; }
+
+        .status-badge { font-weight: bold; font-size: 10px; padding: 2px 5px; border-radius: 4px; display: inline-block; }
     </style>
 </head>
 <body>
@@ -45,9 +47,9 @@
     <div class="meta">
         <table style="width: 100%">
             <tr>
-                <td style="width: 15%"><strong>Laporan</strong></td>
+                <td style="width: 20%"><strong>Laporan</strong></td>
                 <td style="width: 2%">:</td>
-                <td>Data Aset (Inventaris)</td>
+                <td>Perawatan & Perbaikan Aset (Maintenance)</td>
                 <td style="width: 15%"><strong>Dicetak Oleh</strong></td>
                 <td style="width: 2%">:</td>
                 <td><?php echo e(optional(auth()->user())->name ?? 'Admin'); ?></td>
@@ -56,9 +58,9 @@
                 <td><strong>Tanggal Cetak</strong></td>
                 <td>:</td>
                 <td><?php echo e(now()->translatedFormat('d F Y, H:i')); ?></td>
-                <td><strong>Filter</strong></td>
+                <td><strong>Filter Status</strong></td>
                 <td>:</td>
-                <td><?php echo e(request('category_id') ? 'Kategori Tertentu' : 'Semua Kategori'); ?></td>
+                <td><?php echo e(request('status') ? (request('status')=='completed'?'Selesai':'Sedang Proses') : 'Semua Status'); ?></td>
             </tr>
         </table>
     </div>
@@ -66,40 +68,49 @@
     <table>
         <thead>
             <tr>
-                <th width="5%">No</th>
-                <th width="15%">Kode Aset</th>
-                <th width="25%">Nama Barang & Merk</th>
-                <th width="15%">Kategori</th>
-                <th width="15%">Tanggal Beli</th>
-                <th width="10%">Kondisi</th>
-                <th width="15%">Status</th>
+                <th width="4%">No</th>
+                <th width="12%">Tanggal</th>
+                <th width="20%">Aset</th>
+                <th width="15%">Jenis Perawatan</th>
+                <th width="20%">Keluhan</th>
+                <th width="15%">Tindakan & Biaya</th>
+                <th width="10%">Status</th>
             </tr>
         </thead>
         <tbody>
-            <?php $__empty_1 = true; $__currentLoopData = $tools; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $tool): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+            <?php $__empty_1 = true; $__currentLoopData = $maintenances; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $mt): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
             <tr>
                 <td class="text-center"><?php echo e($index + 1); ?></td>
-                <td class="text-center"><?php echo e($tool->tool_code); ?></td>
-                <td>
-                    <strong><?php echo e($tool->tool_name); ?></strong><br>
-                    <small><?php echo e($tool->brand ?? '-'); ?></small>
-                </td>
-                <td class="text-center"><?php echo e($tool->category->category_name ?? '-'); ?></td>
-                <td class="text-center"><?php echo e($tool->purchase_date ? \Carbon\Carbon::parse($tool->purchase_date)->translatedFormat('d/m/Y') : '-'); ?></td>
-                <td class="text-center"><?php echo e($tool->current_condition); ?></td>
                 <td class="text-center">
-                    <?php if($tool->availability_status == 'available'): ?> Tersedia
-                    <?php elseif($tool->availability_status == 'borrowed'): ?> Dipinjam
-                    <?php elseif($tool->availability_status == 'maintenance'): ?> Perbaikan
-                    <?php elseif($tool->availability_status == 'disposed'): ?> Dihapus
-                    <?php else: ?> <?php echo e($tool->availability_status); ?>
+                    <?php echo e(\Carbon\Carbon::parse($mt->start_date)->translatedFormat('d M Y')); ?>
 
+                    <?php if($mt->end_date): ?>
+                    <br><small>s/d <?php echo e(\Carbon\Carbon::parse($mt->end_date)->format('d M y')); ?></small>
+                    <?php endif; ?>
+                </td>
+                <td>
+                    <strong><?php echo e($mt->tool->tool_name ?? 'Item Terhapus'); ?></strong><br>
+                    <small><?php echo e($mt->tool->tool_code ?? '-'); ?></small>
+                </td>
+                <td class="text-center"><?php echo e($mt->type->name ?? '-'); ?></td>
+                <td><?php echo e($mt->note); ?></td>
+                <td>
+                    <?php echo e($mt->action_taken ?? '-'); ?><br>
+                    <?php if($mt->cost > 0): ?>
+                    <strong style="color: #047857;">Rp <?php echo e(number_format($mt->cost, 0, ',', '.')); ?></strong>
+                    <?php endif; ?>
+                </td>
+                <td class="text-center">
+                    <?php if($mt->status == 'completed'): ?>
+                        <span style="color: green;">SELESAI</span>
+                    <?php else: ?>
+                        <span style="color: orange;">PROSES</span>
                     <?php endif; ?>
                 </td>
             </tr>
             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
             <tr>
-                <td colspan="7" class="text-center">Tidak ada data aset.</td>
+                <td colspan="7" class="text-center">Tidak ada data perawatan.</td>
             </tr>
             <?php endif; ?>
         </tbody>
@@ -108,11 +119,11 @@
     <div class="footer">
         <div class="signature-box">
             <p>Mengetahui,</p>
-            <p>Kepala Manajemen Inventaris</p>
+            <p>Kepala Pengadaan</p>
             <div class="signature-line"><?php echo e(auth()->user()->name ?? '(..........................)'); ?></div>
             <p>NIP. ..........................</p>
         </div>
     </div>
 </body>
 </html>
-<?php /**PATH C:\laragon\www\app-inventaris\resources\views/tools/pdf.blade.php ENDPATH**/ ?>
+<?php /**PATH C:\laragon\www\app-inventaris\resources\views/maintenances/pdf.blade.php ENDPATH**/ ?>

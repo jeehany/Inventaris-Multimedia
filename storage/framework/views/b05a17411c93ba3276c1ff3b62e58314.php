@@ -31,7 +31,7 @@
         <table style="width: 100%; border: none; margin-bottom: 0;">
             <tr>
                 <td style="width: 50px; border: none; text-align: center;">
-                    <img src="<?php echo e($logo); ?>" style="height: 50px; width: auto;">
+                    <img src="data:image/png;base64,<?php echo e(base64_encode(file_get_contents(public_path('images/logo.png')))); ?>" style="height: 50px; width: auto;">
                 </td>
                 <td style="border: none; text-align: center;">
                     <h1>HM COMPANY</h1>

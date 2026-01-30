@@ -109,7 +109,7 @@
     <div class="footer">
         <div class="signature-box">
             <p>Mengetahui,</p>
-            <p>Admin Peminjaman</p>
+            <p>Kepala Manajemen Inventaris</p>
             <div class="signature-line">{{ optional(auth()->user())->name ?? '(..........................)' }}</div>
             <p>NIP. ..........................</p>
         </div>
