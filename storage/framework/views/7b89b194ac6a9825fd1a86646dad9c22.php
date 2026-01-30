@@ -121,12 +121,9 @@
                                                         <a href="<?php echo e(route('borrowers.edit', $b->id)); ?>" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 p-2 rounded-lg hover:bg-indigo-100 transition" title="Edit">
                                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                                                         </a>
-                                                        <form action="<?php echo e(route('borrowers.destroy', $b->id)); ?>" method="POST" onsubmit="return confirm('Hapus data ini? Aksi ini tidak dapat dibatalkan.');">
-                                                            <?php echo csrf_field(); ?> <?php echo method_field('DELETE'); ?>
-                                                            <button type="submit" class="text-rose-600 hover:text-rose-900 bg-rose-50 p-2 rounded-lg hover:bg-rose-100 transition" title="Hapus">
-                                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                                            </button>
-                                                        </form>
+                                                        <button type="button" onclick="openDeleteModal('<?php echo e(route('borrowers.destroy', $b->id)); ?>', 'Hapus Anggota <?php echo e($b->name); ?>?', 'Yakin ingin menghapus data anggota ini? Riwayat peminjaman terkait mungkin akan terdampak.')" class="text-rose-600 hover:text-rose-900 bg-rose-50 p-2 rounded-lg hover:bg-rose-100 transition" title="Hapus">
+                                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                                        </button>
                                                     </div>
                                                 <?php else: ?>
                                                     <span class="text-slate-400 text-xs italic bg-slate-100 px-2 py-1 rounded">View Only
@@ -153,6 +150,26 @@
             </div>
         </div>
     </div>
+    <?php if (isset($component)) { $__componentOriginal47243a3de3ed132c2f9157dc8e8a8bd7 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal47243a3de3ed132c2f9157dc8e8a8bd7 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.modal-delete','data' => ['id' => 'deleteModal']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('modal-delete'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['id' => 'deleteModal']); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal47243a3de3ed132c2f9157dc8e8a8bd7)): ?>
+<?php $attributes = $__attributesOriginal47243a3de3ed132c2f9157dc8e8a8bd7; ?>
+<?php unset($__attributesOriginal47243a3de3ed132c2f9157dc8e8a8bd7); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal47243a3de3ed132c2f9157dc8e8a8bd7)): ?>
+<?php $component = $__componentOriginal47243a3de3ed132c2f9157dc8e8a8bd7; ?>
+<?php unset($__componentOriginal47243a3de3ed132c2f9157dc8e8a8bd7); ?>
+<?php endif; ?>
  <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginal9ac128a9029c0e4701924bd2d73d7f54)): ?>
