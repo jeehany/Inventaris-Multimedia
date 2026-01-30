@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-bold text-xl text-slate-800 leading-tight">
-            {{ __('Data Supplier') }}
+            {{ __('Data Vendor') }}
         </h2>
     </x-slot>
 
@@ -31,7 +31,7 @@
                 <div class="p-6 md:p-8 text-slate-800">
                     {{-- HEADER TEXT --}}
                     <div class="mb-8 border-b border-slate-100 pb-4">
-                        <h3 class="text-lg font-bold text-slate-800">Daftar Mitra / Supplier</h3>
+                        <h3 class="text-lg font-bold text-slate-800">Daftar Mitra / Vendor</h3>
                         <p class="text-sm text-slate-500 mt-1">Kelola data vendor penyedia aset multimedia.</p>
                     </div>
 

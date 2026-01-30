@@ -95,7 +95,7 @@
 
                                 <div class="px-4 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider">Pengadaan</div>
                                 <x-dropdown-link :href="route('vendors.index')" :active="request()->routeIs('vendors.*')">
-                                    {{ __('Data Supplier') }}
+                                    {{ __('Data Vendor') }}
                                 </x-dropdown-link>
                                 <x-dropdown-link :href="route('purchases.request')" :active="request()->routeIs('purchases.request')">
                                     {{ __('Pengajuan Pengadaan') }}
@@ -196,7 +196,7 @@
                 {{ __('Transaksi Peminjaman') }}
             </x-responsive-nav-link>
              <x-responsive-nav-link :href="route('vendors.index')" :active="request()->routeIs('vendors.*')">
-                {{ __('Data Supplier') }}
+                {{ __('Data Vendor') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('purchases.request')" :active="request()->routeIs('purchases.request')">
                 {{ __('Pengajuan Pengadaan') }}

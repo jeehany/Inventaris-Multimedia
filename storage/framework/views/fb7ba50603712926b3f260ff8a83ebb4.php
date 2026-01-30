@@ -266,7 +266,7 @@
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
 <?php $component->withAttributes(['href' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(route('vendors.index')),'active' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(request()->routeIs('vendors.*'))]); ?>
-                                    <?php echo e(__('Data Supplier')); ?>
+                                    <?php echo e(__('Data Vendor')); ?>
 
                                  <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
@@ -661,7 +661,7 @@
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
 <?php $component->withAttributes(['href' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(route('vendors.index')),'active' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(request()->routeIs('vendors.*'))]); ?>
-                <?php echo e(__('Data Supplier')); ?>
+                <?php echo e(__('Data Vendor')); ?>
 
              <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>

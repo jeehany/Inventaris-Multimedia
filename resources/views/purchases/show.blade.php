@@ -27,7 +27,7 @@
                     </div>
 
                     <div class="mb-6 bg-gray-50 p-4 rounded">
-                        <h4 class="font-bold text-sm text-gray-500 uppercase">Supplier / Vendor</h4>
+                        <h4 class="font-bold text-sm text-gray-500 uppercase">Vendor</h4>
                         <p class="text-lg font-semibold">{{ $purchase->vendor->name }}</p>
                         <p class="text-gray-600">{{ $purchase->vendor->address }}</p>
                         <p class="text-gray-600">{{ $purchase->vendor->phone }}</p>

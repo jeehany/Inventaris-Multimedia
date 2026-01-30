@@ -35,7 +35,7 @@
                                 </div>
 
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700">Supplier (Vendor)</label>
+                                    <label class="block text-sm font-medium text-gray-700">Vendor</label>
                                     <select name="vendor_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500" required>
                                         <option value="">-- Pilih Vendor --</option>
                                         @foreach($vendors as $vendor)
