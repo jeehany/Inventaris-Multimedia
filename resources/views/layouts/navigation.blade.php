@@ -29,12 +29,12 @@
                     </a>
                     @endif
 
-                    <!-- Dropdown: Aset & Perawatan -->
+                    <!-- Dropdown: Aset & Pemerliharaan -->
                     <div class="hidden sm:flex sm:items-center">
                         <x-dropdown align="right" width="48">
                             <x-slot name="trigger">
-                                <button class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium leading-5 transition duration-150 ease-in-out gap-1 focus:outline-none {{ request()->routeIs('tools.*') || request()->routeIs('categories.*') || request()->routeIs('maintenances.*') ? 'border-indigo-500 text-white font-bold' : 'border-transparent text-slate-300 hover:text-white hover:border-slate-300' }}">
-                                    <div>Aset & Perawatan</div>
+                                <button class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium leading-5 transition duration-150 ease-in-out gap-1 focus:outline-none {{ request()->routeIs('tools.*') || request()->routeIs('categories.*') || request()->routeIs('maintenances.*') || request()->routeIs('maintenance-types.*') ? 'border-indigo-500 text-white font-bold' : 'border-transparent text-slate-300 hover:text-white hover:border-slate-300' }}">
+                                    <div>Aset & Pemerliharaan</div>
                                     <div class="ms-1">
                                         <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                                             <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -57,12 +57,12 @@
 
                                 <div class="border-t border-slate-100 my-1"></div>
                                 
-                                <div class="px-4 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider">Perawatan</div>
+                                <div class="px-4 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider">Pemerliharaan</div>
                                 <x-dropdown-link :href="route('maintenance-types.index')" :active="request()->routeIs('maintenance-types.*')">
-                                    {{ __('Jenis Perawatan') }}
+                                    {{ __('Jenis Pemerliharaan') }}
                                 </x-dropdown-link>
                                 <x-dropdown-link :href="route('maintenances.index')" :active="request()->routeIs('maintenances.*')">
-                                    {{ __('Riwayat Perawatan') }}
+                                    {{ __('Riwayat Pemerliharaan') }}
                                 </x-dropdown-link>
                             </x-slot>
                         </x-dropdown>
@@ -180,10 +180,10 @@
                 {{ __('Daftar Aset') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('maintenance-types.index')" :active="request()->routeIs('maintenance-types.*')">
-                {{ __('Jenis Perawatan') }}
+                {{ __('Jenis Pemerliharaan') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('maintenances.index')" :active="request()->routeIs('maintenances.*')">
-                {{ __('Riwayat Perawatan') }}
+                {{ __('Riwayat Pemerliharaan') }}
             </x-responsive-nav-link>
 
              <div class="border-t border-slate-800 my-2"></div>
