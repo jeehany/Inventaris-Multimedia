@@ -18,7 +18,7 @@
                         
                         {{-- Input Nama Jenis --}}
                         <div class="mb-4">
-                            <label class="block font-bold text-sm text-gray-700">Nama Jenis Perawatan</label>
+                            <label class="block font-bold text-sm text-gray-700">Nama Jenis Pemerliharaan</label>
                             <input type="text" name="name" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500" required placeholder="Contoh: Service Rutin, Perbaikan Berat, Kalibrasi">
                         </div>
 
