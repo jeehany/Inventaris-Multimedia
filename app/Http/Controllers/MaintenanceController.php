@@ -188,7 +188,7 @@ class MaintenanceController extends Controller
             'status' => ($maintenance->status == 'pending') ? 'in_progress' : $maintenance->status
         ]);
 
-        return redirect()->back()->with('success', 'Informasi perbaikan diperbarui.');
+        return redirect()->route('maintenances.index')->with('success', 'Informasi perbaikan diperbarui.');
     }
 
     public function destroy(Maintenance $maintenance)
