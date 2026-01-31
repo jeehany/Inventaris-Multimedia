@@ -34,11 +34,11 @@
                     </div>
 
                     <div class="mb-6">
-                        <h4 class="font-bold text-sm text-gray-500 uppercase mb-2">Rincian Barang</h4>
+                        <h4 class="font-bold text-sm text-gray-500 uppercase mb-2">Rincian Aset</h4>
                         <table class="min-w-full border">
                             <thead class="bg-gray-100 border-b">
                                 <tr>
-                                    <th class="px-4 py-2 text-left">Nama Barang</th>
+                                    <th class="px-4 py-2 text-left">Nama Aset</th>
                                     <th class="px-4 py-2 text-left">Spesifikasi</th>
                                     <th class="px-4 py-2 text-center">Qty</th>
                                     <th class="px-4 py-2 text-right">Harga Satuan</th>

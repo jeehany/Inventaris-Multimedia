@@ -43,7 +43,7 @@
 
         <!-- Subtitle -->
         <p class="text-lg text-slate-600 max-w-2xl mb-10 leading-relaxed">
-            Platform terintegrasi untuk pencatatan, peminjaman, dan perawatan inventaris peralatan HM Company. Simpel, cepat, dan akurat.
+            Platform terintegrasi untuk pencatatan, peminjaman, dan pemeliharaan inventaris aset multimedia HM Company. Simpel, cepat, dan akurat.
         </p>
 
         <!-- CTA Buttons -->

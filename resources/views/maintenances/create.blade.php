@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-bold text-xl text-slate-800 leading-tight">
-            {{ __('Catat Pemerliharaan / Perbaikan Baru') }}
+            {{ __('Catat Pemeliharaan / Perbaikan Baru') }}
         </h2>
     </x-slot>
 
@@ -28,7 +28,7 @@
                     
                     <div class="mb-6 border-b border-slate-100 pb-4">
                         <h3 class="text-xl font-bold text-slate-800">Form Perbaikan Aset</h3>
-                        <p class="text-slate-500 mt-1 text-sm">Input data aset yang memerlukan pemerliharaan atau perbaikan.</p>
+                        <p class="text-slate-500 mt-1 text-sm">Input data aset yang memerlukan pemeliharaan atau perbaikan.</p>
                     </div>
 
                     <form action="{{ route('maintenances.store') }}" method="POST">
@@ -53,7 +53,7 @@
 
                         {{-- 2. Pilihan Jenis Maintenance --}}
                         <div class="mb-5">
-                            <label class="block text-sm font-semibold text-slate-700 mb-2">Jenis Perbaikan / Pemerliharaan</label>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Jenis Perbaikan / Pemeliharaan</label>
                             <select name="maintenance_type_id" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-slate-700 font-medium" required>
                                 <option value="">-- Pilih Jenis --</option>
                                 @foreach($types as $type)
@@ -78,7 +78,7 @@
                         {{-- 4. Deskripsi Masalah --}}
                         <div class="mb-8">
                             <label class="block text-sm font-semibold text-slate-700 mb-2">Keterangan / Keluhan</label>
-                            <textarea name="note" rows="4" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 placeholder-slate-400" placeholder="Jelaskan detail kerusakan atau pemerliharaan yang dibutuhkan..." required>{{ old('note') }}</textarea>
+                            <textarea name="note" rows="4" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 placeholder-slate-400" placeholder="Jelaskan detail kerusakan atau pemeliharaan yang dibutuhkan..." required>{{ old('note') }}</textarea>
                         </div>
 
                         <div class="flex flex-row-reverse gap-3 border-t border-slate-100 pt-6">

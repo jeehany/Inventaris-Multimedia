@@ -21,7 +21,7 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             
-                            {{-- Kode Alat (Readonly) --}}
+                            {{-- Kode Aset (Readonly) --}}
                             <div>
                                 <label class="block text-sm font-semibold text-slate-500 mb-2">Kode Aset (Permanen)</label>
                                 <input type="text" value="{{ $tool->tool_code }}" readonly 
@@ -37,7 +37,7 @@
                                 <input type="hidden" name="category_id" value="{{ $tool->category_id }}">
                             </div>
 
-                            {{-- Nama Alat --}}
+                            {{-- Nama Aset --}}
                             <div class="md:col-span-2">
                                 <label class="block text-sm font-semibold text-slate-700 mb-2">Nama Aset</label>
                                 <input type="text" name="tool_name" value="{{ old('tool_name', $tool->tool_name) }}" 

@@ -295,7 +295,7 @@
             form.reset();
             form.action = "/purchases/" + id + "/process"; // Sesuaikan route
 
-            // 2. Isi Nama Barang
+            // 2. Isi Nama Aset
             document.getElementById('modalToolName').innerText = name;
 
             // 3. Isi Harga Rencana (Format Rupiah)

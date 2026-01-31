@@ -71,7 +71,7 @@
                 <th width="14%">Peminjam</th>
                 <th width="12%">Tgl Pinjam</th>
                 <th width="12%">Tgl Kembali</th>
-                <th width="20%">Item</th>
+                <th width="20%">Aset</th>
                 <th width="10%">Status</th>
                 <th width="16%">Analisa</th>
             </tr>

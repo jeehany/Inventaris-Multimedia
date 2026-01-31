@@ -11,7 +11,7 @@
         <tr>
             <th style="font-weight: bold; text-align: center; background-color: #8B5CF6; color: white; border: 1px solid black; width: 20px;">Tanggal Selesai</th>
             <th style="font-weight: bold; text-align: center; background-color: #8B5CF6; color: white; border: 1px solid black; width: 20px;">Kode Transaksi</th>
-            <th style="font-weight: bold; text-align: center; background-color: #8B5CF6; color: white; border: 1px solid black; width: 25px;">Nama Barang</th>
+            <th style="font-weight: bold; text-align: center; background-color: #8B5CF6; color: white; border: 1px solid black; width: 25px;">Nama Aset</th>
             <th style="font-weight: bold; text-align: center; background-color: #8B5CF6; color: white; border: 1px solid black; width: 20px;">Vendor</th>
             <th style="font-weight: bold; text-align: center; background-color: #8B5CF6; color: white; border: 1px solid black; width: 20px;">Kategori</th>
             <th style="font-weight: bold; text-align: center; background-color: #8B5CF6; color: white; border: 1px solid black; width: 10px;">Qty</th>
@@ -62,7 +62,7 @@
         <tr>
             <th style="font-weight: bold; text-align: center; background-color: #E11D48; color: white; border: 1px solid black;">Tanggal Ditolak</th>
             <th style="font-weight: bold; text-align: center; background-color: #E11D48; color: white; border: 1px solid black;">Kode Transaksi</th>
-            <th style="font-weight: bold; text-align: center; background-color: #E11D48; color: white; border: 1px solid black;">Nama Barang</th>
+            <th style="font-weight: bold; text-align: center; background-color: #E11D48; color: white; border: 1px solid black;">Nama Aset</th>
             <th style="font-weight: bold; text-align: center; background-color: #E11D48; color: white; border: 1px solid black;">Vendor</th>
             <th style="font-weight: bold; text-align: center; background-color: #E11D48; color: white; border: 1px solid black;">Kategori</th>
             <th style="font-weight: bold; text-align: center; background-color: #E11D48; color: white; border: 1px solid black;">Qty</th>

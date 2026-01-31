@@ -45,7 +45,7 @@
 <?php $component->withAttributes(['align' => 'right','width' => '48']); ?>
                              <?php $__env->slot('trigger', null, []); ?> 
                                 <button class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium leading-5 transition duration-150 ease-in-out gap-1 focus:outline-none <?php echo e(request()->routeIs('tools.*') || request()->routeIs('categories.*') || request()->routeIs('maintenances.*') || request()->routeIs('maintenance-types.*') ? 'border-indigo-500 text-white font-bold' : 'border-transparent text-slate-300 hover:text-white hover:border-slate-300'); ?>">
-                                    <div>Aset & Pemerliharaan</div>
+                                    <div>Aset & Pemeliharaan</div>
                                     <div class="ms-1">
                                         <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                                             <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -125,7 +125,7 @@
 
                                 <div class="border-t border-slate-100 my-1"></div>
                                 
-                                <div class="px-4 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider">Pemerliharaan</div>
+                                <div class="px-4 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider">Pemeliharaan</div>
                                 <?php if (isset($component)) { $__componentOriginal68cb1971a2b92c9735f83359058f7108 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginal68cb1971a2b92c9735f83359058f7108 = $attributes; } ?>
 <?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.dropdown-link','data' => ['href' => route('maintenance-types.index'),'active' => request()->routeIs('maintenance-types.*')]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
@@ -136,7 +136,7 @@
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
 <?php $component->withAttributes(['href' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(route('maintenance-types.index')),'active' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(request()->routeIs('maintenance-types.*'))]); ?>
-                                    <?php echo e(__('Jenis Pemerliharaan')); ?>
+                                    <?php echo e(__('Jenis Pemeliharaan')); ?>
 
                                  <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
@@ -158,7 +158,7 @@
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
 <?php $component->withAttributes(['href' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(route('maintenances.index')),'active' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(request()->routeIs('maintenances.*'))]); ?>
-                                    <?php echo e(__('Riwayat Pemerliharaan')); ?>
+                                    <?php echo e(__('Riwayat Pemeliharaan')); ?>
 
                                  <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
@@ -569,7 +569,7 @@
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
 <?php $component->withAttributes(['href' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(route('maintenance-types.index')),'active' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(request()->routeIs('maintenance-types.*'))]); ?>
-                <?php echo e(__('Jenis Pemerliharaan')); ?>
+                <?php echo e(__('Jenis Pemeliharaan')); ?>
 
              <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
@@ -591,7 +591,7 @@
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
 <?php $component->withAttributes(['href' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(route('maintenances.index')),'active' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(request()->routeIs('maintenances.*'))]); ?>
-                <?php echo e(__('Riwayat Pemerliharaan')); ?>
+                <?php echo e(__('Riwayat Pemeliharaan')); ?>
 
              <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>

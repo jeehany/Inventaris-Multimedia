@@ -70,7 +70,7 @@
                                     </p>
                                 </div>
     
-                                {{-- Pilih Alat --}}
+                                {{-- Pilih Aset --}}
                                 <div>
                                     <label for="tool_ids" class="block text-sm font-semibold text-slate-700 mb-2">Daftar Aset (Multi-Select)</label>
                                     <select name="tool_ids[]" id="tool_ids" multiple class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 h-40 bg-slate-100 cursor-not-allowed text-sm text-slate-600 font-mono" disabled required>
@@ -127,7 +127,7 @@
             var categoryId = this.value;
             var toolSelect = document.getElementById('tool_ids');
 
-            // 1. Reset Dropdown Alat
+            // 1. Reset Dropdown Aset
             toolSelect.innerHTML = '<option value="" class="p-2 text-slate-400">Memuat data...</option>';
             toolSelect.disabled = true;
             toolSelect.classList.add('bg-slate-100', 'cursor-not-allowed', 'text-slate-400');
@@ -144,7 +144,7 @@
                         if (data.length === 0) {
                             toolSelect.innerHTML = '<option value="" class="p-2">Tidak ada aset tersedia / stok habis</option>';
                         } else {
-                            // Loop data alat dan masukkan ke dropdown
+                            // Loop data aset dan masukkan ke dropdown
                             data.forEach(tool => {
                                 var option = document.createElement('option');
                                 option.value = tool.id;

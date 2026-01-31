@@ -52,7 +52,7 @@
             <tr>
                 <td style="width: 20%"><strong>Laporan</strong></td>
                 <td style="width: 2%">:</td>
-                <td>Pengajuan Pengadaan Barang (Requests)</td>
+                <td>Pengajuan Pengadaan Aset (Requests)</td>
                 <td style="width: 15%"><strong>Dicetak Oleh</strong></td>
                 <td style="width: 2%">:</td>
                 <td>{{ optional(auth()->user())->name ?? 'Admin' }}</td>
@@ -74,7 +74,7 @@
                 <th width="4%">No</th>
                 <th width="12%">Kode</th>
                 <th width="12%">Tanggal</th>
-                <th width="20%">Nama Barang & Spec</th>
+                <th width="20%">Nama Aset & Spec</th>
                 <th width="10%">Vendor</th>
                 <th width="8%">Qty</th>
                 <th width="12%">Harga Satuan</th>

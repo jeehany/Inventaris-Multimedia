@@ -73,7 +73,7 @@
             <tr>
                 <th width="5%">No</th>
                 <th width="15%">Kode Aset</th>
-                <th width="30%">Nama Barang & Merk</th>
+                <th width="30%">Nama Aset & Merk</th>
                 <th width="20%">Kategori</th>
                 <th width="15%">Tanggal Dihapus</th>
                 <th width="15%">Kondisi Terakhir</th>

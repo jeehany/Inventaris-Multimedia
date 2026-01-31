@@ -377,11 +377,11 @@
                     </div>
 
                     <div class="col-span-2 border-b border-slate-100 pb-2 mb-2 mt-2">
-                        <p class="text-xs text-slate-500 uppercase font-bold tracking-wider">Detail Barang</p>
+                        <p class="text-xs text-slate-500 uppercase font-bold tracking-wider">Detail Aset</p>
                     </div>
 
                     <div class="col-span-2">
-                        <p class="text-xs text-slate-500">Nama Barang</p>
+                        <p class="text-xs text-slate-500">Nama Aset</p>
                         <p class="font-bold text-indigo-700 text-base">${data.tool_name}</p>
                     </div>
                     <div>

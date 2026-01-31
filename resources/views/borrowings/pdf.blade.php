@@ -68,7 +68,7 @@
                 <th width="20%">Peminjam</th>
                 <th width="15%">Tanggal Pinjam</th>
                 <th width="15%">Rencana Kembali</th>
-                <th width="20%">Item</th>
+                <th width="20%">Aset</th>
                 <th width="10%">Status</th>
             </tr>
         </thead>

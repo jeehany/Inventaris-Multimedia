@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <title>Laporan Perawatan Aset</title>
+    <title>Laporan Pemeliharaan Aset</title>
     <style>
         body { font-family: sans-serif; font-size: 11px; color: #333; }
         .header { text-align: center; margin-bottom: 25px; border-bottom: 2px solid #333; padding-bottom: 10px; }
@@ -54,7 +54,7 @@
             <tr>
                 <td style="width: 20%"><strong>Laporan</strong></td>
                 <td style="width: 2%">:</td>
-                <td>Perawatan & Perbaikan Aset (Maintenance)</td>
+                <td>Pemeliharaan & Perbaikan Aset (Maintenance)</td>
                 <td style="width: 15%"><strong>Dicetak Oleh</strong></td>
                 <td style="width: 2%">:</td>
                 <td>{{ optional(auth()->user())->name ?? 'Admin' }}</td>
@@ -76,7 +76,7 @@
                 <th width="4%">No</th>
                 <th width="12%">Tanggal</th>
                 <th width="20%">Aset</th>
-                <th width="15%">Jenis Perawatan</th>
+                <th width="15%">Jenis Pemeliharaan</th>
                 <th width="20%">Keluhan</th>
                 <th width="15%">Tindakan & Biaya</th>
                 <th width="10%">Status</th>
@@ -114,7 +114,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="7" class="text-center">Tidak ada data perawatan.</td>
+                <td colspan="7" class="text-center">Tidak ada data pemeliharaan.</td>
             </tr>
             @endforelse
         </tbody>

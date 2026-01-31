@@ -355,7 +355,7 @@
                                         <td colspan="7" class="text-center py-12">
                                             <div class="flex flex-col items-center justify-center text-slate-400">
                                                 <svg class="w-12 h-12 mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
-                                                <p class="text-base font-medium">Belaum ada aset.</p>
+                                                <p class="text-base font-medium">Belum ada aset.</p>
                                                 <p class="text-sm mt-1">Gunakan tombol Tambah Aset untuk memulai.</p>
                                             </div>
                                         </td>

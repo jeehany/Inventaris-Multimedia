@@ -39,7 +39,6 @@
                                     placeholder="Pilih kategori dulu...">
                             </div>
 
-                            {{-- Nama Alat --}}
                             <div class="md:col-span-2">
                                 <label class="block text-sm font-semibold text-slate-700 mb-2">Nama Aset</label>
                                 <input type="text" name="tool_name" 
