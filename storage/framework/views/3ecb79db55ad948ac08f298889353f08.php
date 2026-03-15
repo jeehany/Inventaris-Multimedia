@@ -10,7 +10,7 @@
 <?php $component->withAttributes([]); ?>
      <?php $__env->slot('header', null, []); ?> 
         <h2 class="font-bold text-xl text-slate-800 leading-tight">
-            <?php echo e(__('Catat Pemerliharaan / Perbaikan Baru')); ?>
+            <?php echo e(__('Catat Pemeliharaan / Perbaikan Baru')); ?>
 
         </h2>
      <?php $__env->endSlot(); ?>
@@ -38,7 +38,7 @@
                     
                     <div class="mb-6 border-b border-slate-100 pb-4">
                         <h3 class="text-xl font-bold text-slate-800">Form Perbaikan Aset</h3>
-                        <p class="text-slate-500 mt-1 text-sm">Input data aset yang memerlukan pemerliharaan atau perbaikan.</p>
+                        <p class="text-slate-500 mt-1 text-sm">Input data aset yang memerlukan pemeliharaan atau perbaikan.</p>
                     </div>
 
                     <form action="<?php echo e(route('maintenances.store')); ?>" method="POST">
@@ -63,7 +63,7 @@
 
                         
                         <div class="mb-5">
-                            <label class="block text-sm font-semibold text-slate-700 mb-2">Jenis Perbaikan / Pemerliharaan</label>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Jenis Perbaikan / Pemeliharaan</label>
                             <select name="maintenance_type_id" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-slate-700 font-medium" required>
                                 <option value="">-- Pilih Jenis --</option>
                                 <?php $__currentLoopData = $types; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $type): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
@@ -89,7 +89,7 @@
                         
                         <div class="mb-8">
                             <label class="block text-sm font-semibold text-slate-700 mb-2">Keterangan / Keluhan</label>
-                            <textarea name="note" rows="4" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 placeholder-slate-400" placeholder="Jelaskan detail kerusakan atau pemerliharaan yang dibutuhkan..." required><?php echo e(old('note')); ?></textarea>
+                            <textarea name="note" rows="4" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 placeholder-slate-400" placeholder="Jelaskan detail kerusakan atau pemeliharaan yang dibutuhkan..." required><?php echo e(old('note')); ?></textarea>
                         </div>
 
                         <div class="flex flex-row-reverse gap-3 border-t border-slate-100 pt-6">

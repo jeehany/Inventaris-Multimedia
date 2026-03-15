@@ -137,7 +137,7 @@
             var categoryId = this.value;
             var toolSelect = document.getElementById('tool_ids');
 
-            // 1. Reset Dropdown Alat
+            // 1. Reset Dropdown Aset
             toolSelect.innerHTML = '<option value="" class="p-2 text-slate-400">Memuat data...</option>';
             toolSelect.disabled = true;
             toolSelect.classList.add('bg-slate-100', 'cursor-not-allowed', 'text-slate-400');
@@ -154,7 +154,7 @@
                         if (data.length === 0) {
                             toolSelect.innerHTML = '<option value="" class="p-2">Tidak ada aset tersedia / stok habis</option>';
                         } else {
-                            // Loop data alat dan masukkan ke dropdown
+                            // Loop data aset dan masukkan ke dropdown
                             data.forEach(tool => {
                                 var option = document.createElement('option');
                                 option.value = tool.id;

@@ -163,12 +163,12 @@
                                         <?php if(auth()->user()->isHead()): ?>
                                             <th class="px-6 py-4 font-semibold">Tgl & Kode</th>
                                             <th class="px-6 py-4 font-semibold">Pemohon</th>
-                                            <th class="px-6 py-4 font-semibold">Barang</th>
+                                            <th class="px-6 py-4 font-semibold">Aset</th>
                                             <th class="px-6 py-4 font-semibold text-right">Total (Est)</th>
                                             <th class="px-6 py-4 font-semibold text-center">Aksi</th>
                                         <?php else: ?>
                                             <th class="px-6 py-4 font-semibold">Peminjam</th>
-                                            <th class="px-6 py-4 font-semibold">Barang</th>
+                                            <th class="px-6 py-4 font-semibold">Aset</th>
                                             <th class="px-6 py-4 font-semibold">Tanggal</th>
                                             <th class="px-6 py-4 font-semibold">Status</th>
                                         <?php endif; ?>
