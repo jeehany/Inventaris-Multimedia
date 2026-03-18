@@ -89,13 +89,21 @@
                 <td class="text-center">{{ $req->purchase_code }}</td>
                 <td class="text-center">{{ \Carbon\Carbon::parse($req->date)->translatedFormat('d M Y') }}</td>
                 <td>
-                    <strong>{{ $req->tool_name }}</strong><br>
-                    <small style="color:#666;">{{ $req->specification ?? '-' }}</small>
+                    @if($req->items && $req->items->count() > 0)
+                        @foreach($req->items as $item)
+                            <div style="margin-bottom: 4px;">
+                                <strong>{{ $item->tool_name }}</strong><br>
+                                <small style="color:#666;">{{ $item->specification ?? '-' }}</small>
+                            </div>
+                        @endforeach
+                    @else
+                        -
+                    @endif
                 </td>
                 <td class="text-center">{{ $req->vendor->name ?? '-' }}</td>
-                <td class="text-center">{{ $req->quantity }}</td>
-                <td class="text-right">Rp {{ number_format($req->unit_price, 0, ',', '.') }}</td>
-                <td class="text-right"><strong>Rp {{ number_format($req->subtotal, 0, ',', '.') }}</strong></td>
+                <td class="text-center">{{ $req->items ? $req->items->sum('quantity') : 0 }}</td>
+                <td class="text-right">-</td>
+                <td class="text-right"><strong>Rp {{ number_format($req->total_amount, 0, ',', '.') }}</strong></td>
                 <td class="text-center">
                     @if($req->status == 'pending') <span style="color:#d97706; font-weight:bold;">PENDING</span>
                     @elseif($req->status == 'approved') <span style="color:#059669; font-weight:bold;">APPROVED</span>

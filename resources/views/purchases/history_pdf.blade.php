@@ -94,22 +94,18 @@
             @endphp
             @forelse($purchases as $index => $h)
             @php
-                $planTotal = $h->unit_price * $h->quantity;
+                $planTotal = $h->items ? $h->items->sum('subtotal') : $h->total_amount;
                 
                 // Jika rejected, realisasi 0
-                if($h->status == 'rejected') {
+                if(str_contains($h->status, 'rejected')) {
                     $realTotal = 0;
-                    $actualPrice = 0;
                     $diff = 0; 
                 } else {
-                    $actualPrice = $h->actual_unit_price ?? $h->unit_price;
-                    $realTotal = $actualPrice * $h->quantity;
+                    $realTotal = $h->total_amount;
                     $diff = $planTotal - $realTotal; // Positif = Hemat, Negatif = Boros
                 }
 
-                // Accumulate only for completed items to make sense? 
-                // Or accumulate all? Usually Analysis excludes rejected.
-                if($h->status == 'completed' || $h->is_purchased) {
+                if(str_contains($h->status, 'completed') || $h->is_purchased) {
                     $totalBudget += $planTotal;
                     $totalRealization += $realTotal;
                     $totalSavings += $diff;
@@ -122,19 +118,27 @@
                     <small>{{ \Carbon\Carbon::parse($h->updated_at)->format('d/m/Y') }}</small>
                 </td>
                 <td>
-                    <strong>{{ $h->tool_name }}</strong><br>
-                    <small style="color:#555;">{{ $h->category->category_name ?? '-' }}</small>
+                    @if($h->items && $h->items->count() > 0)
+                        @foreach($h->items as $item)
+                            <div style="margin-bottom: 4px;">
+                                <strong>{{ $item->tool_name }}</strong><br>
+                                <small style="color:#555;">{{ $item->category->category_name ?? '-' }} (Qty: {{ $item->quantity }})</small>
+                            </div>
+                        @endforeach
+                    @else
+                        -
+                    @endif
                 </td>
-                <td>{{ $h->vendor->name ?? '-' }}</td>
-                <td class="text-center">{{ $h->quantity }}</td>
-                <td class="text-right">{{ number_format($actualPrice, 0, ',', '.') }}</td>
+                <td class="text-center">{{ $h->vendor->name ?? '-' }}</td>
+                <td class="text-center">{{ $h->items ? $h->items->sum('quantity') : 0 }}</td>
+                <td class="text-right">-</td>
                 
                 <td class="text-right" style="background-color: #f9fafb;">
                     Rp {{ number_format($planTotal, 0, ',', '.') }}
                 </td>
                 
                 <td class="text-right">
-                    @if($h->status == 'rejected')
+                    @if(str_contains($h->status, 'rejected'))
                         <span style="color:red; font-style:italic;">Ditolak</span>
                     @else
                         Rp {{ number_format($realTotal, 0, ',', '.') }}
@@ -142,7 +146,7 @@
                 </td>
 
                 <td class="text-right">
-                    @if($h->status == 'rejected')
+                    @if(str_contains($h->status, 'rejected'))
                         -
                     @else
                         @if($diff > 0)

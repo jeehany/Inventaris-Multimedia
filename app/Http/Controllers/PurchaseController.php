@@ -19,23 +19,42 @@ class PurchaseController extends Controller
     // ----------------------------------------------------------------------
     public function indexRequests(Request $request)
     {
-        // Mulai Query
-        $query = Purchase::with(['vendor', 'user', 'category'])
-            // Hanya tampilkan yang BELUM disetujui (Pending & Rejected)
-            // Karena yang Approved pindah ke menu Transaksi
-            ->where('status', '!=', 'approved');
+        // Mulai Query (Gunakan Load Partial untuk Items jika dibutuhkan, tapi untuk master cukup ini dulu)
+        $query = Purchase::with(['user', 'vendor', 'items.category']);
 
-        // --- FILTER 1: SEARCH (Kode / Nama Barang) ---
+        // LOGIKA MULTI-ROLE FILTERING
+        // -------------------------------------------------------------
+        $userRole = Auth::user()->role;
+
+        if ($userRole == 'staff') {
+            // Staff melihat SEMUA pengajuannya sendiri, kecuali yang sudah dibelikan/selesai
+            // Atau melihat semua riwayat pending/rejected
+            $query->where('user_id', Auth::id())
+                  ->where('status', '!=', 'completed');
+        } elseif ($userRole == 'kepala') {
+            // Kepala melihat SEMUA pengajuan yang masih menunggu persetujuannya (pending_head)
+            // Dan pengajuan yang dia tolak (rejected_head) sbg riwayat
+            $query->whereIn('status', ['pending_head', 'rejected_head']);
+        } elseif ($userRole == 'bendahara') {
+            // Bendahara HANYA melihat pengajuan yang SUDAH DISETUJUI kepala (approved_head)
+            // Dan mungkin yang dia tolak (rejected_bendahara)
+            $query->whereIn('status', ['approved_head', 'rejected_bendahara']);
+        }
+
+        // --- FILTER 1: SEARCH (Kode Purchase) ---
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('purchase_code', 'LIKE', "%{$search}%")
-                  ->orWhere('tool_name', 'LIKE', "%{$search}%");
+                  ->orWhereHas('user', function($u) use ($search) {
+                      $u->where('name', 'LIKE', "%{$search}%");
+                  });
             });
         }
 
-        // --- FILTER 2: STATUS (Pending / Rejected) ---
+        // --- FILTER 2: STATUS KHUSUS ---
         if ($request->filled('status') && $request->status !== 'all') {
+            // Jika Kepala/Bendahara ingin filter spesifik
             $query->where('status', $request->status);
         }
 
@@ -46,59 +65,26 @@ class PurchaseController extends Controller
 
         // Eksekusi dengan Pagination
         $purchases = $query->orderBy('created_at', 'desc')
-                           ->paginate(5)
+                           ->paginate(10)
                            ->withQueryString();
 
         // STATISTICS (REQUEST PAGE)
-        $pendingRequests = Purchase::where('status', 'pending')->count();
-        $rejectedRequests = Purchase::where('status', 'rejected')->count();
+        // Disesuaikan berdasarkan role
+        if ($userRole == 'kepala') {
+            $pendingRequests = Purchase::where('status', 'pending_head')->count();
+            $rejectedRequests = Purchase::where('status', 'rejected_head')->count();
+        } elseif ($userRole == 'bendahara') {
+            $pendingRequests = Purchase::where('status', 'approved_head')->count();
+            $rejectedRequests = Purchase::where('status', 'rejected_bendahara')->count();
+        } else {
+            $pendingRequests = Purchase::where('user_id', Auth::id())->whereIn('status', ['pending_head', 'approved_head', 'pending_bendahara'])->count();
+            $rejectedRequests = Purchase::where('user_id', Auth::id())->whereIn('status', ['rejected_head', 'rejected_bendahara'])->count();
+        }
 
         return view('purchases.requests', compact('purchases', 'pendingRequests', 'rejectedRequests'));
     }
 
-    // ----------------------------------------------------------------------
-    // 2. HALAMAN "PEMBELIAN BARANG" (indexTransaction)
-    // Aturan: Menampilkan data ketika status == 'approved'
-    // ----------------------------------------------------------------------
-    public function indexTransaction(Request $request)
-    {
-        // Query: Approved TAPI Belum Dibeli
-        $query = Purchase::with(['vendor', 'user', 'category'])
-            ->where('status', 'approved')
-            ->where('is_purchased', false);
-
-        // --- FILTER 1: SEARCH ---
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('purchase_code', 'LIKE', "%{$search}%")
-                  ->orWhere('tool_name', 'LIKE', "%{$search}%")
-                  ->orWhereHas('vendor', function($v) use ($search) {
-                      $v->where('name', 'LIKE', "%{$search}%");
-                  });
-            });
-        }
-
-        // --- FILTER 2: BULAN ---
-        if ($request->filled('month')) {
-            $query->whereMonth('date', $request->month);
-        }
-
-        // --- FILTER 3: TAHUN ---
-        if ($request->filled('year')) {
-            $query->whereYear('date', $request->year);
-        }
-
-        $purchases = $query->orderBy('date', 'asc')
-                           ->paginate(5)
-                           ->withQueryString();
-
-        // STATISTICS (TRANSACTION PAGE)
-        $approvedTransactions = Purchase::where('status', 'approved')->where('is_purchased', false)->count();
-        $totalPlanCost = Purchase::where('status', 'approved')->where('is_purchased', false)->sum('subtotal');
-
-        return view('purchases.transaction', compact('purchases', 'approvedTransactions', 'totalPlanCost'));
-    }
+    // (indexTransaction dihapus karena sudah tidak relevan dengan alur baru)
 
     // ----------------------------------------------------------------------
     // 3. HALAMAN RIWAYAT (indexHistory)
@@ -106,7 +92,7 @@ class PurchaseController extends Controller
     // ----------------------------------------------------------------------
     public function indexHistory(Request $request)
     {
-        $query = Purchase::with(['vendor', 'user', 'category']);
+        $query = Purchase::with(['vendor', 'user', 'items.category']);
 
         // --- FILTER 1: STATUS ---
         // Logika: 
@@ -172,7 +158,7 @@ class PurchaseController extends Controller
      */
     public function exportRequestExcel(Request $request) 
     {
-        $query = Purchase::with(['vendor', 'user', 'category']);
+        $query = Purchase::with(['vendor', 'user', 'items.category']);
 
         // --- FILTER (Replikasi Logic requestList) ---
         
@@ -204,7 +190,7 @@ class PurchaseController extends Controller
     public function exportRequestPdf(Request $request) 
     {
         set_time_limit(300);
-        $query = Purchase::with(['vendor', 'user', 'category']);
+        $query = Purchase::with(['vendor', 'user', 'items.category']);
 
         // 1. STATUS
         if ($request->filled('status') && $request->status != 'all') {
@@ -255,7 +241,7 @@ class PurchaseController extends Controller
         $categories = Category::all(); 
         
         $user = Auth::user();
-        if ($user && in_array($user->role, ['kepala','head'])) {
+        if ($user && in_array($user->role, ['kepala', 'head'])) {
             return redirect()->back()->with('error', 'Akses ditolak. Kepala tidak membuat pengajuan.');
         }
         
@@ -264,84 +250,109 @@ class PurchaseController extends Controller
 
     public function store(Request $request)
     {
+        // 1. Validasi Input Header & Detail Array
         $request->validate([
-            'date'          => 'required|date',
-            'vendor_id'     => 'required|exists:vendors,id',
-            'category_id'   => 'required|exists:tool_categories,id',
-            'tool_name'     => 'required|string',
-            'quantity'      => 'required|integer|min:1',
-            'unit_price'    => 'required|numeric|min:0',
-            'specification' => 'nullable|string',
+            'date'                  => 'required|date',
+            'vendor_id'             => 'nullable|exists:vendors,id', // Opsional, bisa pakai vendor yang disarankan atau null
+            'items'                 => 'required|array|min:1',
+            'items.*.category_id'   => 'required|exists:tool_categories,id',
+            'items.*.tool_name'     => 'required|string',
+            'items.*.specification' => 'nullable|string',
+            'items.*.quantity'      => 'required|integer|min:1',
+            'items.*.unit_price'    => 'required|numeric|min:0',
         ]);
 
         try {
             DB::beginTransaction();
 
-            $subtotal = $request->quantity * $request->unit_price;
+            // 2. Hitung Grand Total dari seluruh item
+            $grandTotal = 0;
+            foreach ($request->items as $item) {
+                $grandTotal += ($item['quantity'] * $item['unit_price']);
+            }
 
-            Purchase::create([
+            // 3. Simpan Master Purchase
+            $purchase = Purchase::create([
                 'purchase_code' => 'REQ-' . date('ymd') . '-' . rand(1000, 9999),
                 'date'          => $request->date,
-                'vendor_id'     => $request->vendor_id,
-                'category_id'   => $request->category_id,
+                'vendor_id'     => $request->vendor_id, 
                 'user_id'       => Auth::id(),
-                'tool_name'     => $request->tool_name,
-                'specification' => $request->specification ?? '-',
-                'quantity'      => $request->quantity,
-                'unit_price'    => $request->unit_price,
-                'subtotal'      => $subtotal,
-                'status'        => 'pending', // Default Pending
+                'total_amount'  => $grandTotal,
+                'status'        => 'pending_head', // Default Pending Kepala
                 'is_purchased'  => false,
             ]);
 
+            // 4. Simpan Detail Purchase Items
+            foreach ($request->items as $item) {
+                $subtotal = $item['quantity'] * $item['unit_price'];
+
+                $purchase->items()->create([
+                    'category_id'   => $item['category_id'],
+                    'tool_name'     => $item['tool_name'],
+                    'specification' => $item['specification'] ?? '-',
+                    'quantity'      => $item['quantity'],
+                    'unit_price'    => $item['unit_price'],
+                    'subtotal'      => $subtotal,
+                ]);
+            }
+
             DB::commit();
-            return redirect()->route('purchases.request')->with('success', 'Pengajuan berhasil dibuat.');
+            return redirect()->route('purchases.request')->with('success', 'Pengajuan pengadaan berhasil dibuat dan menunggu persetujuan Kepala Multimedia.');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withInput()->withErrors(['msg' => 'Error: ' . $e->getMessage()]);
+            return back()->withInput()->withErrors(['msg' => 'Gagal menyimpan pengajuan: ' . $e->getMessage()]);
         }
     }
 
     // ----------------------------------------------------------------------
-    // ACTION: APPROVE & REJECT
+    // ACTION: APPROVE & REJECT MULTI-LEVEL
     // ----------------------------------------------------------------------
     public function approve($id)
     {
         $user = Auth::user();
-        if (!$user || !in_array($user->role, ['kepala','head'])) {
-            return abort(403, 'Unauthorized');
+        $purchase = Purchase::findOrFail($id);
+
+        if ($user->role == 'kepala' && $purchase->status == 'pending_head') {
+            // Kepala menyetujui -> diteruskan ke Bendahara
+            $purchase->update(['status' => 'approved_head']);
+            return redirect()->back()->with('success', 'Pengajuan disetujui (Kepala) dan diteruskan ke Bendahara.');
+        } 
+        elseif ($user->role == 'bendahara' && $purchase->status == 'approved_head') {
+            // Bendahara menyetujui -> masuk ke daftar Pencairan Dana / Pembelian
+            // Disini status belum "completed", tapi "pending_purchased" atau tetap "approved_head" dg flag uang cair
+            // Kita gunakan 'approved_head' tapi role Bendahara di frontend akan punya tombol 'Proses Cairkan' yg nnti memanggil storePurchaseEvidence
+            return redirect()->back()->with('info', 'Approval Bendahara dilakukan pada saat pencairan langsung (Upload Bukti).');
         }
 
-        $purchase = Purchase::findOrFail($id);
-        
-        // Hanya update status jadi Approved. 
-        // Data akan pindah dari halaman Request -> Halaman Transaction
-        $purchase->update([
-            'status' => 'approved'
-        ]);
-
-        return redirect()->back()->with('success', 'Pengajuan disetujui. Silakan cek menu Pembelian Barang.');
+        return abort(403, 'Unauthorized Action or Invalid State');
     }
 
     public function reject(Request $request, $id)
     {
         $user = Auth::user();
-        if (!$user || !in_array($user->role, ['kepala','head'])) {
-            return abort(403);
+        $purchase = Purchase::findOrFail($id);
+
+        if ($user->role == 'kepala' && $purchase->status == 'pending_head') {
+            $purchase->update([
+                'status' => 'rejected_head',
+                'rejection_note' => $request->input('note', '-')
+            ]);
+            return redirect()->back()->with('success', 'Pengajuan ditolak oleh Kepala Multimedia.');
+        } 
+        elseif ($user->role == 'bendahara' && $purchase->status == 'approved_head') {
+            $purchase->update([
+                'status' => 'rejected_bendahara',
+                'rejection_note' => $request->input('note', '-')
+            ]);
+            return redirect()->back()->with('success', 'Pengajuan ditolak oleh Bendahara (Tidak Ada Anggaran).');
         }
 
-        $purchase = Purchase::findOrFail($id);
-        $purchase->update([
-            'status' => 'rejected',
-            'rejection_note' => $request->input('note', '-')
-        ]);
-
-        return redirect()->back()->with('success', 'Pengajuan ditolak.');
+        return abort(403);
     }
 
     // ----------------------------------------------------------------------
-    // 4. ACTION: UPLOAD BUKTI (Eksekusi Akhir)
+    // 4. ACTION: UPLOAD BUKTI (Eksekusi Akhir Bendahara)
     // Aturan: Input 'transaction_proof_photo' -> 'is_purchased' = true -> Masuk Data Barang
     // ----------------------------------------------------------------------
     public function storePurchaseEvidence(Request $request, $id)
@@ -349,70 +360,67 @@ class PurchaseController extends Controller
         // 1. VALIDASI INPUT
         $request->validate([
             'proof_photo' => 'required|image|max:2048',
-            'real_price'  => 'required|numeric',
-            'brand'       => 'required|string|max:100', // <--- WAJIB INPUT MERK
+            'real_price'  => 'required|numeric', // Total Pencairan Keseluruhan
+            'brand'       => 'required|string|max:100', // Merk default jika ada
         ]);
 
-        $purchase = Purchase::findOrFail($id);
-
-        // 2. SIMPAN HARGA REALISASI & BUKTI KE PURCHASE
-        if ($request->has('real_price')) {
-            $purchase->unit_price = $request->real_price; 
-            $purchase->subtotal = $request->real_price * $purchase->quantity;
-        }
+        $purchase = Purchase::with('items.category')->findOrFail($id);
 
         if ($request->hasFile('proof_photo')) {
             $path = $request->file('proof_photo')->store('proofs', 'public');
             $purchase->transaction_proof_photo = $path;
         }
 
+        // 2. SIMPAN HARGA REALISASI (Optional, disimpan sbg total realisasi)
+        $purchase->total_amount = $request->real_price; 
+        
         $purchase->status = 'completed';
         $purchase->is_purchased = true;
         $purchase->save();
 
-        // 3. GENERATOR KODE ASET (Sama seperti sebelumnya)
-        $category = Category::find($purchase->category_id);
-        $prefix = 'GEN'; 
-        if ($category && !empty($category->category_name)) {
-            $prefix = strtoupper(substr($category->category_name, 0, 3));
-        }
-
-        // Loop sebanyak Quantity (Misal beli 3 kamera, create 3 row di tools)
-        // Atau jika sistemmu 1 row = stok banyak, sesuaikan. 
-        // Di sini saya asumsikan 1 row Purchase = 1 entry Inventaris sesuai request "Detail".
-        
-        for ($i = 0; $i < $purchase->quantity; $i++) {
+        // 3. GENERATOR ASET PER ITEM
+        // Looping setiap item yang ada di Transaksi Purchase ini
+        foreach ($purchase->items as $item) {
             
-            // Generate Kode Unik per item
-            $lastTool = Tool::where('tool_code', 'like', $prefix . '-%')->orderBy('id', 'desc')->first();
-            $nextNumber = 1;
-            if ($lastTool) {
-                $parts = explode('-', $lastTool->tool_code);
-                if (count($parts) >= 2) {
-                    $nextNumber = intval(end($parts)) + 1;
-                }
+            $prefix = 'GEN'; 
+            if ($item->category && !empty($item->category->category_name)) {
+                $prefix = strtoupper(substr($item->category->category_name, 0, 3));
             }
-            $generatedCode = $prefix . '-' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
 
-            // 4. INSERT KE TOOLS (DENGAN DATA LENGKAP)
-            Tool::create([
-                'tool_code'           => $generatedCode,
-                'tool_name'           => $purchase->tool_name,
-                'brand'               => $request->brand,       // <--- DARI INPUT MODAL
-                'purchase_date'       => $purchase->date,       // <--- DARI TANGGAL BELI
-                'category_id'         => $purchase->category_id,
-                'purchase_item_id'    => $purchase->id,
-                'current_condition'   => 'Baik',
-                'availability_status' => 'available',
-            ]);
+            // Loop sebanyak quantity per item (Misal beli 3 Lensa, buat 3 kode)
+            for ($i = 0; $i < $item->quantity; $i++) {
+                
+                // Cari Nomor Terakhir
+                $lastTool = Tool::where('tool_code', 'like', $prefix . '-%')->orderBy('id', 'desc')->first();
+                $nextNumber = 1;
+                if ($lastTool) {
+                    $parts = explode('-', $lastTool->tool_code);
+                    if (count($parts) >= 2) {
+                        $nextNumber = intval(end($parts)) + 1;
+                    }
+                }
+                $generatedCode = $prefix . '-' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+
+                // INSERT KE TOOLS
+                Tool::create([
+                    'tool_code'           => $generatedCode,
+                    'tool_name'           => $item->tool_name,
+                    'brand'               => $request->brand,       // Sama rata brand
+                    'purchase_date'       => $purchase->date,       // DARI TANGGAL BELI MASTER
+                    'category_id'         => $item->category_id,
+                    'purchase_item_id'    => $purchase->id,         // Track dari master purchase
+                    'current_condition'   => 'Baik',
+                    'availability_status' => 'available',
+                ]);
+            }
         }
 
-        return redirect()->route('purchases.history')->with('success', 'Transaksi Selesai! Barang masuk inventaris.');
+        return redirect()->route('purchases.request')->with('success', 'Transaksi Selesai! Anggaran dicairkan dan barang masuk inventaris.');
     }
 
     public function show($id)
     {
-        $purchase = Purchase::with(['vendor', 'user', 'category'])->findOrFail($id);
+        $purchase = Purchase::with(['vendor', 'user', 'items.category'])->findOrFail($id);
         return view('purchases.show', compact('purchase'));
     }
 
@@ -420,98 +428,15 @@ class PurchaseController extends Controller
     {
         $purchase = Purchase::findOrFail($id);
         
-        if ($purchase->status == 'approved' || $purchase->is_purchased) {
-             return back()->with('error', 'Tidak bisa menghapus data yang sudah disetujui/dibeli.');
+        if (in_array($purchase->status, ['approved_head', 'completed']) || $purchase->is_purchased) {
+             return back()->with('error', 'Tidak bisa menghapus data yang sudah disetujui/diselesaikan.');
         }
 
         $purchase->delete();
         return back()->with('success', 'Data dihapus.');
     }
 
-    public function process(Request $request, $id)
-    {
-        // 1. VALIDASI (Sesuaikan dengan name di Form View)
-        $request->validate([
-            'actual_unit_price' => 'required|numeric', // Di form namanya actual_unit_price
-            'brand'             => 'required|string|max:100',
-            'proof_photo'       => 'nullable|image|max:5120',
-        ]);
-
-        $purchase = Purchase::findOrFail($id);
-
-        // 2. UPDATE DATA PURCHASE
-        // Kita simpan harga asli dan ubah status
-        $purchase->actual_unit_price = $request->actual_unit_price; 
-        $purchase->brand = $request->brand;
-        
-        // Simpan Foto
-        if ($request->hasFile('proof_photo')) {
-            // Hapus foto lama jika ada
-            if ($purchase->transaction_proof_photo) {
-                Storage::disk('public')->delete($purchase->transaction_proof_photo);
-            }
-            $path = $request->file('proof_photo')->store('evidence', 'public');
-            $purchase->transaction_proof_photo = $path;
-        }
-
-        $purchase->status = 'completed';
-        $purchase->is_purchased = true;
-        $purchase->save();
-
-        // ============================================================
-        // 3. LOGIKA MASUK TOOLS (ASET GENERATOR) - KODE ANDA
-        // ============================================================
-        
-        // A. Tentukan Prefix Kode (Misal: LAP untu Laptop)
-        $prefix = 'GEN'; 
-        if ($purchase->category && !empty($purchase->category->category_name)) {
-            // Ambil 3 huruf pertama kategori, uppercase
-            $prefix = strtoupper(substr($purchase->category->category_name, 0, 3));
-        }
-
-        // B. Cari Nomor Urut Terakhir di Database
-        // Kita ambil angka terakhir SEKALI saja sebelum loop agar lebih cepat
-        $lastTool = Tool::where('tool_code', 'like', $prefix . '-%')
-                        ->orderByRaw('LENGTH(tool_code) DESC') // Urutkan panjang string dulu
-                        ->orderBy('tool_code', 'desc')         // Baru urutkan kodenya
-                        ->first();
-        
-        $nextNumber = 1;
-        if ($lastTool) {
-            $parts = explode('-', $lastTool->tool_code);
-            // Ambil angka paling belakang
-            if (count($parts) >= 2) {
-                $nextNumber = intval(end($parts)) + 1;
-            }
-        }
-
-        // C. Looping Sebanyak Quantity (Beli 5 = Buat 5 Baris)
-        for ($i = 0; $i < $purchase->quantity; $i++) {
-            
-            // Format Kode: ABC-001, ABC-002, dst
-            $generatedCode = $prefix . '-' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
-
-            // Create Data Tool
-            Tool::create([
-                'tool_code'           => $generatedCode,
-                'tool_name'           => $purchase->tool_name,
-                'brand'               => $request->brand,      // Dari Input User
-                'purchase_date'       => $purchase->date,      // Dari Tanggal Beli
-                'category_id'         => $purchase->category_id,
-                // 'purchase_item_id' => $purchase->id,        // (Opsional: Kalau di tabel tools ada kolom ini, nyalakan)
-                'quantity'            => 1,                    // Karena aset, qty per baris selalu 1
-                'current_condition'   => 'Baik',               // Default
-                'availability_status' => 'available',          // Default
-                'description'         => $purchase->specification,
-                'image'               => $purchase->transaction_proof_photo, // Opsional: Foto nota jadi foto aset
-            ]);
-
-            // Naikkan nomor urut untuk putaran berikutnya
-            $nextNumber++;
-        }
-
-        return redirect()->back()->with('success', 'Transaksi Selesai! ' . $purchase->quantity . ' item telah masuk ke Inventaris.');
-    }
+    // (Fungsi process() dihapus karena tugasnya sudah digabung ke storePurchaseEvidence)
 
     /**
      * [BARU] Export PDF History with Analysis
@@ -520,7 +445,7 @@ class PurchaseController extends Controller
     {
         set_time_limit(300);
         // 1. LOGIKA QUERY (Disamakan pesis dengan indexHistory)
-        $query = Purchase::with(['vendor', 'user', 'category']);
+        $query = Purchase::with(['vendor', 'user', 'items.category']);
 
         // Filter Status Defaul (Completed / Rejected)
         if ($request->filled('status') && $request->status == 'completed') {

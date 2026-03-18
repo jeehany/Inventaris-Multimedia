@@ -181,42 +181,57 @@
                                         </td>
 
                                         <td class="px-6 py-4">
-                                            <div class="font-bold text-indigo-700"><?php echo e($purchase->tool_name); ?></div>
+                                            <?php if($purchase->items && $purchase->items->count() > 0): ?>
+                                                <div class="font-bold text-indigo-700">
+                                                    <?php echo e($purchase->items->first()->tool_name); ?>
+
+                                                    <?php if($purchase->items->count() > 1): ?>
+                                                        <span class="text-xs bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded ml-1">
+                                                            +<?php echo e($purchase->items->count() - 1); ?> item lainnya
+                                                        </span>
+                                                    <?php endif; ?>
+                                                </div>
+                                            <?php else: ?>
+                                                <div class="font-bold text-slate-500 italic">Multi-Item</div>
+                                            <?php endif; ?>
                                             <div class="text-xs text-slate-500 mt-1 flex flex-col gap-0.5">
-                                                <span><span class="font-medium text-slate-700">Vendor:</span> <?php echo e($purchase->vendor->name); ?></span>
-                                                <span><span class="font-medium text-slate-700">Qty:</span> <?php echo e($purchase->quantity); ?> unit</span>
+                                                <span><span class="font-medium text-slate-700">Vendor:</span> <?php echo e($purchase->vendor ? $purchase->vendor->name : '-'); ?></span>
+                                                <span><span class="font-medium text-slate-700">Total Item:</span> <?php echo e($purchase->items ? $purchase->items->sum('quantity') : 0); ?> unit</span>
                                             </div>
                                         </td>
 
                                         <td class="px-6 py-4 whitespace-nowrap text-right font-bold text-slate-700">
-                                            Rp <?php echo e(number_format($purchase->subtotal, 0, ',', '.')); ?>
+                                            Rp <?php echo e(number_format($purchase->total_amount, 0, ',', '.')); ?>
 
                                         </td>
 
                                         <td class="px-6 py-4 whitespace-nowrap text-center">
-                                            <?php if($purchase->status == 'pending'): ?>
+                                            <?php if($purchase->status == 'pending_head' || $purchase->status == 'pending'): ?>
                                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 border border-amber-200">
                                                     <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                                    Menunggu
+                                                    Menunggu Kepala
                                                 </span>
-                                            <?php elseif($purchase->status == 'approved'): ?>
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 border border-indigo-200">
-                                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                                    Disetujui
-                                                </span>
+                                            <?php elseif($purchase->status == 'approved_head'): ?>
+                                                <div class="flex flex-col items-center gap-1">
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
+                                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                        Disetujui Kep.
+                                                    </span>
+                                                    <span class="text-[10px] text-slate-500 italic block">Menunggu Bendahara</span>
+                                                </div>
                                             <?php elseif($purchase->status == 'completed'): ?> 
                                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200">
                                                     <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                                                     Selesai
                                                 </span>
-                                            <?php elseif($purchase->status == 'rejected'): ?>
-                                                <div class="flex flex-col items-center">
+                                            <?php elseif(str_contains($purchase->status, 'rejected')): ?>
+                                                <div class="flex flex-col items-center gap-1">
                                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-100 text-rose-800 border border-rose-200">
                                                         <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                                                         Ditolak
                                                     </span>
                                                     <?php if($purchase->rejection_note): ?>
-                                                        <div class="group relative mt-1">
+                                                        <div class="group relative">
                                                             <span class="text-[10px] text-rose-500 border-b border-dotted border-rose-400 cursor-help">Lihat Alasan</span>
                                                             <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 p-2 bg-slate-800 text-white text-xs rounded shadow-lg w-48 text-center hidden group-hover:block z-10 opacity-0 group-hover:opacity-100 transition-opacity">
                                                                 <?php echo e($purchase->rejection_note); ?>
@@ -237,44 +252,43 @@
                                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                                                 </button>
                                                 
-                                                <?php if(in_array(auth()->user()->role, ['kepala', 'head'])): ?>
-                                                    <?php if($purchase->status == 'pending'): ?>
-                                                        
-                                                        <form action="<?php echo e(route('purchases.approve', $purchase->id)); ?>" method="POST">
-                                                            <?php echo csrf_field(); ?> <?php echo method_field('PATCH'); ?>
-                                                            <button type="submit" class="text-emerald-600 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 p-2 rounded-lg transition" title="Setujui Pengajuan" onclick="return confirm('Setujui pengajuan ini?')">
-                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                                                </svg>
-                                                            </button>
-                                                        </form>
-                                                        
-                                                        
-                                                        <button type="button" class="text-rose-600 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 p-2 rounded-lg transition" title="Tolak Pengajuan" onclick="rejectPurchase(<?php echo e($purchase->id); ?>)">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                                            </svg>
-                                                        </button>
-
-                                                        <form id="reject-form-<?php echo e($purchase->id); ?>" action="<?php echo e(route('purchases.reject', $purchase->id)); ?>" method="POST" class="hidden">
-                                                            <?php echo csrf_field(); ?> <?php echo method_field('PATCH'); ?>
-                                                            <input type="hidden" name="note" id="note-<?php echo e($purchase->id); ?>">
-                                                        </form>
-                                                    <?php else: ?>
-                                                        
-                                                    <?php endif; ?>
-                                
-                                                <?php else: ?>
+                                                <?php if(auth()->user()->role == 'kepala' && str_starts_with($purchase->status, 'pending')): ?>
                                                     
-                                                    <?php if($purchase->status == 'pending'): ?>
-                                                        <button type="button" onclick="openDeleteModal('<?php echo e(route('purchases.destroy', $purchase->id)); ?>', 'Batalkan Pengajuan?', 'Yakin ingin membatalkan pengajuan ini? Data akan dihapus permanen.')" class="text-rose-600 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 p-2 rounded-lg transition" title="Batalkan Pengajuan">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                            </svg>
+                                                    <form action="<?php echo e(route('purchases.approve', $purchase->id)); ?>" method="POST" class="inline">
+                                                        <?php echo csrf_field(); ?> <?php echo method_field('PATCH'); ?>
+                                                        <button type="submit" class="text-emerald-600 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 p-2 rounded-lg transition" title="Setujui Pengajuan" onclick="return confirm('Setujui pengajuan ini dan teruskan ke Bendahara?')">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
                                                         </button>
-                                                    <?php else: ?>
-                                                        
-                                                    <?php endif; ?>
+                                                    </form>
+                                                    
+                                                    <button type="button" class="text-rose-600 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 p-2 rounded-lg transition inline" title="Tolak Pengajuan" onclick="rejectPurchase(<?php echo e($purchase->id); ?>, 'Alasan Penolakan Kepala:')">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                                                    </button>
+                                                    <form id="reject-form-<?php echo e($purchase->id); ?>" action="<?php echo e(route('purchases.reject', $purchase->id)); ?>" method="POST" class="hidden">
+                                                        <?php echo csrf_field(); ?> <?php echo method_field('PATCH'); ?>
+                                                        <input type="hidden" name="note" id="note-<?php echo e($purchase->id); ?>">
+                                                    </form>
+                                                    
+                                                <?php elseif(auth()->user()->role == 'bendahara' && $purchase->status == 'approved_head'): ?>
+                                                    
+                                                    <button onclick="openEvidenceModal(<?php echo e($purchase->id); ?>, <?php echo e($purchase->total_amount); ?>)" class="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 p-2 rounded-lg transition" title="Proses Pencairan & Bukti Belanja">
+                                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                    </button>
+                                                    
+                                                    <button type="button" class="text-rose-600 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 p-2 rounded-lg transition inline" title="Tolak Pencairan" onclick="rejectPurchase(<?php echo e($purchase->id); ?>, 'Alasan Penolakan (Misal: Tidak Ada Anggaran):')">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                                                    </button>
+                                                    <form id="reject-form-<?php echo e($purchase->id); ?>" action="<?php echo e(route('purchases.reject', $purchase->id)); ?>" method="POST" class="hidden">
+                                                        <?php echo csrf_field(); ?> <?php echo method_field('PATCH'); ?>
+                                                        <input type="hidden" name="note" id="note-<?php echo e($purchase->id); ?>">
+                                                    </form>
+
+                                                <?php elseif(auth()->user()->role == 'staff' && str_starts_with($purchase->status, 'pending')): ?>
+                                                    <button type="button" onclick="openDeleteModal('<?php echo e(route('purchases.destroy', $purchase->id)); ?>', 'Batalkan Pengajuan?', 'Yakin ingin membatalkan pengajuan ini? Data akan dihapus permanen.')" class="text-rose-600 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 p-2 rounded-lg transition" title="Batalkan Pengajuan">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                        </svg>
+                                                    </button>
                                                 <?php endif; ?>
 
                                             </div>
@@ -357,21 +371,59 @@
             // Format Rupiah
             const formatter = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' });
             
-            // Translate Status
+            // Translate Status Multi-level
             let statusBadge = '';
-            if(data.status === 'pending') statusBadge = '<span class="px-2 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-bold border border-amber-200">Menunggu</span>';
-            else if(data.status === 'approved') statusBadge = '<span class="px-2 py-1 bg-indigo-100 text-indigo-800 rounded-full text-xs font-bold border border-indigo-200">Disetujui</span>';
-            else if(data.status === 'rejected') statusBadge = '<span class="px-2 py-1 bg-rose-100 text-rose-800 rounded-full text-xs font-bold border border-rose-200">Ditolak</span>';
-            else if(data.status === 'completed') statusBadge = '<span class="px-2 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-bold border border-emerald-200">Selesai</span>';
+            if(data.status === 'pending_head' || data.status === 'pending') statusBadge = '<span class="px-2 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-bold border border-amber-200">Menunggu Kepala</span>';
+            else if(data.status === 'approved_head') statusBadge = '<span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-bold border border-blue-200">Disetujui Kep. (Tunggu Bendahara)</span>';
+            else if(data.status === 'rejected_head') statusBadge = '<span class="px-2 py-1 bg-rose-100 text-rose-800 rounded-full text-xs font-bold border border-rose-200">Ditolak Kepala</span>';
+            else if(data.status === 'rejected_bendahara') statusBadge = '<span class="px-2 py-1 bg-rose-100 text-rose-800 rounded-full text-xs font-bold border border-rose-200">Ditolak Bendahara</span>';
+            else if(data.status === 'completed') statusBadge = '<span class="px-2 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-bold border border-emerald-200">Anggaran Cair / Dibeli</span>';
 
             // Tanggal
             const date = new Date(data.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+            // Generate HTML for Items
+            let itemsHtml = '';
+            if (data.items && data.items.length > 0) {
+                itemsHtml = `
+                    <div class="col-span-2 mt-4">
+                        <table class="w-full text-sm text-left border border-slate-200 rounded">
+                            <thead class="bg-slate-50 text-slate-600 text-xs uppercase border-b border-slate-200">
+                                <tr>
+                                    <th class="px-3 py-2">Nm Aset & Kategori</th>
+                                    <th class="px-3 py-2">Qty</th>
+                                    <th class="px-3 py-2 text-right">Hrg. Satuan</th>
+                                    <th class="px-3 py-2 text-right">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                `;
+                data.items.forEach(item => {
+                    itemsHtml += `
+                        <tr class="hover:bg-slate-50">
+                            <td class="px-3 py-2">
+                                <span class="font-bold text-indigo-700 block">${item.tool_name}</span>
+                                <span class="text-[10px] text-slate-500 block">${item.category ? item.category.category_name : '-'}</span>
+                                <span class="text-[10px] text-slate-400 block">${item.specification || ''}</span>
+                            </td>
+                            <td class="px-3 py-2">${item.quantity}</td>
+                            <td class="px-3 py-2 text-right">${formatter.format(item.unit_price)}</td>
+                            <td class="px-3 py-2 text-right font-medium">${formatter.format(item.subtotal)}</td>
+                        </tr>
+                    `;
+                });
+                itemsHtml += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }
 
             // HTML Structure (Grid 2 Kolom)
             content.innerHTML = `
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                     <div class="col-span-2 border-b border-slate-100 pb-2 mb-2">
-                        <p class="text-xs text-slate-500 uppercase font-bold tracking-wider">Info Transaksi</p>
+                        <p class="text-xs text-slate-500 uppercase font-bold tracking-wider">Info Transaksi (Total: ${formatter.format(data.total_amount)})</p>
                     </div>
 
                     <div>
@@ -391,47 +443,16 @@
                         <div class="mt-1">${statusBadge}</div>
                     </div>
 
-                    <div class="col-span-2 border-b border-slate-100 pb-2 mb-2 mt-2">
-                        <p class="text-xs text-slate-500 uppercase font-bold tracking-wider">Detail Aset</p>
-                    </div>
+                    ${itemsHtml}
 
-                    <div class="col-span-2">
-                        <p class="text-xs text-slate-500">Nama Aset</p>
-                        <p class="font-bold text-indigo-700 text-base">${data.tool_name}</p>
-                    </div>
-                    <div>
-                         <p class="text-xs text-slate-500">Vendor</p>
-                        <p class="font-bold text-slate-800">${data.vendor ? data.vendor.name : '-'}</p>
-                    </div>
-                    <div>
-                         <p class="text-xs text-slate-500">Kategori</p>
-                        <p class="font-bold text-slate-800">${data.category ? data.category.category_name : '-'}</p>
-                    </div>
-                    <div class="col-span-2">
-                         <p class="text-xs text-slate-500">Spesifikasi</p>
-                        <p class="font-medium text-slate-700 bg-slate-50 p-2 rounded border border-slate-100">${data.specification || '-'}</p>
-                    </div>
-
-                    <div class="col-span-2 border-b border-slate-100 pb-2 mb-2 mt-2">
-                        <p class="text-xs text-slate-500 uppercase font-bold tracking-wider">Estimasi Biaya</p>
-                    </div>
-
-                    <div>
-                        <p class="text-xs text-slate-500">Harga Satuan</p>
-                        <p class="font-mono font-medium text-slate-600">${formatter.format(data.unit_price)}</p>
-                    </div>
-                     <div>
-                        <p class="text-xs text-slate-500">Jumlah (Qty)</p>
-                        <p class="font-mono font-medium text-slate-600">${data.quantity} Unit</p>
-                    </div>
                     <div class="col-span-2 bg-indigo-50 p-3 rounded-lg border border-indigo-100 mt-2">
                         <div class="flex justify-between items-center">
-                            <p class="text-sm font-bold text-indigo-900">Total Estimasi</p>
-                            <p class="text-lg font-bold text-indigo-700">${formatter.format(data.subtotal)}</p>
+                            <p class="text-sm font-bold text-indigo-900">Grand Total RAB</p>
+                            <p class="text-lg font-bold text-indigo-700">${formatter.format(data.total_amount)}</p>
                         </div>
                     </div>
 
-                    ${data.status === 'rejected' && data.rejection_note ? `
+                    ${(data.status.includes('rejected')) && data.rejection_note ? `
                         <div class="col-span-2 bg-rose-50 p-3 rounded-lg border border-rose-100 mt-2">
                             <p class="text-xs font-bold text-rose-800 uppercase mb-1">Alasan Penolakan</p>
                             <p class="text-sm text-rose-700 italic">"${data.rejection_note}"</p>
@@ -445,6 +466,17 @@
 
         function closeDetailModal() {
             document.getElementById('detailModal').classList.add('hidden');
+        }
+        function openEvidenceModal(id, currentTotal) {
+            document.getElementById('evidenceModal').classList.remove('hidden');
+            document.getElementById('evidenceForm').action = `/purchases/${id}/evidence`;
+            if (currentTotal) {
+                document.getElementById('realPriceInput').value = currentTotal;
+            }
+        }
+
+        function closeEvidenceModal() {
+            document.getElementById('evidenceModal').classList.add('hidden');
         }
     </script>
     <?php if (isset($component)) { $__componentOriginal47243a3de3ed132c2f9157dc8e8a8bd7 = $component; } ?>
@@ -467,6 +499,61 @@
 <?php $component = $__componentOriginal47243a3de3ed132c2f9157dc8e8a8bd7; ?>
 <?php unset($__componentOriginal47243a3de3ed132c2f9157dc8e8a8bd7); ?>
 <?php endif; ?>
+
+    <!-- MODAL PENCAIRAN BENDAHARA -->
+    <div id="evidenceModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-slate-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeEvidenceModal()"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                            <h3 class="text-lg leading-6 font-medium text-slate-900" id="modal-title">
+                                Proses Pencairan & Bukti Belanja
+                            </h3>
+                            <div class="mt-4">
+                                <form id="evidenceForm" method="POST" action="" enctype="multipart/form-data">
+                                    <?php echo csrf_field(); ?>
+                                    <div class="mb-4">
+                                        <label class="block text-sm font-medium text-slate-700 mb-1">Total Dana Dicairkan/Realisasi (Rp) <span class="text-rose-500">*</span></label>
+                                        <div class="relative">
+                                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <span class="text-slate-500 sm:text-sm">Rp</span>
+                                            </div>
+                                            <input type="number" name="real_price" id="realPriceInput" class="pl-10 focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-slate-300 rounded-md" required>
+                                        </div>
+                                        <p class="text-xs text-slate-500 mt-1">Masukkan total uang yang direalisasikan.</p>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="block text-sm font-medium text-slate-700 mb-1">Merek Barang (Jika ada) <span class="text-rose-500">*</span></label>
+                                        <input type="text" name="brand" class="focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-slate-300 rounded-md p-2" placeholder="Contoh: Sony / Canon / Multimerek" required value="Multimerek">
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="block text-sm font-medium text-slate-700 mb-1">Upload Bukti Nota/Struk <span class="text-rose-500">*</span></label>
+                                        <input type="file" name="proof_photo" accept="image/*" class="focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-slate-300 rounded-md py-1" required>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t border-slate-200">
+                    <button type="submit" form="evidenceForm" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        Selesai & Simpan
+                    </button>
+                    <button type="button" onclick="closeEvidenceModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-slate-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Batal
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
  <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginal9ac128a9029c0e4701924bd2d73d7f54)): ?>

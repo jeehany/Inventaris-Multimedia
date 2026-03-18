@@ -38,7 +38,9 @@ class PurchaseCompletedSheet implements FromQuery, WithHeadings, WithMapping, Sh
             $search = $this->filters['search'];
             $query->where(function($q) use ($search) {
                 $q->where('purchase_code', 'LIKE', "%{$search}%")
-                  ->orWhere('tool_name', 'LIKE', "%{$search}%")
+                  ->orWhereHas('items', function($i) use ($search) {
+                      $i->where('tool_name', 'LIKE', "%{$search}%");
+                  })
                   ->orWhereHas('vendor', function($v) use ($search) {
                       $v->where('name', 'LIKE', "%{$search}%");
                   });
@@ -56,23 +58,21 @@ class PurchaseCompletedSheet implements FromQuery, WithHeadings, WithMapping, Sh
 
     public function map($purchase): array
     {
-        $qty = $purchase->quantity;
-        $budgetPrice = $purchase->unit_price;
-        $actualPrice = $purchase->actual_unit_price ?? $purchase->unit_price;
-        
-        $totalBudget = $budgetPrice * $qty;
-        $totalActual = $actualPrice * $qty;
+        $qty = $purchase->items ? $purchase->items->sum('quantity') : 0;
+        $totalBudget = $purchase->items ? $purchase->items->sum('subtotal') : $purchase->total_amount;
+        $totalActual = $purchase->total_amount;
         $diff = $totalBudget - $totalActual; // Positif = Hemat
+        $toolNames = $purchase->items ? implode("\n", $purchase->items->map(fn($i) => "- " . $i->tool_name . " (" . $i->quantity . " unit)")->toArray()) : '-';
 
         return [
             \Carbon\Carbon::parse($purchase->updated_at)->translatedFormat('d F Y'),
             $purchase->purchase_code,
-            $purchase->tool_name,
+            $toolNames,
             $purchase->vendor ? $purchase->vendor->name : '-',
             $qty,
-            "Rp " . number_format($budgetPrice, 0, ',', '.'),
+            "-",
             "Rp " . number_format($totalBudget, 0, ',', '.'),
-            "Rp " . number_format($actualPrice, 0, ',', '.'),
+            "-",
             "Rp " . number_format($totalActual, 0, ',', '.'),
             "Rp " . number_format($diff, 0, ',', '.'),
             'Selesai'

@@ -15,8 +15,83 @@
         </h2>
      <?php $__env->endSlot(); ?>
 
+    <style>
+        /* Custom UI for HTML5-QRCode Scanner */
+        #qr-reader {
+            border: none !important;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            padding: 1rem;
+        }
+        #qr-reader__dashboard_section_csr span,
+        #qr-reader__dashboard_section_csr div {
+            font-family: inherit !important;
+            color: #475569 !important;
+            font-size: 0.875rem !important;
+        }
+        #qr-reader__dashboard_section_swaplink {
+            text-decoration: none !important;
+            color: #4f46e5 !important;
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-top: 0.75rem;
+            display: inline-block;
+            transition: color 0.2s;
+        }
+        #qr-reader__dashboard_section_swaplink:hover {
+            color: #3730a3 !important;
+        }
+        #qr-reader button {
+            background-color: #f1f5f9 !important;
+            color: #334155 !important;
+            border: 1px solid #cbd5e1 !important;
+            padding: 0.5rem 1rem !important;
+            border-radius: 0.5rem !important;
+            font-size: 0.875rem !important;
+            font-weight: 600 !important;
+            cursor: pointer !important;
+            transition: all 0.2s !important;
+            margin: 0.25rem !important;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+        }
+        #qr-reader button:hover {
+            background-color: #e2e8f0 !important;
+        }
+        #qr-reader__dashboard_section_csr input[type="file"] {
+            display: block;
+            width: 100%;
+            font-size: 0.875rem;
+            color: #475569;
+            background-color: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: 0.75rem;
+            padding: 1.5rem 1rem;
+            margin: 1rem 0;
+            cursor: pointer;
+            text-align: center;
+            transition: border-color 0.2s;
+        }
+        #qr-reader__dashboard_section_csr input[type="file"]:hover {
+            border-color: #818cf8;
+        }
+        #qr-reader__dashboard_section_csr input[type="file"]::file-selector-button {
+            background-color: #4f46e5;
+            color: white;
+            border: none;
+            padding: 0.5rem 1.25rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-right: 1.5rem;
+            transition: background-color 0.2s;
+        }
+        #qr-reader__dashboard_section_csr input[type="file"]::file-selector-button:hover {
+            background-color: #4338ca;
+        }
+    </style>
+
     <div class="py-12 bg-slate-50 min-h-screen">
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             
             
             <?php if($errors->any()): ?>
@@ -63,34 +138,60 @@
 
                         
                         <div class="bg-slate-50 p-6 rounded-xl border border-slate-200 mb-8">
-                            <h4 class="font-bold text-indigo-900 text-sm uppercase tracking-wider mb-4 border-b border-indigo-100 pb-2">Pilih Aset Multimedia</h4>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                
-                                <div>
-                                    <label for="category_filter" class="block text-sm font-semibold text-slate-700 mb-2">Filter Kategori</label>
-                                    <select id="category_filter" class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white text-slate-700">
-                                        <option value="">-- Pilih Kategori --</option>
-                                        <?php $__currentLoopData = $categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $category): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                            <option value="<?php echo e($category->id); ?>"><?php echo e($category->category_name); ?></option>
-                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                                    </select>
-                                    <p class="text-xs text-slate-500 mt-2 flex items-center gap-1">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                        Pilih kategori untuk menampilkan daftar aset.
-                                    </p>
-                                </div>
-    
-                                
-                                <div>
-                                    <label for="tool_ids" class="block text-sm font-semibold text-slate-700 mb-2">Daftar Aset (Multi-Select)</label>
-                                    <select name="tool_ids[]" id="tool_ids" multiple class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 h-40 bg-slate-100 cursor-not-allowed text-sm text-slate-600 font-mono" disabled required>
-                                        <option value="" class="p-2">-- Menunggu Input Kategori --</option>
-                                    </select>
-                                    <div class="mt-2 text-xs text-indigo-600 bg-indigo-50 p-2 rounded border border-indigo-100 inline-block">
-                                        <strong>Tips:</strong> Tahan tombol <kbd class="font-sans bg-white border border-slate-300 rounded px-1">CTRL</kbd> (Win) atau <kbd class="font-sans bg-white border border-slate-300 rounded px-1">CMD</kbd> (Mac) untuk memilih banyak aset.
-                                    </div>
-                                </div>
+                            <div class="flex justify-between items-center mb-4 border-b border-indigo-100 pb-2">
+                                <h4 class="font-bold text-indigo-900 text-sm uppercase tracking-wider">Pindai / Cari Aset (QR Code)</h4>
                             </div>
+                            
+                            
+                            <div class="mb-4">
+                                <label for="barcode_input" class="block text-sm font-semibold text-slate-700 mb-2">Kode Aset / Pindai QR Code</label>
+                                <div class="flex gap-2 mb-3 flex-wrap">
+                                    <input type="text" id="barcode_input" placeholder="Ketik kode aset atau Pindai QR..." class="w-full md:w-1/2 border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 font-mono text-sm" autofocus>
+                                    <button type="button" id="btn_manual_add" class="bg-slate-800 text-white px-4 py-2 rounded-lg hover:bg-slate-700 transition font-medium text-sm flex items-center gap-2">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                        Tambah
+                                    </button>
+                                    <button type="button" id="btn_scan_camera" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition font-medium text-sm flex items-center gap-2">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                        Gunakan Kamera
+                                    </button>
+                                </div>
+
+                                <!-- Container QR Scanner -->
+                                <div id="qr-reader-container" class="hidden w-full md:w-1/2 mb-4 border border-indigo-200 rounded-xl overflow-hidden bg-white shadow-sm">
+                                    <div id="qr-reader" style="width: 100%;"></div>
+                                    <button type="button" id="btn_close_camera" class="w-full bg-rose-50 text-rose-600 py-3 font-bold text-sm hover:bg-rose-100 transition border-t border-rose-100 flex items-center justify-center gap-2">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                        Tutup Scanner Kamera
+                                    </button>
+                                </div>
+
+                                <p class="text-xs text-slate-500 mt-1" id="scan_status">Status: Standby untuk pemindaian QR...</p>
+                            </div>
+
+                            
+                            <div class="bg-white rounded-lg border border-slate-200 overflow-hidden">
+                                <table class="min-w-full divide-y divide-slate-200">
+                                    <thead class="bg-slate-100">
+                                        <tr>
+                                            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Kode Aset</th>
+                                            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Nama Aset</th>
+                                            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Kategori</th>
+                                            <th class="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-100" id="scanned_tools_body">
+                                        <tr id="empty_row">
+                                            <td colspan="4" class="px-4 py-8 text-center text-slate-400 text-sm">
+                                                Belum ada aset yang di-scan atau ditambahkan.
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            
+                            <div id="hidden_tool_inputs"></div>
                         </div>
 
                         
@@ -132,49 +233,168 @@
     </div>
 
     
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <script>
-        document.getElementById('category_filter').addEventListener('change', function() {
-            var categoryId = this.value;
-            var toolSelect = document.getElementById('tool_ids');
+        const barcodeInput = document.getElementById('barcode_input');
+        const btnManualAdd = document.getElementById('btn_manual_add');
+        const btnScanCamera = document.getElementById('btn_scan_camera');
+        const btnCloseCamera = document.getElementById('btn_close_camera');
+        const qrContainer = document.getElementById('qr-reader-container');
+        const scanStatus = document.getElementById('scan_status');
+        const tableBody = document.getElementById('scanned_tools_body');
+        const emptyRow = document.getElementById('empty_row');
+        const hiddenInputsContainer = document.getElementById('hidden_tool_inputs');
+        
+        let html5QrcodeScanner = null;
+        let addedToolIds = [];
 
-            // 1. Reset Dropdown Aset
-            toolSelect.innerHTML = '<option value="" class="p-2 text-slate-400">Memuat data...</option>';
-            toolSelect.disabled = true;
-            toolSelect.classList.add('bg-slate-100', 'cursor-not-allowed', 'text-slate-400');
-            toolSelect.classList.remove('bg-white', 'text-slate-700');
+        barcodeInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                processBarcode(this.value.trim());
+            }
+        });
 
-            if (categoryId) {
-                // 2. Fetch Data dari Server
-                fetch('/get-tools/' + categoryId)
-                    .then(response => response.json())
-                    .then(data => {
-                        // Kosongkan opsi
-                        toolSelect.innerHTML = '';
-                        
-                        if (data.length === 0) {
-                            toolSelect.innerHTML = '<option value="" class="p-2">Tidak ada aset tersedia / stok habis</option>';
-                        } else {
-                            // Loop data aset dan masukkan ke dropdown
-                            data.forEach(tool => {
-                                var option = document.createElement('option');
-                                option.value = tool.id;
-                                option.text = tool.tool_name + ' (Kode: ' + tool.tool_code + ')';
-                                option.className = "p-2 hover:bg-indigo-50 cursor-pointer border-b border-slate-50 last:border-0";
-                                toolSelect.appendChild(option);
-                            });
-                            
-                            // Aktifkan Dropdown
-                            toolSelect.disabled = false;
-                            toolSelect.classList.remove('bg-slate-100', 'cursor-not-allowed', 'text-slate-400');
-                            toolSelect.classList.add('bg-white', 'text-slate-700');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        toolSelect.innerHTML = '<option value="" class="p-2 text-rose-500">Gagal memuat data</option>';
-                    });
-            } else {
-                toolSelect.innerHTML = '<option value="" class="p-2">-- Pilih Kategori Dahulu --</option>';
+        btnManualAdd.addEventListener('click', function() {
+            processBarcode(barcodeInput.value.trim());
+        });
+
+        // Toggle Camera Scanner
+        btnScanCamera.addEventListener('click', function() {
+            qrContainer.classList.remove('hidden');
+            if(!html5QrcodeScanner) {
+                html5QrcodeScanner = new Html5QrcodeScanner(
+                    "qr-reader", { fps: 10, qrbox: {width: 250, height: 250} }, false);
+                
+                html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+                showStatus('Kamera diaktifkan...', 'info');
+            }
+        });
+
+        btnCloseCamera.addEventListener('click', function() {
+            if(html5QrcodeScanner) {
+                html5QrcodeScanner.clear().then(() => {
+                    html5QrcodeScanner = null;
+                    qrContainer.classList.add('hidden');
+                    showStatus('Kamera dimatikan.', 'info');
+                    barcodeInput.focus();
+                });
+            }
+        });
+
+        function onScanSuccess(decodedText, decodedResult) {
+            // Pause scanner momentarily after success detection (optional but good for UX)
+            showStatus('QR Terbaca: ' + decodedText, 'success');
+            
+            // Masukkan nilai hasil scanner kamera ke fungsi existing 
+            processBarcode(decodedText);
+            
+            // Auto-close camera logic (if user only needs to scan one, but here we let them scan multi, 
+            // so we keep it open, but we have a delay to prevent duplicate scanning rapidly)
+        }
+
+        function onScanFailure(error) {
+            // handle scan failure, usually better to ignore and keep scanning
+        }
+
+        function processBarcode(code) {
+            if (!code) {
+                showStatus('Kode tidak boleh kosong!', 'error');
+                return;
+            }
+
+            barcodeInput.disabled = true;
+            btnManualAdd.disabled = true;
+            showStatus('Mencari kode: ' + code + '...', 'info');
+
+            fetch(`/get-tool-by-code?code=${encodeURIComponent(code)}`)
+                .then(response => response.json())
+                .then(res => {
+                    if (res.success) {
+                        addToolToTable(res.data);
+                        showStatus('Berhasil menambahkan: ' + res.data.tool_name, 'success');
+                        barcodeInput.value = '';
+                    } else {
+                        showStatus(res.message, 'error');
+                        barcodeInput.classList.add('border-rose-500', 'ring-rose-500');
+                        setTimeout(() => barcodeInput.classList.remove('border-rose-500', 'ring-rose-500'), 2000);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching tool:', error);
+                    showStatus('Terjadi kesalahan jaringan.', 'error');
+                })
+                .finally(() => {
+                    barcodeInput.disabled = false;
+                    btnManualAdd.disabled = false;
+                    barcodeInput.focus();
+                });
+        }
+
+        function addToolToTable(tool) {
+            if (addedToolIds.includes(tool.id)) {
+                showStatus('Aset ini sudah ada di daftar!', 'error');
+                return;
+            }
+
+            if (emptyRow) emptyRow.style.display = 'none';
+
+            addedToolIds.push(tool.id);
+
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.name = 'tool_ids[]';
+            hiddenInput.value = tool.id;
+            hiddenInput.id = 'hidden_tool_' + tool.id;
+            hiddenInputsContainer.appendChild(hiddenInput);
+
+            const tr = document.createElement('tr');
+            tr.id = 'row_tool_' + tool.id;
+            tr.className = 'hover:bg-slate-50';
+            tr.innerHTML = `
+                <td class="px-4 py-3 whitespace-nowrap text-sm font-mono text-indigo-600 font-bold">${tool.tool_code}</td>
+                <td class="px-4 py-3 text-sm text-slate-800 font-medium">${tool.tool_name}</td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-500">${tool.category_name}</td>
+                <td class="px-4 py-3 whitespace-nowrap text-center text-sm font-medium">
+                    <button type="button" onclick="removeTool(${tool.id})" class="text-rose-600 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 p-1.5 rounded-lg transition" title="Hapus dari daftar">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                </td>
+            `;
+            tableBody.appendChild(tr);
+        }
+
+        window.removeTool = function(toolId) {
+            addedToolIds = addedToolIds.filter(id => id !== toolId);
+            
+            const hiddenObj = document.getElementById('hidden_tool_' + toolId);
+            if (hiddenObj) hiddenObj.remove();
+
+            const rowObj = document.getElementById('row_tool_' + toolId);
+            if (rowObj) rowObj.remove();
+
+            if (addedToolIds.length === 0 && emptyRow) {
+                emptyRow.style.display = '';
+            }
+
+            showStatus('Aset dihapus dari daftar.', 'info');
+            barcodeInput.focus();
+        };
+
+        function showStatus(message, type) {
+            scanStatus.textContent = 'Status: ' + message;
+            scanStatus.className = 'text-xs mt-1 font-medium transition-colors ';
+            if (type === 'error') scanStatus.classList.add('text-rose-500');
+            else if (type === 'success') scanStatus.classList.add('text-emerald-500');
+            else scanStatus.classList.add('text-indigo-500');
+        }
+        
+        // Form Validation Before Submit
+        document.querySelector('form').addEventListener('submit', function(e) {
+            if(addedToolIds.length === 0) {
+                e.preventDefault();
+                alert('Anda harus melakukan scan aset minimal 1 barang!');
+                barcodeInput.focus();
             }
         });
     </script>

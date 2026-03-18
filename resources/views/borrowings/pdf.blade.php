@@ -60,6 +60,35 @@
         </table>
     </div>
 
+    <!-- BLOK RINGKASAN ANALITIK EKSEKUTIF -->
+    <div style="background-color: #f8fafc; padding: 12px; border: 1px solid #cbd5e1; margin-bottom: 15px; border-radius: 4px;">
+        <h4 style="margin-top: 0; margin-bottom: 8px; color: #1e293b; font-size: 13px; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px;">Ringkasan Keputusan Analitik (Executive Summary)</h4>
+        <table style="border: none; margin: 0; width: 100%; font-size: 10px;">
+            <tr>
+                <td style="border: none; vertical-align: top; width: 33%; padding: 4px;">
+                    <strong>Total Transaksi:</strong> <span style="color: #4338ca;">{{ $borrowings->count() }} Peminjaman</span><br>
+                    <strong>Sedang Dipinjam:</strong> <span style="color: #047857;">{{ $borrowings->where('borrowing_status', 'active')->count() }} Transaksi Berjalan</span>
+                </td>
+                <td style="border: none; vertical-align: top; width: 33%; padding: 4px;">
+                    <strong>Telah Kembali:</strong> {{ $borrowings->where('borrowing_status', 'returned')->count() }} Transaksi Selesai<br>
+                    <strong>Pengembalian Rusak/Cacat:</strong> <span style="color: #dc2626;">{{ $borrowings->where('borrowing_status', 'returned')->where('return_condition', '!=', 'Baik')->count() }} Kasus Ditemukan</span>
+                </td>
+                <td style="border: none; vertical-align: top; width: 33%; padding: 4px;">
+                    <strong>Total Aset Beredar:</strong> {{ $borrowings->where('borrowing_status', 'active')->sum(function($b) { return $b->items->count(); }) }} Unit<br>
+                    <strong>Rata-rata Durasi Pinjam:</strong> 
+                    @php
+                        $returned = $borrowings->where('borrowing_status', 'returned')->whereNotNull('actual_return_date');
+                        $avgDuration = $returned->count() > 0 ? round($returned->avg(function($b) {
+                            return \Carbon\Carbon::parse($b->borrow_date)->diffInDays(\Carbon\Carbon::parse($b->actual_return_date));
+                        })) : 0;
+                    @endphp
+                    {{ $avgDuration }} Hari
+                </td>
+            </tr>
+        </table>
+    </div>
+    <!-- END BLOK ANALITIK -->
+
     <table>
         <thead>
             <tr>
@@ -90,11 +119,16 @@
                        @endforeach
                    </ul>
                 </td>
-                <td class="text-center">
-                    @if($b->borrowing_status == 'active') <span style="color: blue;">Dipinjam</span>
-                    @elseif($b->borrowing_status == 'returned') <span style="color: green;">Kembali</span>
-                    @elseif($b->borrowing_status == 'overdue') <span style="color: red;">Terlambat</span>
-                    @else {{ $b->borrowing_status }}
+                <td>
+                    @if($b->borrowing_status == 'active')
+                        <span class="status-badge status-active">Dipinjam</span>
+                    @elseif($b->borrowing_status == 'pending_head')
+                        <span class="status-badge" style="background-color: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe;">Menunggu</span>
+                    @elseif($b->borrowing_status == 'rejected_head')
+                        <span class="status-badge" style="background-color: #ffe4e6; color: #9f1239; border: 1px solid #fecdd3;">Ditolak</span>
+                    @else
+                        <span class="status-badge status-returned">Kembali</span><br>
+                        <span class="status-sub">{{ $b->final_status }}<br>({{ $b->return_condition }})</span>
                     @endif
                 </td>
             </tr>

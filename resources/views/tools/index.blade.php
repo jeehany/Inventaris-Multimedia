@@ -143,16 +143,17 @@
                         <div class="flex gap-2 w-full md:w-auto">
 
 
+                        {{-- Tombol Laporan (Khusus Kepala) --}}
                             @auth
-                                @if(auth()->user()->isHead())
+                                @if(auth()->user()->isKepala())
                                     <div class="relative" x-data="{ open: false }">
                                         <button @click="open = !open" @click.away="open = false" class="inline-flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-5 rounded-lg shadow-lg hover:shadow-emerald-500/30 transition duration-150 ease-in-out text-sm gap-2">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                                             Export Laporan
                                             <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                                         </button>
-                                        <div x-show="open" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-xl z-20 border border-slate-100" style="display: none;">
-                                            <a href="{{ route('tools.exportPdf', request()->query()) }}" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-emerald-600">
+                                        <div x-show="open" class="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-xl z-20 border border-slate-100" style="display: none;">
+                                            <a href="{{ route('tools.exportPdf', request()->query()) }}" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-emerald-600 border-b border-slate-100">
                                                 📄 Laporan Aset (PDF)
                                             </a>
                                             <a href="{{ route('tools.exportExcel', request()->query()) }}" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-green-600">
@@ -161,10 +162,19 @@
                                         </div>
                                     </div>
                                 @else
-                                    <a href="{{ route('tools.create') }}" class="inline-flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-5 rounded-lg shadow-lg hover:shadow-indigo-500/30 transition duration-150 ease-in-out text-sm gap-2">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                                        Tambah Aset
-                                    </a>
+                                    <div class="flex gap-2 w-full md:w-auto">
+                                        {{-- Tombol Cetak URL Aset Massal --}}
+                                        <a href="{{ route('tools.printQr', request()->query()) }}" target="_blank" class="inline-flex items-center justify-center bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold py-2 px-5 rounded-lg shadow-sm transition duration-150 ease-in-out text-sm gap-2">
+                                            <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                                            Cetak Label QR
+                                        </a>
+
+                                        {{-- Tombol Tambah --}}
+                                        <button onclick="toggleModal('modal-create')" class="inline-flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-5 rounded-lg shadow-lg hover:shadow-indigo-500/30 transition duration-150 ease-in-out text-sm gap-2">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                            Tambah Aset
+                                        </button>
+                                    </div>
                                 @endif
                             @endauth
                         </div>
@@ -246,14 +256,20 @@
                                                     </svg>
                                                 </button>
 
+                                                {{-- 1.5 TOMBOL CETAK QR SATUAN --}}
+                                                <a href="{{ route('tools.printSingleQr', $tool->id) }}" target="_blank"
+                                                    class="text-emerald-600 hover:text-emerald-900 bg-emerald-50 p-2 rounded-lg hover:bg-emerald-100 transition" title="Cetak QR Code">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                                                </a>
+
                                                 @auth
-                                                    @if(!auth()->user()->isHead())
+                                                    @if(!auth()->user()->isKepala())
                                                         {{-- Edit --}}
-                                                        <a href="{{ route('tools.edit', $tool->id) }}" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 p-2 rounded-lg transition" title="Edit">
+                                                        <button type="button" onclick="toggleModal('modal-edit-{{ $tool->id }}')" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 p-2 rounded-lg transition" title="Edit">
                                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                                             </svg>
-                                                        </a>
+                                                        </button>
                                                         
                                                         {{-- Hapus (Soft Delete) --}}
                                                         <button type="button" 
@@ -337,16 +353,23 @@
                                                             <button type="button" onclick="document.getElementById('modal-detail-{{ $tool->id }}').classList.add('hidden')" class="w-full inline-flex justify-center rounded-lg border border-slate-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-slate-700 hover:bg-slate-50 focus:outline-none sm:w-auto sm:text-sm transition">
                                                                 Tutup
                                                             </button>
-                                                            @if(auth()->user()->isAdmin())
-                                                                <a href="{{ route('tools.edit', $tool->id) }}" class="mr-3 w-full inline-flex justify-center rounded-lg shadow-sm px-4 py-2 bg-amber-500 text-base font-medium text-white hover:bg-amber-600 focus:outline-none sm:w-auto sm:text-sm transition">
+                                                            @if(auth()->user()->isStaff())
+                                                                <button type="button" onclick="document.getElementById('modal-detail-{{ $tool->id }}').classList.add('hidden'); toggleModal('modal-edit-{{ $tool->id }}');" class="mr-3 w-full inline-flex justify-center rounded-lg shadow-sm px-4 py-2 bg-amber-500 text-base font-medium text-white hover:bg-amber-600 focus:outline-none sm:w-auto sm:text-sm transition">
                                                                     Edit Data
+                                                                </button>
+                                                                <a href="{{ route('tools.printSingleQr', $tool->id) }}" target="_blank" class="mr-3 w-full inline-flex justify-center items-center gap-2 rounded-lg shadow-sm px-4 py-2 bg-emerald-500 text-base font-medium text-white hover:bg-emerald-600 focus:outline-none sm:w-auto sm:text-sm transition">
+                                                                    <svg class="w-4 h-4" justify-center fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                                                                    Cetak QR
                                                                 </a>
                                                             @endif
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                            {{-- END MODAL --}}
+                                            {{-- END MODAL DETAIL --}}
+
+                                            {{-- MODAL EDIT INCLUDE --}}
+                                            @include('tools.modal_edit', ['tool' => $tool])
 
                                         </td>
                                     </tr>
@@ -375,6 +398,97 @@
         </div>
     </div>
     
+    {{-- MODAL CREATE ASET --}}
+    <div id="modal-create" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-hidden="true" role="dialog">
+        <div class="flex items-center justify-center min-h-screen px-4 text-center">
+            <div class="fixed inset-0 bg-slate-900 bg-opacity-75 transition-opacity backdrop-blur-sm" onclick="toggleModal('modal-create')"></div>
+            
+            <div class="inline-block bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:max-w-2xl sm:w-full">
+                <form action="{{ route('tools.store') }}" method="POST">
+                    @csrf
+                    <div class="bg-white px-6 pt-6 pb-6">
+                        <div class="flex justify-between items-center mb-5 border-b border-slate-100 pb-3">
+                            <h3 class="text-lg font-bold text-slate-900">Tambah Data Aset Baru</h3>
+                            <button type="button" onclick="toggleModal('modal-create')" class="text-slate-400 hover:text-rose-500 transition-colors">
+                                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            </button>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Kategori Aset -->
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Kategori Aset <span class="text-rose-500">*</span></label>
+                                <select name="category_id" required class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-slate-700">
+                                    <option value="" disabled selected>-- Pilih Kategori --</option>
+                                    @foreach($categories as $category)
+                                        <option value="{{ $category->id }}">{{ $category->category_name }} ({{ $category->code }})</option>
+                                    @endforeach
+                                </select>
+                                <p class="text-[10px] text-indigo-600 mt-1">* Kode aset akan otomatis di-generate berdasarkan singkatan kategori yang dipilih.</p>
+                            </div>
+
+                            <!-- Nama Alat -->
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Nama Alat <span class="text-rose-500">*</span></label>
+                                <input type="text" name="tool_name" required placeholder="Contoh: Kamera Canon EOS 5D"
+                                    class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 placeholder-slate-400">
+                            </div>
+
+                            <!-- Merk / Tipe -->
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Merk / Tipe <span class="text-slate-400 font-normal">(Opsional)</span></label>
+                                <input type="text" name="brand" placeholder="Contoh: Canon EOS 5D Mark IV"
+                                    class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 placeholder-slate-400">
+                            </div>
+
+                            <!-- Tanggal Perolehan -->
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Tanggal Perolehan <span class="text-slate-400 font-normal">(Opsional)</span></label>
+                                <input type="date" name="purchase_date" 
+                                    class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-slate-700">
+                            </div>
+
+                            <!-- Kondisi Aset -->
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Kondisi Aset Saat Ini <span class="text-rose-500">*</span></label>
+                                <select name="current_condition" required class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-slate-700">
+                                    <option value="Baik" selected>Baik (Siap Pakai)</option>
+                                    <option value="Rusak Ringan">Rusak Ringan (Perlu Servis Minor)</option>
+                                    <option value="Rusak Berat">Rusak Berat (Tidak Bisa Dipakai)</option>
+                                </select>
+                            </div>
+
+                            <!-- Ketersediaan -->
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Ketersediaan (Availability) <span class="text-rose-500">*</span></label>
+                                <select name="availability_status" required class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-slate-700">
+                                    <option value="available" selected>Tersedia (Bisa Dipinjam)</option>
+                                    <option value="borrowed">Sedang Dipinjam</option>
+                                    <option value="maintenance">Dalam Perbaikan (Maintenance)</option>
+                                    <option value="missing">Hilang / Tidak Ditemukan</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Footer -->
+                    <div class="bg-slate-50 px-6 py-4 flex flex-row-reverse gap-3 border-t border-slate-100">
+                        <button type="submit" class="bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 text-sm font-semibold shadow-md transition">Simpan Aset Baru</button>
+                        <button type="button" onclick="toggleModal('modal-create')" class="bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-50 text-sm font-semibold shadow-sm transition">Batal</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleModal(id) {
+            const modal = document.getElementById(id);
+            if(modal) {
+                modal.classList.toggle('hidden');
+            }
+        }
+    </script>
+
     {{-- MODAL DELETE PREMIUM (Standardized) --}}
     <x-modal-delete id="deleteModal">
         {{-- DROPDOWN ALASAN (Specific to Tools) --}}

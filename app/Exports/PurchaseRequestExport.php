@@ -28,9 +28,9 @@ class PurchaseRequestExport implements FromQuery, WithHeadings, WithMapping, Sho
 
     public function map($purchase): array
     {
-        $qty = $purchase->quantity;
-        $budget = $purchase->unit_price;
-        $subtotal = $purchase->subtotal;
+        $qty = $purchase->items ? $purchase->items->sum('quantity') : 0;
+        $subtotal = $purchase->total_amount;
+        $toolNames = $purchase->items ? implode("\n", $purchase->items->map(fn($i) => "- " . $i->tool_name . " (" . $i->quantity . " unit)")->toArray()) : '-';
 
         // Translate Status
         $status = match($purchase->status) {
@@ -44,10 +44,10 @@ class PurchaseRequestExport implements FromQuery, WithHeadings, WithMapping, Sho
         return [
             \Carbon\Carbon::parse($purchase->date)->translatedFormat('d F Y'),
             $purchase->purchase_code,
-            $purchase->tool_name,
+            $toolNames,
             $purchase->vendor ? $purchase->vendor->name : '-',
             $qty,
-            "Rp " . number_format($budget, 0, ',', '.'),
+            "-", // Harga Satuan (Estimasi) is mixed
             "Rp " . number_format($subtotal, 0, ',', '.'),
             $status,
             $purchase->status == 'rejected' ? ($purchase->rejection_note ?? '-') : '-'

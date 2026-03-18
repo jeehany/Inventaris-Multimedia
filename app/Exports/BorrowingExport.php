@@ -34,7 +34,16 @@ class BorrowingExport implements FromQuery, WithHeadings, WithMapping, ShouldAut
         })->join(', ');
 
         // 2. Format Status
-        $status = $borrowing->borrowing_status == 'active' ? 'Sedang Dipinjam' : 'Dikembalikan';
+        if ($borrowing->borrowing_status == 'active') {
+            $status = 'Sedang Dipinjam';
+        } elseif ($borrowing->borrowing_status == 'pending_head') {
+            $status = 'Menunggu Persetujuan';
+        } elseif ($borrowing->borrowing_status == 'rejected_head') {
+            $status = 'Ditolak Kepala';
+        } else {
+            $status = 'Dikembalikan';
+        }
+        
         if ($borrowing->final_status) {
             $status .= ' (' . $borrowing->final_status . ')';
         }

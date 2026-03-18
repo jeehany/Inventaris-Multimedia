@@ -59,6 +59,33 @@ class ToolController extends Controller
         return Excel::download(new ToolsExport($query), 'laporan-inventaris-alat-' . now()->format('Y-m-d') . '.xlsx');
     }
 
+    public function printQr(Request $request)
+    {
+        set_time_limit(300); // INI PENTING
+        $query = $this->getFilteredQuery($request);
+        $tools = $query->get();
+        // Pack data, set paper to A4 and orientation portrait
+        $pdf = Pdf::loadView('tools.qr_pdf', compact('tools'))->setPaper('a4', 'portrait');
+        
+        while (ob_get_level()) {
+            ob_end_clean();
+        }
+        
+        return $pdf->download('Cetak_Label_QR_Aset_' . now()->format('Y-m-d') . '.pdf');
+    }
+
+    public function printSingleQr(Tool $tool)
+    {
+        set_time_limit(300);
+        $pdf = Pdf::loadView('tools.qr_single_pdf', compact('tool'))->setPaper('a4', 'portrait');
+        
+        while (ob_get_level()) {
+            ob_end_clean();
+        }
+        
+        return $pdf->download('Cetak_Label_QR_' . $tool->tool_code . '.pdf');
+    }
+
     // ==========================
     // 2. SOFT DELETES (TRASH)
     // ==========================
@@ -147,7 +174,7 @@ class ToolController extends Controller
     public function restore($id)
     {
         $user = Auth::user();
-        if ($user && in_array($user->role, ['kepala','head'])) {
+        if ($user && in_array($user->role, ['kepala', 'head'])) {
              return redirect()->back()->with('error', 'Akses ditolak.');
         }
 
@@ -170,7 +197,7 @@ class ToolController extends Controller
 
     public function create() {
         $user = Auth::user();
-        if ($user && in_array($user->role, ['kepala','head'])) {
+        if ($user && in_array($user->role, ['kepala', 'head'])) {
             return redirect()->route('tools.index')->with('error', 'Akses ditolak.');
         }
 
@@ -253,7 +280,7 @@ class ToolController extends Controller
     public function edit(Tool $tool)
     {
         $user = Auth::user();
-        if ($user && in_array($user->role, ['kepala','head'])) {
+        if ($user && in_array($user->role, ['kepala', 'head'])) {
             return redirect()->route('tools.index')->with('error', 'Akses ditolak.');
         }
 
@@ -290,7 +317,7 @@ class ToolController extends Controller
     public function destroy(Tool $tool)
     {
         $user = Auth::user();
-        if ($user && in_array($user->role, ['kepala','head'])) {
+        if ($user && in_array($user->role, ['kepala', 'head'])) {
             return redirect()->route('tools.index')->with('error', 'Akses ditolak.');
         }
 

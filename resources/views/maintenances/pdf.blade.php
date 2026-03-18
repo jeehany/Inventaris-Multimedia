@@ -70,6 +70,28 @@
         </table>
     </div>
 
+    <!-- BLOK RINGKASAN ANALITIK EKSEKUTIF -->
+    <div style="background-color: #fffbeb; padding: 12px; border: 1px solid #fde68a; margin-bottom: 15px; border-radius: 4px;">
+        <h4 style="margin-top: 0; margin-bottom: 8px; color: #92400e; font-size: 13px; border-bottom: 1px solid #fde68a; padding-bottom: 4px;">Ringkasan Keputusan Analitik (Executive Summary)</h4>
+        <table style="border: none; margin: 0; width: 100%; font-size: 10px;">
+            <tr>
+                <td style="border: none; vertical-align: top; width: 33%; padding: 4px;">
+                    <strong>Total Kasus Servis:</strong> <span style="color: #b45309;">{{ $maintenances->count() }} Permintaan</span><br>
+                    <strong>Tuntas (Selesai):</strong> <span style="color: #047857;">{{ $maintenances->where('status', 'completed')->count() }} Kasus</span>
+                </td>
+                <td style="border: none; vertical-align: top; width: 33%; padding: 4px;">
+                    <strong>Total Biaya (RAB):</strong> <span style="color: #b45309;">Rp {{ number_format($maintenances->sum('cost'), 0, ',', '.') }}</span><br>
+                    <strong>Rata-rata Biaya per Servis:</strong> Rp {{ $maintenances->count() > 0 ? number_format($maintenances->sum('cost') / $maintenances->count(), 0, ',', '.') : 0 }}
+                </td>
+                <td style="border: none; vertical-align: top; width: 33%; padding: 4px;">
+                    <strong>Keluhan Terbanyak:</strong> {{ $maintenances->groupBy('type_id')->sortByDesc(function($item) { return $item->count(); })->first()?->first()?->type->name ?? '-' }}<br>
+                    <strong>Aset Paling Sering Diservis:</strong> {{ $maintenances->groupBy('tool_id')->sortByDesc(function($item) { return $item->count(); })->first()?->first()?->tool->tool_name ?? '-' }}
+                </td>
+            </tr>
+        </table>
+    </div>
+    <!-- END BLOK ANALITIK -->
+
     <table>
         <thead>
             <tr>

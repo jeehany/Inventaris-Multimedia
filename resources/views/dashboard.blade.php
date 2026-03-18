@@ -19,10 +19,12 @@
                             Selamat Datang, <span class="text-indigo-400">{{ Auth::user()->name }}</span>! 👋
                         </h3>
                         <p class="text-slate-300 max-w-xl">
-                            @if(auth()->user()->isHead())
-                                Berikut adalah ringkasan aktivitas peminjaman dan performa inventaris bulan ini.
+                            @if(auth()->user()->isKepala())
+                                Berikut adalah ringkasan pengajuan yang perlu disetujui dan sirkulasi peminjaman.
+                            @elseif(auth()->user()->isBendahara())
+                                Ringkasan laporan pengeluaran, pembelian yang disetujui, dan rekap keuangan.
                             @else
-                                Panel operasional untuk mengelola aset, peminjaman, dan data pengguna secara efisien.
+                                Panel operasional inventaris untuk manajemen sirkulasi peminjaman aset dan operasional rutin.
                             @endif
                         </p>
                     </div>
@@ -35,8 +37,8 @@
 
             <!-- Stats Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                @if(auth()->user()->isHead())
-                    <!-- Head Stats -->
+                @if(auth()->user()->isKepala())
+                    <!-- Kepala Stats -->
                     <!-- CARD 1: ACTION NEEDED (Pengajuan Menunggu) -->
                     <div class="group bg-white rounded-xl p-6 shadow-sm border border-slate-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 relative overflow-hidden ring-1 ring-orange-100">
                         <div class="absolute right-0 top-0 w-24 h-24 bg-orange-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
@@ -80,21 +82,63 @@
                     </div>
 
                     <!-- CARD 4: Button Laporan -->
-                    <div class="group bg-white rounded-xl p-6 shadow-sm border border-slate-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 relative overflow-hidden flex flex-col justify-center items-center text-center cursor-pointer" onclick="window.location='{{ route('purchases.history') }}'">
+                    <div class="group bg-white rounded-xl p-6 shadow-sm border border-slate-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 relative overflow-hidden flex flex-col justify-center items-center text-center cursor-pointer" onclick="window.location='#'">
                         <div class="p-3 bg-emerald-100 text-emerald-600 rounded-full mb-3 group-hover:scale-110 transition-transform">
                             <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                         </div>
-                        <h4 class="font-bold text-slate-700">Laporan Pengadaan</h4>
-                        <p class="text-xs text-slate-400 mt-1">Cek realisasi anggaran</p>
+                        <h4 class="font-bold text-slate-700">Monitoring Kondisi</h4>
+                        <p class="text-xs text-slate-400 mt-1">Cek aset terdaftar</p>
                     </div>
+
+                @elseif(auth()->user()->isBendahara())
+                    <!-- Bendahara Stats -->
+                     <div class="group bg-white rounded-xl p-6 shadow-sm border border-slate-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 relative overflow-hidden">
+                        <div class="absolute right-0 top-0 w-24 h-24 bg-emerald-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+                        <div class="relative">
+                            <div class="text-slate-500 text-sm font-medium uppercase tracking-wider mb-1">Total Pencairan</div>
+                            <div class="text-3xl font-bold text-emerald-600">{{ $data['total_purchases'] }}</div>
+                            <div class="text-xs text-emerald-500 font-medium mt-2">RAB Selesai Diproses</div>
+                        </div>
+                    </div>
+
+                    <div class="group bg-white rounded-xl p-6 shadow-sm border border-slate-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 relative overflow-hidden">
+                         <div class="absolute right-0 top-0 w-24 h-24 bg-slate-100 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+                        <div class="relative">
+                            <div class="text-slate-500 text-sm font-medium uppercase tracking-wider mb-1">Pengeluaran Bulan Ini</div>
+                            <div class="text-xl font-bold text-slate-800">Rp {{ number_format($data['total_spent_this_month'], 0, ',', '.') }}</div>
+                            <div class="text-xs text-slate-500 font-medium mt-2">Dari transaksi berstatus Selesai</div>
+                        </div>
+                    </div>
+
+                    <div class="group bg-white rounded-xl p-6 shadow-sm border border-slate-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 relative overflow-hidden ring-1 ring-blue-100">
+                         <div class="absolute right-0 top-0 w-24 h-24 bg-blue-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+                        <div class="relative">
+                            <div class="text-blue-600 text-sm font-medium uppercase tracking-wider mb-1">Disetujui Kepala</div>
+                            <div class="text-3xl font-bold text-slate-800">{{ $data['approved_purchases_count'] }}</div>
+                             <div class="text-xs text-blue-600 font-medium mt-2 flex items-center gap-1">
+                                <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                                <span>Menunggu Pencairan/Tindak Lanjut</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CARD 4: Kosong / Placeholder Bendahara -->
+                    <div class="group bg-white rounded-xl p-6 shadow-sm border border-slate-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 relative overflow-hidden flex flex-col justify-center items-center text-center cursor-pointer">
+                        <div class="p-3 bg-indigo-100 text-indigo-600 rounded-full mb-3 group-hover:scale-110 transition-transform">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                        <h4 class="font-bold text-slate-700">Laporan Keuangan</h4>
+                        <p class="text-xs text-slate-400 mt-1">Lihat detail anggaran</p>
+                    </div>
+
                 @else
-                    <!-- Admin Stats -->
+                    <!-- Staff Stats -->
                      <div class="group bg-white rounded-xl p-6 shadow-sm border border-slate-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 relative overflow-hidden">
                         <div class="absolute right-0 top-0 w-24 h-24 bg-indigo-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
                         <div class="relative">
                             <div class="text-slate-500 text-sm font-medium uppercase tracking-wider mb-1">Total Aset</div>
                             <div class="text-3xl font-bold text-slate-800">{{ $data['total_tools'] }}</div>
-                            <div class="text-xs text-indigo-500 font-medium mt-2">Item terdaftar</div>
+                            <div class="text-xs text-indigo-500 font-medium mt-2">Item terdaftar di gudang</div>
                         </div>
                     </div>
 
@@ -103,7 +147,7 @@
                         <div class="relative">
                             <div class="text-slate-500 text-sm font-medium uppercase tracking-wider mb-1">Total Pengguna</div>
                             <div class="text-3xl font-bold text-slate-800">{{ $data['total_users'] }}</div>
-                            <div class="text-xs text-slate-500 font-medium mt-2">Anggota aktif</div>
+                            <div class="text-xs text-slate-500 font-medium mt-2">Anggota & User aktif</div>
                         </div>
                     </div>
 
@@ -136,11 +180,11 @@
                     <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
                         <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                             <h4 class="font-bold text-slate-800 flex items-center gap-2">
-                                <span class="flex h-2 w-2 rounded-full {{ auth()->user()->isHead() ? 'bg-orange-500' : 'bg-indigo-500' }}"></span>
-                                {{ auth()->user()->isHead() ? 'Pengajuan Menunggu Persetujuan' : 'Aktivitas Terbaru' }}
+                                <span class="flex h-2 w-2 rounded-full {{ auth()->user()->isKepala() ? 'bg-orange-500' : (auth()->user()->isBendahara() ? 'bg-emerald-500' : 'bg-indigo-500') }}"></span>
+                                {{ auth()->user()->isKepala() ? 'Pengajuan Menunggu Persetujuan' : (auth()->user()->isBendahara() ? 'Aktivitas Pengeluaran Terbaru' : 'Aktivitas Terbaru') }}
                             </h4>
-                            @if(auth()->user()->isHead())
-                                <a href="{{ route('purchases.request', ['status' => 'pending']) }}" class="text-sm font-medium text-orange-600 hover:text-orange-700 hover:underline">Lihat Semua</a>
+                            @if(auth()->user()->isKepala() || auth()->user()->isBendahara())
+                                <a href="#" class="text-sm font-medium text-orange-600 hover:text-orange-700 hover:underline">Lihat Semua</a>
                             @else
                                 <a href="{{ route('borrowings.index') }}" class="text-sm font-medium text-indigo-600 hover:text-indigo-700 hover:underline">Lihat Semua</a>
                             @endif
@@ -149,12 +193,12 @@
                             <table class="w-full text-sm text-left">
                                 <thead class="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-100">
                                     <tr>
-                                        @if(auth()->user()->isHead())
+                                        @if(auth()->user()->isKepala() || auth()->user()->isBendahara())
                                             <th class="px-6 py-4 font-semibold">Tgl & Kode</th>
                                             <th class="px-6 py-4 font-semibold">Pemohon</th>
                                             <th class="px-6 py-4 font-semibold">Aset</th>
                                             <th class="px-6 py-4 font-semibold text-right">Total (Est)</th>
-                                            <th class="px-6 py-4 font-semibold text-center">Aksi</th>
+                                            <th class="px-6 py-4 font-semibold text-center">Status / Aksi</th>
                                         @else
                                             <th class="px-6 py-4 font-semibold">Peminjam</th>
                                             <th class="px-6 py-4 font-semibold">Aset</th>
@@ -166,8 +210,8 @@
                                 <tbody class="divide-y divide-slate-100">
                                     @forelse($data['recent_activities'] as $activity)
                                         <tr class="hover:bg-slate-50/50 transition-colors duration-150">
-                                            @if(auth()->user()->isHead())
-                                                {{-- ROW UNTUK PURCHASE (HEAD) --}}
+                                            @if(auth()->user()->isKepala() || auth()->user()->isBendahara())
+                                                {{-- ROW UNTUK PURCHASE (HEAD & BENDAHARA) --}}
                                                 <td class="px-6 py-4">
                                                     <div class="font-bold text-slate-800">{{ $activity->purchase_code }}</div>
                                                     <div class="text-xs text-slate-500">{{ $activity->created_at->format('d M y') }}</div>
@@ -180,15 +224,21 @@
                                                     <div class="text-xs text-slate-400 font-normal">{{ $activity->quantity }} Unit</div>
                                                 </td>
                                                 <td class="px-6 py-4 text-right font-bold text-slate-700">
-                                                    Rp {{ number_format($activity->subtotal, 0, ',', '.') }}
+                                                    Rp {{ number_format($activity->total_amount, 0, ',', '.') }}
                                                 </td>
                                                 <td class="px-6 py-4 text-center">
-                                                    <a href="{{ route('purchases.request', ['search' => $activity->purchase_code]) }}" class="inline-flex items-center px-2 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded hover:bg-orange-200 transition">
-                                                        Review
-                                                    </a>
+                                                    @if(auth()->user()->isBendahara())
+                                                        <span class="inline-flex items-center px-2 py-1 bg-{{ $activity->status == 'completed' ? 'emerald' : 'blue' }}-100 text-{{ $activity->status == 'completed' ? 'emerald' : 'blue' }}-700 text-xs font-bold rounded">
+                                                            {{ $activity->status == 'completed' ? 'Selesai' : 'Disetujui' }}
+                                                        </span>
+                                                    @else
+                                                        <a href="{{ route('purchases.request', ['search' => $activity->purchase_code]) }}" class="inline-flex items-center px-2 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded hover:bg-orange-200 transition">
+                                                            Review
+                                                        </a>
+                                                    @endif
                                                 </td>
                                             @else
-                                                {{-- ROW UNTUK BORROWING (ADMIN) --}}
+                                                {{-- ROW UNTUK BORROWING (STAFF) --}}
                                                 <td class="px-6 py-4">
                                                     <div class="flex items-center gap-3">
                                                         <div class="h-8 w-8 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 text-white flex items-center justify-center font-bold text-xs ring-2 ring-white shadow-sm">
@@ -248,7 +298,7 @@
                             Menu Cepat
                         </h4>
                         <div class="space-y-3">
-                            @if(auth()->user()->isHead())
+                            @if(auth()->user()->isKepala())
                                 {{-- 1. Review Pengajuan (Orange - Priority) --}}
                                 <a href="{{ route('purchases.request') }}" class="w-full group flex items-center p-3 rounded-lg bg-orange-50 hover:bg-orange-100 border border-orange-100 transition-all duration-200 text-left">
                                     <div class="p-2 bg-orange-500 rounded-md shadow-md text-white mr-3 group-hover:scale-110 transition-transform">

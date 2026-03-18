@@ -14,21 +14,30 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Membuat Akun Admin
+        // 1. Membuat Akun Staff
         User::create([
-            'name' => 'Administrator',
-            'email' => 'admin@gmail.com',
-            'password' => Hash::make('12345678'), // Password default: password
-            'role' => 'admin', // Sesuai enum ['admin', 'head']
+            'name' => 'Staff Multimedia',
+            'email' => 'staff@gmail.com',
+            'password' => Hash::make('12345678'),
+            'role' => 'staff',
             'email_verified_at' => now(),
         ]);
 
-        // 2. Membuat Akun Kepala (Head)
+        // 2. Membuat Akun Kepala
         User::create([
-            'name' => 'Kepala',
+            'name' => 'Kepala Multimedia',
             'email' => 'kepala@gmail.com',
-            'password' => Hash::make('12345678'), // Password default: password
-            'role' => 'head', // Sesuai enum ['admin', 'head']
+            'password' => Hash::make('12345678'),
+            'role' => 'kepala',
+            'email_verified_at' => now(),
+        ]);
+
+        // 3. Membuat Akun Bendahara
+        User::create([
+            'name' => 'Bendahara Keuangan',
+            'email' => 'bendahara@gmail.com',
+            'password' => Hash::make('12345678'),
+            'role' => 'bendahara',
             'email_verified_at' => now(),
         ]);
     }

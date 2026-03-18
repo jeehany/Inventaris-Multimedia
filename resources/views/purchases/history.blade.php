@@ -138,7 +138,7 @@
                         </form>
 
                         {{-- TOMBOL EXPORT --}}
-                        @if(auth()->user()->isHead())
+                        @if(auth()->user()->isKepala())
                         <div class="flex items-center gap-2">
                              <a href="{{ route('purchases.history.exportPdf', request()->all()) }}" target="_blank" class="bg-emerald-600 text-white px-4 py-2.5 rounded-xl hover:bg-emerald-700 font-medium text-sm shadow-sm transition flex items-center">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
@@ -170,32 +170,43 @@
                                         <div class="text-xs mt-0.5">{{ \Carbon\Carbon::parse($h->updated_at)->format('d M Y') }}</div>
                                     </td>
                                     <td class="px-6 py-4 text-sm text-slate-900">
-                                        <div class="font-bold text-indigo-700">{{ $h->tool_name }}</div>
-                                        <div class="text-xs text-slate-500 mt-0.5">{{ $h->category->category_name ?? '-' }}</div>
-                                        <div class="text-xs mt-1 font-medium bg-slate-100 px-1.5 py-0.5 rounded inline-block">Qty: {{ $h->quantity }}</div>
+                                        @if($h->items && $h->items->count() > 0)
+                                            <div class="font-bold text-indigo-700">
+                                                {{ $h->items->first()->tool_name }}
+                                                @if($h->items->count() > 1)
+                                                    <span class="text-xs bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded ml-1">
+                                                        +{{ $h->items->count() - 1 }} item
+                                                    </span>
+                                                @endif
+                                            </div>
+                                            <div class="text-xs text-slate-500 mt-0.5">{{ $h->items->first()->category->category_name ?? '-' }}</div>
+                                            <div class="text-xs mt-1 font-medium bg-slate-100 px-1.5 py-0.5 rounded inline-block">Total Qty: {{ $h->items->sum('quantity') }}</div>
+                                        @else
+                                            <div class="font-bold text-slate-500 italic">Multi-Item</div>
+                                        @endif
                                     </td>
                                     <td class="px-6 py-4 text-sm text-slate-600">
-                                        <div class="font-medium">{{ $h->vendor->name }}</div>
+                                        <div class="font-medium">{{ $h->vendor ? $h->vendor->name : '-' }}</div>
                                         <div class="text-xs text-slate-400 mt-0.5">
-                                            Merk: {{ $h->brand ?? '-' }}
+                                            Multimerek
                                         </div>
                                     </td>
                                     
                                     {{-- KOLOM 1: HARGA RENCANA (BUDGET) --}}
+                                    @php
+                                        $totalPlan = $h->items && $h->items->count() > 0 ? $h->items->sum('subtotal') : $h->total_amount;
+                                    @endphp
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-slate-500">
-                                        Rp {{ number_format($h->unit_price * $h->quantity, 0, ',', '.') }}
+                                        Rp {{ number_format($totalPlan, 0, ',', '.') }}
                                     </td>
 
                                     {{-- KOLOM 2: HARGA REALISASI (AKHIR) --}}
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
-                                        @if($h->status == 'rejected')
+                                        @if(str_contains($h->status, 'rejected'))
                                             <span class="text-slate-400 italic">-</span>
                                         @else
                                             @php
-                                                // Gunakan actual_unit_price yang sudah kita fix di database
-                                                $actualPrice = $h->actual_unit_price ?? $h->unit_price;
-                                                $totalReal = $actualPrice * $h->quantity;
-                                                $totalPlan = $h->unit_price * $h->quantity;
+                                                $totalReal = $h->total_amount;
                                                 $diff = $totalPlan - $totalReal;
                                             @endphp
                                             
@@ -204,11 +215,11 @@
                                             </div>
 
                                             {{-- Indikator Hemat/Lebih --}}
-                                            @if($diff > 0)
+                                            @if(str_contains($h->status, 'completed') && $diff > 0)
                                                 <div class="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-1.5 py-0.5 rounded inline-block mt-1 border border-emerald-100">
                                                     Hemat: {{ number_format($diff, 0, ',', '.') }}
                                                 </div>
-                                            @elseif($diff < 0)
+                                            @elseif(str_contains($h->status, 'completed') && $diff < 0)
                                                 <div class="text-[10px] text-rose-600 font-bold bg-rose-50 px-1.5 py-0.5 rounded inline-block mt-1 border border-rose-100">
                                                     Over: {{ number_format(abs($diff), 0, ',', '.') }}
                                                 </div>

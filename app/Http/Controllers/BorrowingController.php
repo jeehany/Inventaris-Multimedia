@@ -82,7 +82,7 @@ class BorrowingController extends Controller
                 'user_id' => auth()->id(),
                 'borrow_date' => $request->borrow_date,
                 'planned_return_date' => $request->return_date,
-                'borrowing_status' => 'active', // Adjusted to match index query
+                'borrowing_status' => 'pending_head', // Menunggu persetujuan kepala
                 'notes' => $request->notes,
             ]);
 
@@ -149,6 +149,49 @@ class BorrowingController extends Controller
         $borrowing->update($request->only('borrower_id', 'return_date', 'notes'));
 
         return redirect()->route('borrowings.index')->with('success', 'Data peminjaman diperbarui.');
+    }
+
+    /**
+     * [ACTION] Approve Pinjaman (Otomatis Active)
+     */
+    public function approve($id)
+    {
+        $borrowing = Borrowing::findOrFail($id);
+
+        if (Auth::user()->role == 'kepala' && $borrowing->borrowing_status == 'pending_head') {
+            $borrowing->update(['borrowing_status' => 'active']);
+            return redirect()->back()->with('success', 'Peminjaman disetujui. Aset kini berstatus Dipinjam (Active).');
+        }
+
+        return abort(403, 'Unauthorized Action');
+    }
+
+    /**
+     * [ACTION] Reject Pinjaman 
+     */
+    public function reject(Request $request, $id)
+    {
+        $borrowing = Borrowing::with('items.tool')->findOrFail($id);
+
+        if (Auth::user()->role == 'kepala' && $borrowing->borrowing_status == 'pending_head') {
+            DB::transaction(function () use ($borrowing, $request) {
+                $borrowing->update([
+                    'borrowing_status' => 'rejected_head',
+                    'rejection_note' => $request->input('note', '-')
+                ]);
+
+                // Kembalikan status barang
+                foreach ($borrowing->items as $item) {
+                    if ($item->tool) {
+                        $item->tool->update(['availability_status' => 'available']);
+                    }
+                }
+            });
+
+            return redirect()->back()->with('success', 'Peminjaman ditolak dan ketersediaan aset dikembalikan.');
+        }
+
+        return abort(403, 'Unauthorized Action');
     }
 
     /**
@@ -347,6 +390,73 @@ class BorrowingController extends Controller
     }
 
     /**
+     * [AJAX] Get Tool by Barcode / QR Code
+     */
+    public function getToolByCode(Request $request)
+    {
+        $code = $request->get('code');
+        if (!$code) {
+            return response()->json(['success' => false, 'message' => 'Kode kosong!']);
+        }
+
+        $tool = Tool::with('category')->where('tool_code', $code)->first();
+
+        if (!$tool) {
+            return response()->json(['success' => false, 'message' => 'Aset tidak ditemukan.']);
+        }
+
+        if ($tool->availability_status !== 'available') {
+            return response()->json([
+                'success' => false, 
+                'message' => 'Aset sedang tidak tersedia (Status: ' . $tool->availability_status . ').'
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $tool->id,
+                'tool_code' => $tool->tool_code,
+                'tool_name' => $tool->tool_name,
+                'category_name' => $tool->category ? $tool->category->category_name : '-',
+            ]
+        ]);
+    }
+
+    /**
+     * [AJAX] Find Active Borrowing by Tool Barcode
+     */
+    public function getBorrowingByToolCode(Request $request)
+    {
+        $code = $request->get('code');
+        if (!$code) {
+            return response()->json(['success' => false, 'message' => 'Kode kosong!']);
+        }
+
+        $tool = Tool::where('tool_code', $code)->first();
+        if (!$tool) {
+            return response()->json(['success' => false, 'message' => 'Aset tidak ditemukan di sistem.']);
+        }
+
+        // Find active borrowing containing this tool
+        $borrowingItem = \App\Models\BorrowingItem::where('tool_id', $tool->id)
+            ->whereHas('borrowing', function($q) {
+                $q->where('borrowing_status', 'active');
+            })->first();
+
+        if (!$borrowingItem) {
+            return response()->json(['success' => false, 'message' => 'Aset ini tidak sedang dipinjam saat ini.']);
+        }
+
+        return response()->json([
+            'success' => true,
+            'borrowing_id' => $borrowingItem->borrowing_id,
+            'tool_name' => $tool->tool_name,
+            'message' => 'Detail Peminjaman ditemukan!'
+        ]);
+    }
+
+    /**
      * [HELPER] Fungsi Logika Filter (Dipakai oleh Index & ExportPdf)
      * Ini biar kodingan rapi dan tidak duplikat.
      */
@@ -363,13 +473,15 @@ class BorrowingController extends Controller
             });
         }
 
+        // Penambahan Logika Multi-Role
+        $userRole = Auth::check() ? Auth::user()->role : 'staff';
+        if ($userRole == 'staff') {
+            $query->where('user_id', Auth::id());
+        }
+
         // Logika Filter Status
-        if ($request->has('status') && $request->status != null) {
-            if ($request->status == 'active') {
-                $query->where('borrowing_status', 'active');
-            } elseif ($request->status == 'returned') {
-                $query->where('borrowing_status', 'returned');
-            }
+        if ($request->has('status') && $request->status != null && $request->status != 'all') {
+            $query->where('borrowing_status', $request->status);
         }
 
         // Filter periode

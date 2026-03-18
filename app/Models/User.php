@@ -47,13 +47,18 @@ class User extends Authenticatable
         ];
     }
 
-    public function isHead(): bool
+    public function isStaff(): bool
     {
-        return in_array($this->role, ['kepala', 'head']);
+        return $this->role === 'staff';
     }
 
-    public function isAdmin(): bool
+    public function isKepala(): bool
     {
-        return $this->role === 'admin';
+        return $this->role === 'kepala';
+    }
+
+    public function isBendahara(): bool
+    {
+        return $this->role === 'bendahara';
     }
 }

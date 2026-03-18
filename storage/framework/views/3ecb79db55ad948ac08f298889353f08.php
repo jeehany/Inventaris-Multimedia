@@ -16,7 +16,7 @@
      <?php $__env->endSlot(); ?>
 
     <div class="py-12 bg-slate-50 min-h-screen">
-        <div class="max-w-xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             
             
             <?php if($errors->any()): ?>
@@ -45,20 +45,46 @@
                         <?php echo csrf_field(); ?>
 
                         
-                        <div class="mb-5">
-                            <label class="block text-sm font-semibold text-slate-700 mb-2">Pilih Aset Multimedia</label>
-                            <select name="tool_id" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-slate-700 font-medium" required>
-                                <option value="">-- Cari Aset --</option>
-                                <?php $__currentLoopData = $tools; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $tool): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                    <option value="<?php echo e($tool->id); ?>" <?php echo e(old('tool_id') == $tool->id ? 'selected' : ''); ?>>
-                                        <?php echo e($tool->tool_name); ?> (<?php echo e($tool->tool_code); ?>)
-                                    </option>
-                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                            </select>
-                            <p class="text-xs text-slate-500 mt-1 flex items-center gap-1">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                Aset yang sedang dipinjam tidak akan muncul di sini.
-                            </p>
+                        <div class="mb-5 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Pindai QR / Barcode Aset Multimedia</label>
+                            
+                            <div class="flex gap-2 mb-3 flex-wrap">
+                                <input type="text" id="barcode_input" placeholder="Arahkan kursor kesini atau Pindai Kamera..." class="w-full md:w-1/2 border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 font-mono text-sm" autofocus>
+                                <button type="button" id="btn_manual_add" class="bg-slate-800 text-white px-4 py-2 rounded-lg hover:bg-slate-700 transition font-medium text-sm flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                                    Cari
+                                </button>
+                                <button type="button" id="btn_scan_camera" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition font-medium text-sm flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                    Kamera
+                                </button>
+                            </div>
+
+                            <!-- Container QR Scanner -->
+                            <div id="qr-reader-container" class="hidden w-full md:w-1/2 mb-4 border-2 border-dashed border-indigo-200 rounded-xl overflow-hidden bg-white">
+                                <div id="qr-reader" style="width: 100%;"></div>
+                                <button type="button" id="btn_close_camera" class="w-full bg-rose-50 text-rose-600 py-2 font-semibold text-sm hover:bg-rose-100 transition border-t border-rose-100">
+                                    Tutup Kamera
+                                </button>
+                            </div>
+
+                            <p class="text-xs text-slate-500 mt-1" id="scan_status">Status: Standby untuk scan barcode/QR...</p>
+                            
+                            <!-- Tempat menyimpan Info Barang yang akan diservis -->
+                            <div id="selected_tool_info" class="mt-4 hidden p-3 bg-indigo-50 rounded-lg border border-indigo-200 flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-white border border-indigo-100 rounded flex items-center justify-center text-indigo-500 font-bold shadow-sm">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>    
+                                    </div>
+                                    <div>
+                                        <div id="selected_tool_name" class="font-bold text-slate-800 text-sm">Nama Alat</div>
+                                        <div id="selected_tool_code" class="text-xs text-indigo-600 font-mono font-bold">CODE</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Hidden input -->
+                            <input type="hidden" name="tool_id" id="hidden_tool_id" required>
                         </div>
 
                         
@@ -104,6 +130,115 @@
             </div>
         </div>
     </div>
+    
+    
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <script>
+        const barcodeInput = document.getElementById('barcode_input');
+        const btnManualAdd = document.getElementById('btn_manual_add');
+        const btnScanCamera = document.getElementById('btn_scan_camera');
+        const btnCloseCamera = document.getElementById('btn_close_camera');
+        const qrContainer = document.getElementById('qr-reader-container');
+        const scanStatus = document.getElementById('scan_status');
+        
+        const hiddenToolId = document.getElementById('hidden_tool_id');
+        const selectedToolInfo = document.getElementById('selected_tool_info');
+        const selectedToolName = document.getElementById('selected_tool_name');
+        const selectedToolCode = document.getElementById('selected_tool_code');
+        
+        let html5QrcodeScanner = null;
+
+        barcodeInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                processBarcode(this.value.trim());
+            }
+        });
+
+        btnManualAdd.addEventListener('click', function() {
+            processBarcode(barcodeInput.value.trim());
+        });
+
+        // Toggle Camera Scanner
+        btnScanCamera.addEventListener('click', function() {
+            qrContainer.classList.remove('hidden');
+            if(!html5QrcodeScanner) {
+                html5QrcodeScanner = new Html5QrcodeScanner(
+                    "qr-reader", { fps: 10, qrbox: {width: 250, height: 250} }, false);
+                
+                html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+                showStatus('Kamera diaktifkan...', 'info');
+            }
+        });
+
+        btnCloseCamera.addEventListener('click', function() {
+            if(html5QrcodeScanner) {
+                html5QrcodeScanner.clear().then(() => {
+                    html5QrcodeScanner = null;
+                    qrContainer.classList.add('hidden');
+                    showStatus('Kamera dimatikan.', 'info');
+                    barcodeInput.focus();
+                });
+            }
+        });
+
+        function onScanSuccess(decodedText, decodedResult) {
+            showStatus('QR Terbaca: ' + decodedText, 'success');
+            processBarcode(decodedText);
+            
+            // Auto close camera in Maintenance Form because we only need 1 tool
+            if(html5QrcodeScanner) {
+                html5QrcodeScanner.clear().then(() => {
+                    html5QrcodeScanner = null;
+                    qrContainer.classList.add('hidden');
+                });
+            }
+        }
+
+        function onScanFailure(error) {
+            // keep scanning silently
+        }
+
+        function processBarcode(code) {
+            if (!code) {
+                showStatus('Kode tidak boleh kosong!', 'error');
+                return;
+            }
+
+            barcodeInput.disabled = true;
+            btnManualAdd.disabled = true;
+            showStatus('Mencari data kerusakan alat dengan kode: ' + code + '...', 'info');
+
+            fetch(`/get-tool-by-code?code=${encodeURIComponent(code)}`)
+                .then(response => response.json())
+                .then(res => {
+                    if (res.success) {
+                        // Cek jika alat tidak sedang available/maintenance dsb sesuai rule jika perlu
+                        // Saat ini API default mengembalikan tool jika valid
+                        selectedToolInfo.classList.remove('hidden');
+                        selectedToolName.textContent = res.data.tool_name + " (" + res.data.category_name + ")";
+                        selectedToolCode.textContent = res.data.tool_code;
+                        hiddenToolId.value = res.data.id;
+                        
+                        showStatus('Berhasil menemukan: ' + res.data.tool_name, 'success');
+                        barcodeInput.value = '';
+                    } else {
+                        showStatus(res.message, 'error');
+                        selectedToolInfo.classList.add('hidden');
+                        hiddenToolId.value = '';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching tool:', error);
+                    showStatus('Terjadi kesalahan jaringan.', 'error');
+                })
+                .finally(() => {
+                    barcodeInput.disabled = false;
+                    btnManualAdd.disabled = false;
+                    barcodeInput.focus();
+                });
+        }
+    </script>
  <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginal9ac128a9029c0e4701924bd2d73d7f54)): ?>

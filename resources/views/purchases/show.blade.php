@@ -68,15 +68,15 @@
                     </div>
 
                     <div class="flex justify-start">
-                        <a href="{{ route('purchases.index') }}" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+                        <a href="{{ route('purchases.request') }}" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
                             &larr; Kembali
                         </a>
                         @auth
-                            @php $role = auth()->user()->role ?? '';
-                            $isHead = in_array($role, ['kepala','head']);
-                        @endphp
-
-                            @if($isHead && $purchase->status == 'pending')
+                            @php
+                                $role = auth()->user()->role;
+                                $isKepala = auth()->user()->isKepala();
+                            @endphp
+                            @if($isKepala && $purchase->status == 'pending_head')
                                 <form action="{{ route('purchases.approve', $purchase->id) }}" method="POST" class="ml-3 inline-block">
                                     @csrf
                                     <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Setujui</button>

@@ -12,6 +12,8 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\MaintenanceTypeController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\MonitoringController;
+use App\Http\Controllers\ReportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -44,6 +46,8 @@ Route::middleware('auth')->group(function () {
     // 2. Export & Custom
     Route::get('tools/export-pdf', [ToolController::class, 'exportPdf'])->name('tools.exportPdf');
     Route::get('tools/export-excel', [ToolController::class, 'exportExcel'])->name('tools.exportExcel');
+    Route::get('tools/print-qr', [ToolController::class, 'printQr'])->name('tools.printQr');
+    Route::get('tools/{tool}/print-qr', [ToolController::class, 'printSingleQr'])->name('tools.printSingleQr');
     
     // 3. Resource & Kategori
     Route::resource('categories', CategoryController::class);
@@ -60,6 +64,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/borrowings/export-excel', [BorrowingController::class, 'exportExcel'])->name('borrowings.exportExcel');
     Route::put('/borrowings/{id}/return', [BorrowingController::class, 'returnItem'])->name('borrowings.return');
     Route::get('/get-tools/{categoryId}', [BorrowingController::class, 'getToolsByCategory'])->name('tools.getByCategory');
+    Route::get('/get-tools/{categoryId}', [BorrowingController::class, 'getToolsByCategory'])->name('tools.getByCategory');
+    Route::get('/get-tool-by-code', [BorrowingController::class, 'getToolByCode'])->name('tools.getByCode');
+    Route::get('/get-borrowing-by-tool', [BorrowingController::class, 'getBorrowingByToolCode'])->name('borrowings.getByTool');
+    Route::patch('/borrowings/{id}/approve', [BorrowingController::class, 'approve'])->name('borrowings.approve');
+    Route::patch('/borrowings/{id}/reject', [BorrowingController::class, 'reject'])->name('borrowings.reject');
     
     Route::resource('borrowings', BorrowingController::class);
 
@@ -72,15 +81,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/purchases/requests', [PurchaseController::class, 'indexRequests'])->name('purchases.request');
     
     // Halaman Riwayat (Status Rejected & Completed/Purchased)
-    Route::get('/purchases/transaction', [PurchaseController::class, 'indexTransaction'])->name('purchases.transaction');
     Route::get('/purchases/history/export', [PurchaseController::class, 'exportHistoryExcel'])->name('purchases.history.export');
     Route::get('/purchases/history/export-pdf', [PurchaseController::class, 'exportHistoryPdf'])->name('purchases.history.exportPdf'); // <--- BARU (PDF Report)
     Route::get('/purchases/history', [PurchaseController::class, 'indexHistory'])->name('purchases.history');
-    Route::put('/purchases/{id}/process', [PurchaseController::class, 'process'])->name('purchases.process');
 
     // 2. Action Routes (Tombol Aksi)
     // List Pengajuan (Pending, Approved, Rejected)
-    // Route::get('/purchases/request', [PurchaseController::class, 'requestList'])->name('purchases.request'); // REMOVED BROKEN DUPLICATE
     Route::get('/purchases/request/export', [PurchaseController::class, 'exportRequestExcel'])->name('purchases.request.export');
     Route::get('/purchases/request/export-pdf', [PurchaseController::class, 'exportRequestPdf'])->name('purchases.request.exportPdf'); // <--- ADDED
     Route::get('/purchases/create', [PurchaseController::class, 'create'])->name('purchases.create');
@@ -94,6 +100,20 @@ Route::middleware('auth')->group(function () {
     // Menggunakan except 'index' karena kita sudah buat custom index di atas (requests, todos, history)
     Route::resource('purchases', PurchaseController::class)->except(['index', 'update', 'edit', 'create']);
 
+
+    // --- Monitoring Routes ---
+    Route::get('/monitoring', [MonitoringController::class, 'index'])->name('monitoring.index');
+
+    // --- Reports Centralized ---
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::get('/reports/1-borrowing', [ReportController::class, 'borrowingHistory'])->name('reports.borrowing');
+    Route::get('/reports/2-maintenance', [ReportController::class, 'maintenanceHistory'])->name('reports.maintenance');
+    Route::get('/reports/3-purchase', [ReportController::class, 'purchaseHistory'])->name('reports.purchase');
+    Route::get('/reports/4-asset-usage', [ReportController::class, 'assetUsage'])->name('reports.assetUsage');
+    Route::get('/reports/5-asset-condition', [ReportController::class, 'assetCondition'])->name('reports.assetCondition');
+    Route::get('/reports/6-asset-depreciation', [ReportController::class, 'assetDepreciation'])->name('reports.assetDepreciation');
+    Route::get('/reports/7-damage-category', [ReportController::class, 'damagePerCategory'])->name('reports.damageCategory');
+    Route::get('/reports/8-vendor-recap', [ReportController::class, 'vendorRecap'])->name('reports.vendorRecap');
 
     // --- Maintenance Routes ---
     Route::get('maintenances/export', [MaintenanceController::class, 'exportExcel'])->name('maintenances.export');

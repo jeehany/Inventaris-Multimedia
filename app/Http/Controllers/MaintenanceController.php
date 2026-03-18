@@ -57,7 +57,7 @@ class MaintenanceController extends Controller
     {
         // Block kepala/head from creating maintenance records
         $user = Auth::user();
-        if ($user && in_array($user->role, ['kepala','head'])) {
+        if ($user && in_array($user->role, ['kepala', 'head'])) {
             return redirect()->route('maintenances.index')->with('error', 'Akses ditolak. Anda tidak dapat mencatat perbaikan.');
         }
         // Mengambil alat yang statusnya TIDAK maintenance
@@ -75,7 +75,7 @@ class MaintenanceController extends Controller
     {
         // Block kepala/head from storing maintenance
         $user = Auth::user();
-        if ($user && in_array($user->role, ['kepala','head'])) {
+        if ($user && in_array($user->role, ['kepala', 'head'])) {
             return redirect()->route('maintenances.index')->with('error', 'Akses ditolak. Anda tidak dapat mencatat perbaikan.');
         }
         $request->validate([
@@ -119,7 +119,7 @@ class MaintenanceController extends Controller
     public function edit(Maintenance $maintenance)
     {
         $user = Auth::user();
-        if ($user && in_array($user->role, ['kepala','head'])) {
+        if ($user && in_array($user->role, ['kepala', 'head'])) {
             return redirect()->route('maintenances.index')->with('error', 'Akses ditolak.');
         }
 
@@ -195,7 +195,7 @@ class MaintenanceController extends Controller
     {
         // Block kepala/head from deleting maintenance
         $user = Auth::user();
-        if ($user && in_array($user->role, ['kepala','head'])) {
+        if ($user && in_array($user->role, ['kepala', 'head'])) {
             return redirect()->route('maintenances.index')->with('error', 'Akses ditolak. Anda tidak dapat menghapus data perbaikan.');
         }
         // Jika dihapus saat sedang perbaikan, kembalikan status alat

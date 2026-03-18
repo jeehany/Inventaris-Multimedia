@@ -99,6 +99,10 @@
                 <td class="text-center">
                     @if($b->borrowing_status == 'active') 
                         <span style="color: #d97706; font-weight:bold;">Dipinjam</span>
+                    @elseif($b->borrowing_status == 'pending_head')
+                        <span style="color: #1e40af; font-weight:bold;">Pending</span>
+                    @elseif($b->borrowing_status == 'rejected_head')
+                        <span style="color: #9f1239; font-weight:bold;">Ditolak</span>
                     @elseif($b->borrowing_status == 'returned') 
                         <span style="color: #059669; font-weight:bold;">Kembali</span>
                     @else 
@@ -118,6 +122,8 @@
                         @else
                             <span style="color: green;">Tepat Waktu</span>
                         @endif
+                    @elseif(in_array($b->borrowing_status, ['pending_head', 'rejected_head']))
+                        <span style="color: #6b7280;">-</span>
                     @else
                         {{-- ACTIVE --}}
                         @if($diff > 0)

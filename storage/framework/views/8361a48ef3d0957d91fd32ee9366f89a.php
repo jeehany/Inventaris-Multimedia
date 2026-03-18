@@ -65,7 +65,7 @@
                         
                         
                         <?php if(auth()->guard()->check()): ?>
-                            <?php if(!auth()->user()->isHead()): ?>
+                            <?php if(!auth()->user()->isKepala()): ?>
                                 <button onclick="toggleModal('modal-create')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow-md text-sm transition flex items-center justify-center gap-2">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                                     Tambah Kategori
@@ -106,7 +106,7 @@
                                         </td>
                                         <td class="px-6 py-4 text-center">
                                             <?php if(auth()->guard()->check()): ?>
-                                                <?php if(!auth()->user()->isHead()): ?>
+                                                <?php if(!auth()->user()->isKepala()): ?>
                                                     <div class="flex justify-center items-center space-x-2">
                                                         
                                                         <button onclick="toggleModal('modal-edit-<?php echo e($cat->id); ?>')" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 p-2 rounded-lg transition" title="Edit">

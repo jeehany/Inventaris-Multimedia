@@ -13,43 +13,49 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
 
-        if ($user->isHead()) {
+        if ($user->isKepala()) {
             // === DATA UNTUK KEPALA (Monitoring & Approval) ===
             $data = [
-                // 1. ACTION NEEDED: Pengajuan Pembelian Menunggu
-                'pending_purchases_count' => \App\Models\Purchase::where('status', 'pending')->count(),
-
-                // 2. Monitoring: Peminjaman Bulan Ini
+                'pending_purchases_count' => \App\Models\Purchase::where('status', 'pending_head')->count(),
                 'monthly_borrowings' => Borrowing::whereMonth('borrow_date', now()->month)
                                         ->whereYear('borrow_date', now()->year)
                                         ->count(),
-                
-                // 3. Monitoring: Barang Sedang Dipinjam
                 'active_borrowings'  => Borrowing::where('borrowing_status', 'active')->count(),
-
-                // 4. Monitoring: Telat Kembali
                 'overdue_items'      => Borrowing::where('borrowing_status', 'active')
                                         ->where('planned_return_date', '<', now())
                                         ->count(),
-                
-                // 5. Tabel Utama: Daftar Pengajuan Pending (Prioritas Utama Kepala)
                 'recent_activities'  => \App\Models\Purchase::with(['user', 'vendor'])
-                                        ->where('status', 'pending')
+                                        ->where('status', 'pending_head')
                                         ->latest()
                                         ->take(5)
                                         ->get(),
-
-                // 6. Tabel Sekunder: Peminjaman Terakhir (Biar tetap ada info operasional)
                 'recent_borrowings'  => Borrowing::with('borrower', 'items.tool')
                                         ->latest()
                                         ->take(5)
                                         ->get(),
             ];
+        } elseif ($user->isBendahara()) {
+            // === DATA UNTUK BENDAHARA (Laporan & Arsip Pencairan Dana) ===
+            $data = [
+                'total_purchases' => \App\Models\Purchase::where('status', 'completed')->count(),
+                'total_spent_this_month' => \App\Models\Purchase::where('status', 'completed')
+                                        ->whereMonth('date', now()->month)
+                                        ->sum('total_amount'),
+                'approved_purchases_count' => \App\Models\Purchase::where('status', 'approved_head')->count(),
+                'monthly_borrowings' => 0, // Bypass variable
+                'active_borrowings'  => 0, // Bypass variable
+                'overdue_items'      => 0, // Bypass variable
+                'recent_activities'  => \App\Models\Purchase::with(['user', 'vendor'])
+                                        ->whereIn('status', ['approved_head', 'completed'])
+                                        ->latest()
+                                        ->take(5)
+                                        ->get(),
+            ];
         } else {
-            // === DATA UNTUK ADMIN (Operasional) ===
+            // === DATA UNTUK STAFF (Operasional) ===
             $data = [
                 'total_users'       => User::count(),
-                'total_tools'       => Tool::count(), // Pastikan model Tool ada
+                'total_tools'       => Tool::count(),
                 'active_borrowings' => Borrowing::where('borrowing_status', 'active')->count(),
                 'returned_today'    => Borrowing::whereDate('actual_return_date', today())->count(),
                 'recent_activities' => Borrowing::with('borrower', 'items.tool')

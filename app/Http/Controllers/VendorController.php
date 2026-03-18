@@ -35,7 +35,7 @@ class VendorController extends Controller
     {
         // Block kepala/head from creating vendors
         $user = Auth::user();
-        if ($user && in_array($user->role, ['kepala','head'])) {
+        if ($user && in_array($user->role, ['kepala', 'head'])) {
             return redirect()->route('vendors.index')->with('error', 'Akses ditolak. Anda tidak dapat menambahkan vendor.');
         }
 
@@ -47,7 +47,7 @@ class VendorController extends Controller
     {
         // Block kepala/head from storing vendors
         $user = Auth::user();
-        if ($user && in_array($user->role, ['kepala','head'])) {
+        if ($user && in_array($user->role, ['kepala', 'head'])) {
             return redirect()->route('vendors.index')->with('error', 'Akses ditolak. Anda tidak dapat menambahkan vendor.');
         }
         $request->validate([
@@ -68,7 +68,7 @@ class VendorController extends Controller
     {
         // Block kepala/head from editing vendors
         $user = Auth::user();
-        if ($user && in_array($user->role, ['kepala','head'])) {
+        if ($user && in_array($user->role, ['kepala', 'head'])) {
             return redirect()->route('vendors.index')->with('error', 'Akses ditolak. Anda tidak dapat mengubah vendor.');
         }
 
@@ -96,7 +96,7 @@ class VendorController extends Controller
     {
         // Block kepala/head from deleting vendors
         $user = Auth::user();
-        if ($user && in_array($user->role, ['kepala','head'])) {
+        if ($user && in_array($user->role, ['kepala', 'head'])) {
             return redirect()->route('vendors.index')->with('error', 'Akses ditolak. Anda tidak dapat menghapus vendor.');
         }
 

@@ -39,10 +39,10 @@
                         
                         {{-- TOMBOL TAMBAH: HANYA UNTUK HEAD --}}
                         @if(Auth::user()->role == 'head')
-                            <a href="{{ route('users.create') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:border-indigo-900 focus:ring ring-indigo-300 disabled:opacity-25 transition ease-in-out duration-150 shadow-md">
+                            <button onclick="toggleModal('modal-create')" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:border-indigo-900 focus:ring ring-indigo-300 disabled:opacity-25 transition ease-in-out duration-150 shadow-md">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
                                 Tambah User Baru
-                            </a>
+                            </button>
                         @endif
                     </div>
 
@@ -96,14 +96,17 @@
                                     @if(Auth::user()->role == 'head')
                                         <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                                             <div class="flex justify-center items-center gap-3">
-                                                <a href="{{ route('users.edit', $user->id) }}" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 p-2 rounded-lg hover:bg-indigo-100 transition" title="Edit">
+                                                <button onclick="toggleModal('modal-edit-{{ $user->id }}')" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 p-2 rounded-lg hover:bg-indigo-100 transition" title="Edit">
                                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                                                </a>
+                                                </button>
                                                 
                                                 <button type="button" onclick="openDeleteModal('{{ route('users.destroy', $user->id) }}', 'Hapus User {{ $user->name }}?', 'Yakin ingin menghapus user <strong>{{ $user->name }}</strong>? Akses login akan dicabut.')" class="text-rose-600 hover:text-rose-900 bg-rose-50 p-2 rounded-lg hover:bg-rose-100 transition" title="Hapus">
                                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                                 </button>
                                             </div>
+
+                                            {{-- MODAL EDIT INCLUDE --}}
+                                            @include('users.modal_edit', ['user' => $user])
                                         </td>
                                     @endif
                                 </tr>
@@ -120,5 +123,79 @@
             </div>
         </div>
     </div>
+    {{-- MODAL CREATE USER --}}
+    <div id="modal-create" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-hidden="true" role="dialog">
+        <div class="flex items-center justify-center min-h-screen px-4 text-center">
+            <div class="fixed inset-0 bg-slate-900 bg-opacity-75 transition-opacity backdrop-blur-sm" onclick="toggleModal('modal-create')"></div>
+            
+            <div class="inline-block bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:max-w-md sm:w-full">
+                <form method="POST" action="{{ route('users.store') }}">
+                    @csrf
+                    <div class="bg-white px-6 pt-6 pb-6">
+                        <div class="flex justify-between items-center mb-5 border-b border-slate-100 pb-3">
+                            <h3 class="text-lg font-bold text-slate-900">Tambah Pengguna Baru</h3>
+                            <button type="button" onclick="toggleModal('modal-create')" class="text-slate-400 hover:text-rose-500 transition-colors">
+                                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            </button>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <!-- Name -->
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Nama Lengkap <span class="text-rose-500">*</span></label>
+                                <input type="text" name="name" required 
+                                    class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 placeholder-slate-400">
+                            </div>
+
+                            <!-- Email Address -->
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Alamat Email <span class="text-rose-500">*</span></label>
+                                <input type="email" name="email" required 
+                                    class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 placeholder-slate-400">
+                            </div>
+
+                            <!-- Role -->
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Peran Akses (Role) <span class="text-rose-500">*</span></label>
+                                <select name="role" required class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-slate-700">
+                                    <option value="admin">Admin Operasional</option>
+                                    <option value="head">Kepala (Verifikator)</option>
+                                </select>
+                            </div>
+
+                            <!-- Password -->
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Password <span class="text-rose-500">*</span></label>
+                                <input type="password" name="password" required 
+                                    class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 placeholder-slate-400">
+                            </div>
+
+                            <!-- Confirm Password -->
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Konfirmasi Password <span class="text-rose-500">*</span></label>
+                                <input type="password" name="password_confirmation" required 
+                                    class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 placeholder-slate-400">
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Footer -->
+                    <div class="bg-slate-50 px-6 py-4 flex flex-row-reverse gap-3 border-t border-slate-100">
+                        <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 text-sm font-semibold shadow-md transition">Simpan User</button>
+                        <button type="button" onclick="toggleModal('modal-create')" class="bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-50 text-sm font-semibold shadow-sm transition">Batal</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleModal(id) {
+            const modal = document.getElementById(id);
+            if(modal) {
+                modal.classList.toggle('hidden');
+            }
+        }
+    </script>
+
     <x-modal-delete id="deleteModal" />
 </x-app-layout>

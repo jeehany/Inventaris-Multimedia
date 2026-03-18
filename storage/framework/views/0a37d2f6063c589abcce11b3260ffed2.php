@@ -100,8 +100,10 @@
                                 </div>
                                 <select name="status" onchange="this.form.submit()" class="w-full md:w-40 pl-8 pr-8 py-2 border-none bg-transparent rounded-lg text-sm text-slate-600 font-medium focus:ring-0 cursor-pointer hover:text-indigo-700 transition-colors appearance-none">
                                     <option value="">- Status -</option>
+                                    <option value="pending_head" <?php echo e(request('status') == 'pending_head' ? 'selected' : ''); ?>>Pending</option>
                                     <option value="active" <?php echo e(request('status') == 'active' ? 'selected' : ''); ?>>Dipinjam</option>
                                     <option value="returned" <?php echo e(request('status') == 'returned' ? 'selected' : ''); ?>>Kembali</option>
+                                    <option value="rejected_head" <?php echo e(request('status') == 'rejected_head' ? 'selected' : ''); ?>>Ditolak</option>
                                 </select>
                                 <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400 group-hover:text-indigo-600 transition-colors">
                                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -135,7 +137,7 @@
                         </form>
 
                         <?php if(auth()->guard()->check()): ?>
-                            <?php if(auth()->user()->isHead()): ?>
+                            <?php if(auth()->user()->isKepala()): ?>
                                 <div class="relative" x-data="{ open: false }">
                                     <button @click="open = !open" @click.away="open = false" class="w-full md:w-auto inline-flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-lg shadow-lg hover:shadow-emerald-500/30 transition duration-150 ease-in-out text-sm gap-2">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
@@ -155,14 +157,49 @@
                                         </a>
                                     </div>
                                 </div>
-                            <?php else: ?>
-                                <a href="<?php echo e(route('borrowings.create')); ?>" class="w-full md:w-auto inline-flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-5 rounded-lg shadow-lg hover:shadow-indigo-500/30 transition duration-150 ease-in-out text-sm gap-2">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                                    Peminjaman Baru
-                                </a>
                             <?php endif; ?>
                         <?php endif; ?>
                     </div>
+
+                    
+                    <?php if(auth()->guard()->check()): ?>
+                        <?php if(in_array(auth()->user()->role, ['admin', 'staff'])): ?>
+                            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                                
+                                
+                                <div class="w-full md:w-1/2">
+                                    <div class="w-full flex items-center space-x-2 bg-emerald-50 border border-emerald-200 p-2 rounded-xl shadow-sm">
+                                        <div class="p-2 bg-emerald-100 rounded-lg text-emerald-600">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+                                        </div>
+                                        <div class="flex-1 relative">
+                                            <input type="text" id="return_scanner_input" class="w-full border-none bg-transparent focus:ring-0 text-sm font-mono placeholder-slate-400 py-1" placeholder="Scan Barcode Aset untuk Pengembalian (Check-In)...">
+                                        </div>
+                                        <button type="button" id="btn_scan_return" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-sm font-bold transition shadow-sm whitespace-nowrap">
+                                            Cari
+                                        </button>
+                                        <button type="button" id="btn_scan_camera_return" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-base transition shadow-sm flex items-center justify-center" title="Pindai QR Kamera">
+                                            <svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path></svg>
+                                        </button>
+                                    </div>
+
+                                    <!-- Container QR Scanner -->
+                                    <div id="qr-reader-container" class="hidden w-full md:w-[400px] mt-2 border-2 border-dashed border-emerald-300 rounded-xl overflow-hidden bg-white shadow-lg mx-auto md:mx-0">
+                                        <div id="qr-reader" style="width: 100%;"></div>
+                                        <button type="button" id="btn_close_camera" class="w-full bg-rose-50 text-rose-600 py-2 font-semibold text-sm hover:bg-rose-100 transition border-t border-rose-100">
+                                            Tutup Kamera
+                                        </button>
+                                    </div>
+                                </div>
+
+                                
+                                <a href="<?php echo e(route('borrowings.create')); ?>" class="w-full md:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-xl shadow-lg hover:shadow-indigo-500/30 transition duration-200 ease-in-out transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                    Peminjaman Baru (Scan)
+                                </a>
+                            </div>
+                        <?php endif; ?>
+                    <?php endif; ?>
 
                     
                     <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
@@ -223,6 +260,14 @@
                                                     <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                                     Dipinjam
                                                 </span>
+                                            <?php elseif($borrowing->borrowing_status == 'pending_head'): ?>
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
+                                                    Menunggu Persetujuan
+                                                </span>
+                                            <?php elseif($borrowing->borrowing_status == 'rejected_head'): ?>
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-100 text-rose-800 border border-rose-200">
+                                                    Ditolak Kepala
+                                                </span>
                                             <?php else: ?>
                                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200">
                                                     <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
@@ -245,7 +290,21 @@
                                                 </button>
 
                                                 <?php if(auth()->guard()->check()): ?>
-                                                    <?php if(!auth()->user()->isHead()): ?>
+                                                    <?php if(auth()->user()->isKepala()): ?>
+                                                        <?php if($borrowing->borrowing_status == 'pending_head'): ?>
+                                                            
+                                                            <form action="<?php echo e(route('borrowings.approve', $borrowing->id)); ?>" method="POST" class="inline">
+                                                                <?php echo csrf_field(); ?> <?php echo method_field('PATCH'); ?>
+                                                                <button type="submit" class="text-emerald-600 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 p-2 rounded-lg transition" title="Setujui Peminjaman">
+                                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                                                </button>
+                                                            </form>
+                                                            
+                                                            <button onclick="toggleModal('modal-reject-<?php echo e($borrowing->id); ?>')" class="text-rose-600 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 p-2 rounded-lg transition" title="Tolak Peminjaman">
+                                                               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                                            </button>
+                                                        <?php endif; ?>
+                                                    <?php else: ?>
                                                         
                                                         <?php if($borrowing->borrowing_status == 'active'): ?>
                                                             <button onclick="toggleModal('modal-edit-<?php echo e($borrowing->id); ?>')" class="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 p-2 rounded-lg transition" title="Edit Data">
@@ -260,7 +319,7 @@
                                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                                                                 </svg>
                                                             </button>
-                                                        <?php else: ?>
+                                                        <?php elseif($borrowing->borrowing_status == 'returned'): ?>
                                                             
                                                             <button type="button" onclick="openDeleteModal('<?php echo e(route('borrowings.destroy', $borrowing->id)); ?>', 'Hapus Riwayat Peminjaman?', 'Yakin ingin menghapus riwayat peminjaman ini secara permanen?')" class="text-rose-600 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 p-2 rounded-lg transition" title="Hapus Riwayat">
                                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -413,6 +472,33 @@
                                                 </div>
                                             <?php endif; ?>
 
+                                            
+                                            <?php if(auth()->guard()->check()): ?>
+                                                <?php if(auth()->user()->isKepala() && $borrowing->borrowing_status == 'pending_head'): ?>
+                                                    <div id="modal-reject-<?php echo e($borrowing->id); ?>" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-hidden="true">
+                                                        <div class="flex items-center justify-center min-h-screen px-4 text-center">
+                                                            <div class="fixed inset-0 bg-slate-900 bg-opacity-75 transition-opacity" onclick="toggleModal('modal-reject-<?php echo e($borrowing->id); ?>')"></div>
+                                                            <div class="inline-block bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full border border-slate-200">
+                                                                <form action="<?php echo e(route('borrowings.reject', $borrowing->id)); ?>" method="POST">
+                                                                    <?php echo csrf_field(); ?> <?php echo method_field('PATCH'); ?>
+                                                                    <div class="bg-white px-6 py-6">
+                                                                        <h3 class="text-lg font-bold text-slate-800 mb-4 border-b border-slate-100 pb-3">Tolak Peminjaman</h3>
+                                                                        <div class="mb-4">
+                                                                            <label class="block text-sm font-medium text-slate-700 mb-1">Catatan Penolakan</label>
+                                                                            <textarea name="note" rows="3" required class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-rose-500 focus:border-rose-500 text-sm" placeholder="Berikan alasan mengapa peminjaman ditolak..."></textarea>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="bg-slate-50 px-6 py-4 flex flex-row-reverse gap-3">
+                                                                        <button type="submit" class="bg-rose-600 text-white px-4 py-2 rounded-lg hover:bg-rose-700 text-sm font-medium shadow-sm transition">Tolak Peminjaman</button>
+                                                                        <button type="button" onclick="toggleModal('modal-reject-<?php echo e($borrowing->id); ?>')" class="bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-50 text-sm font-medium transition">Batal</button>
+                                                                    </div>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                <?php endif; ?>
+                                            <?php endif; ?>
+
                                         </td>
                                     </tr>
                                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
@@ -436,39 +522,6 @@
             </div>
         </div>
     </div>
-
-    <script>
-        function toggleModal(modalID){
-            const modal = document.getElementById(modalID);
-            if (modal) {
-                if (modal.classList.contains('hidden')) {
-                    modal.classList.remove('hidden');
-                } else {
-                    modal.classList.add('hidden');
-                }
-            }
-        }
-    </script>
-    <?php if (isset($component)) { $__componentOriginal47243a3de3ed132c2f9157dc8e8a8bd7 = $component; } ?>
-<?php if (isset($attributes)) { $__attributesOriginal47243a3de3ed132c2f9157dc8e8a8bd7 = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.modal-delete','data' => ['id' => 'deleteModal']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
-<?php $component->withName('modal-delete'); ?>
-<?php if ($component->shouldRender()): ?>
-<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
-<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
-<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
-<?php endif; ?>
-<?php $component->withAttributes(['id' => 'deleteModal']); ?>
-<?php echo $__env->renderComponent(); ?>
-<?php endif; ?>
-<?php if (isset($__attributesOriginal47243a3de3ed132c2f9157dc8e8a8bd7)): ?>
-<?php $attributes = $__attributesOriginal47243a3de3ed132c2f9157dc8e8a8bd7; ?>
-<?php unset($__attributesOriginal47243a3de3ed132c2f9157dc8e8a8bd7); ?>
-<?php endif; ?>
-<?php if (isset($__componentOriginal47243a3de3ed132c2f9157dc8e8a8bd7)): ?>
-<?php $component = $__componentOriginal47243a3de3ed132c2f9157dc8e8a8bd7; ?>
-<?php unset($__componentOriginal47243a3de3ed132c2f9157dc8e8a8bd7); ?>
-<?php endif; ?>
  <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginal9ac128a9029c0e4701924bd2d73d7f54)): ?>
@@ -478,4 +531,161 @@
 <?php if (isset($__componentOriginal9ac128a9029c0e4701924bd2d73d7f54)): ?>
 <?php $component = $__componentOriginal9ac128a9029c0e4701924bd2d73d7f54; ?>
 <?php unset($__componentOriginal9ac128a9029c0e4701924bd2d73d7f54); ?>
-<?php endif; ?><?php /**PATH C:\laragon\www\app-inventaris\resources\views/borrowings/index.blade.php ENDPATH**/ ?>
+<?php endif; ?>
+
+
+<div id="modal-global-alert" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-hidden="true">
+    <div class="flex items-center justify-center min-h-screen px-4 text-center">
+        <div class="fixed inset-0 bg-slate-900 bg-opacity-75 transition-opacity" onclick="toggleModal('modal-global-alert')"></div>
+        <div class="inline-block bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:max-w-md sm:w-full border border-slate-200 z-50">
+            <div class="bg-white px-6 py-6 pb-4">
+                <div class="flex flex-col items-center">
+                    <div id="global-alert-icon" class="mb-4">
+                        
+                    </div>
+                    <h3 id="global-alert-title" class="text-xl font-bold text-slate-800 mb-2 font-center">Pemberitahuan</h3>
+                    <p id="global-alert-message" class="text-sm text-slate-600 text-center mb-4"></p>
+                    <button type="button" onclick="toggleModal('modal-global-alert'); setTimeout(() => { document.getElementById('return_scanner_input').focus(); }, 100)" class="w-full bg-slate-800 text-white px-4 py-2 rounded-lg hover:bg-slate-700 text-sm font-medium shadow-sm transition">Tutup & Lanjutkan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+<script>
+    // JS Logic Modal & Delete ...
+    function toggleModal(modalID){
+        const modal = document.getElementById(modalID);
+        if (modal) {
+            if (modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+    }
+
+    function openDeleteModal(actionUrl, title, message) {
+        document.getElementById('deleteForm').action = actionUrl;
+        document.getElementById('deleteTitle').innerText = title;
+        document.getElementById('deleteMessage').innerText = message;
+        toggleModal('modal-delete');
+    }
+
+    // JS Check-In Scanner Logic
+    const returnInput = document.getElementById('return_scanner_input');
+    const returnBtn = document.getElementById('btn_scan_return');
+    
+    const btnScanCameraReturn = document.getElementById('btn_scan_camera_return');
+    const btnCloseCameraReturn = document.getElementById('btn_close_camera');
+    const qrContainerReturn = document.getElementById('qr-reader-container');
+    let html5QrcodeScannerReturn = null;
+
+    if (returnInput && returnBtn) {
+        returnInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                processReturnScanner(this.value.trim());
+            }
+        });
+
+        returnBtn.addEventListener('click', function() {
+            processReturnScanner(returnInput.value.trim());
+        });
+        
+        // Toggle Camera Scanner
+        if (btnScanCameraReturn) {
+            btnScanCameraReturn.addEventListener('click', function() {
+                qrContainerReturn.classList.remove('hidden');
+                if(!html5QrcodeScannerReturn) {
+                    html5QrcodeScannerReturn = new Html5QrcodeScanner(
+                        "qr-reader", { fps: 10, qrbox: {width: 250, height: 250} }, false);
+                    
+                    html5QrcodeScannerReturn.render(onScanReturnSuccess, onScanReturnFailure);
+                }
+            });
+        }
+
+        if (btnCloseCameraReturn) {
+            btnCloseCameraReturn.addEventListener('click', function() {
+                if(html5QrcodeScannerReturn) {
+                    html5QrcodeScannerReturn.clear().then(() => {
+                        html5QrcodeScannerReturn = null;
+                        qrContainerReturn.classList.add('hidden');
+                        returnInput.focus();
+                    });
+                }
+            });
+        }
+    }
+    
+    function onScanReturnSuccess(decodedText, decodedResult) {
+        processReturnScanner(decodedText);
+        
+        if(html5QrcodeScannerReturn) {
+            html5QrcodeScannerReturn.clear().then(() => {
+                html5QrcodeScannerReturn = null;
+                qrContainerReturn.classList.add('hidden');
+            });
+        }
+    }
+
+    function onScanReturnFailure(error) {
+        // ignore
+    }
+
+    function processReturnScanner(code) {
+        if (!code) {
+            showAlert('error', 'Peringatan', 'Mohon scan barcode terlebih dahulu!');
+            return;
+        }
+
+        returnInput.disabled = true;
+        returnBtn.innerHTML = '<svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+        
+        fetch(`/get-borrowing-by-tool?code=${encodeURIComponent(code)}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    // Coba buka modal return jika ada di DOM
+                    const modalId = 'modal-return-' + data.borrowing_id;
+                    const modal = document.getElementById(modalId);
+                    
+                    if (modal) {
+                        toggleModal(modalId);
+                    } else {
+                        showAlert('info', 'Transaksi Tidak Ditemukan di Halaman Ini', 'Transaksi yang berisi barang ini (ID: ' + data.borrowing_id + ') tidak tampil di halaman saat ini. Pastikan filter status/halaman sudah benar.');
+                    }
+                    returnInput.value = '';
+                } else {
+                    showAlert('error', 'Gagal', data.message);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showAlert('error', 'Error Jaringan', 'Terjadi kesalahan sistem saat mencoba scan barang!');
+            })
+            .finally(() => {
+                returnInput.disabled = false;
+                returnBtn.innerHTML = 'Cari Transaksi';
+                returnInput.focus();
+            });
+    }
+
+    function showAlert(type, title, message) {
+        document.getElementById('global-alert-title').innerText = title;
+        document.getElementById('global-alert-message').innerText = message;
+        
+        const iconContainer = document.getElementById('global-alert-icon');
+        if (type === 'error') {
+            iconContainer.innerHTML = '<div class="p-3 bg-rose-100 rounded-full text-rose-600"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>';
+        } else if (type === 'success') {
+            iconContainer.innerHTML = '<div class="p-3 bg-emerald-100 rounded-full text-emerald-600"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg></div>';
+        } else {
+            iconContainer.innerHTML = '<div class="p-3 bg-blue-100 rounded-full text-blue-600"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>';
+        }
+        
+        toggleModal('modal-global-alert');
+    }
+</script><?php /**PATH C:\laragon\www\app-inventaris\resources\views/borrowings/index.blade.php ENDPATH**/ ?>

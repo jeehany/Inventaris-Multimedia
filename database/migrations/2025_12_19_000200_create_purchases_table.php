@@ -10,34 +10,21 @@ return new class extends Migration
     {
         Schema::create('purchases', function (Blueprint $table) {
             $table->id();
+            $table->string('purchase_code')->unique();
+            $table->date('date');
             
-            // Kolom Identitas
-            $table->string('purchase_code'); // <--- INI YANG DICARI DATABASE
-            $table->date('date');            // <--- INI JUGA
+            // Foreign Keys
+            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Staff yang mengajukan
+            $table->unsignedBigInteger('vendor_id')->nullable(); // Opsional di awal RAB
             
-            // Kolom Foreign Key
-            $table->foreignId('vendor_id')->constrained()->onDelete('cascade');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            // Total amount
+            $table->decimal('total_amount', 15, 2)->default(0); // Total RAB
             
-            // PENTING: Foreign Key ke Kategori (Pastikan tabel 'tool_categories' sudah ada)
-            // Kalau tabel kategori dibuat SETELAH ini, hapus 'constrained' jadi 'unsignedBigInteger'
-            $table->unsignedBigInteger('category_id')->nullable(); 
-            
-            // Kolom Detail Barang (Single Table)
-            $table->string('tool_name');
-            $table->text('specification')->nullable();
-            $table->integer('quantity')->default(1);
-            $table->string('brand')->nullable();
-            $table->decimal('unit_price', 15, 2)->default(0); // Harga Rencana (Budget)
-            $table->decimal('actual_unit_price', 15, 2)->nullable(); // Harga Asli (Realisasi)
-            $table->decimal('subtotal', 15, 2)->default(0);
-            
-            // Kolom Status
-            $table->string('status')->default('pending'); // pending, approved, rejected
-            $table->boolean('is_purchased')->default(false); // true kalau sudah dibeli admin
+            // Kolom Status (Sesuai Skripsi: pending_head, approved_head, completed, rejected)
+            $table->string('status')->default('pending_head'); 
             
             // Kolom Bukti & Catatan
-            $table->string('transaction_proof_photo')->nullable();
+            $table->string('transaction_proof_photo')->nullable(); // Nota dari toko setelah completed
             $table->text('rejection_note')->nullable();
 
             $table->timestamps();
