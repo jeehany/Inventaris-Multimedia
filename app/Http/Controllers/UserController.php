@@ -13,7 +13,7 @@ class UserController extends Controller
     // Cek apakah user adalah HEAD
     private function checkHead()
     {
-        if (Auth::user()->role !== 'head') {
+        if (!in_array(Auth::user()->role, ['head', 'kepala'])) {
             abort(403, 'Unauthorized action. Only Head can perform this.');
         }
     }
@@ -41,7 +41,7 @@ class UserController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'role' => ['required', 'in:admin,head'],
+            'role' => ['required', 'in:admin,head,kepala'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
@@ -70,7 +70,7 @@ class UserController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email,'.$user->id],
-            'role' => ['required', 'in:admin,head'],
+            'role' => ['required', 'in:admin,head,kepala'],
         ]);
 
         // Update data dasar

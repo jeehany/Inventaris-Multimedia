@@ -53,6 +53,22 @@ class BorrowerController extends Controller
         return redirect()->route('borrowers.index')->with('success', 'Data peminjam berhasil ditambahkan.');
     }
 
+    public function storeAjax(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'code' => 'required|string|unique:borrowers,code',
+            'phone' => 'nullable|string',
+        ]);
+
+        $borrower = Borrower::create($request->only(['code', 'name', 'phone']));
+
+        return response()->json([
+            'success' => true,
+            'borrower' => $borrower
+        ]);
+    }
+
     public function edit($id) {
         $borrower = Borrower::findOrFail($id);
         return view('borrowers.edit', compact('borrower'));

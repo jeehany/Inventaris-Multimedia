@@ -164,39 +164,35 @@
                     
                     <?php if(auth()->guard()->check()): ?>
                         <?php if(in_array(auth()->user()->role, ['admin', 'staff'])): ?>
-                            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                            <div class="flex flex-col md:flex-row justify-between items-start gap-4 mb-6">
                                 
                                 
-                                <div class="w-full md:w-1/2">
+                                <div class="w-full md:w-[45%]">
                                     <div class="w-full flex items-center space-x-2 bg-emerald-50 border border-emerald-200 p-2 rounded-xl shadow-sm">
                                         <div class="p-2 bg-emerald-100 rounded-lg text-emerald-600">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
                                         </div>
-                                        <div class="flex-1 relative">
-                                            <input type="text" id="return_scanner_input" class="w-full border-none bg-transparent focus:ring-0 text-sm font-mono placeholder-slate-400 py-1" placeholder="Scan Barcode Aset untuk Pengembalian (Check-In)...">
+                                        <div class="flex-1 min-w-0">
+                                            <input type="text" id="return_scanner_input" class="w-full border-none bg-transparent focus:ring-0 text-sm font-mono placeholder-slate-400 py-1" placeholder="Scan Barcode Pengembalian...">
                                         </div>
-                                        <button type="button" id="btn_scan_return" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-sm font-bold transition shadow-sm whitespace-nowrap">
+                                        <button type="button" id="btn_scan_return" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-sm font-bold transition shadow-sm whitespace-nowrap hidden sm:block">
                                             Cari
                                         </button>
-                                        <button type="button" id="btn_scan_camera_return" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-base transition shadow-sm flex items-center justify-center" title="Pindai QR Kamera">
+                                        <button type="button" id="btn_scan_camera_return" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-base transition shadow-sm flex items-center justify-center shrink-0" title="Pindai QR Kamera">
                                             <svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path></svg>
                                         </button>
                                     </div>
-
-                                    <!-- Container QR Scanner -->
-                                    <div id="qr-reader-container" class="hidden w-full md:w-[400px] mt-2 border-2 border-dashed border-emerald-300 rounded-xl overflow-hidden bg-white shadow-lg mx-auto md:mx-0">
-                                        <div id="qr-reader" style="width: 100%;"></div>
-                                        <button type="button" id="btn_close_camera" class="w-full bg-rose-50 text-rose-600 py-2 font-semibold text-sm hover:bg-rose-100 transition border-t border-rose-100">
-                                            Tutup Kamera
-                                        </button>
-                                    </div>
+                                    
                                 </div>
-
                                 
-                                <a href="<?php echo e(route('borrowings.create')); ?>" class="w-full md:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-xl shadow-lg hover:shadow-indigo-500/30 transition duration-200 ease-in-out transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                                    Peminjaman Baru (Scan)
-                                </a>
+                                
+                                <div class="w-full md:w-auto h-full flex items-start justify-end mt-1 md:mt-0">
+                                    <a href="<?php echo e(route('borrowings.create')); ?>" class="w-full md:w-auto shrink-0 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-xl shadow-lg hover:shadow-indigo-500/30 transition duration-200 ease-in-out transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                        Peminjaman Baru (Scan)
+                                    </a>
+                                </div>
+                                
                             </div>
                         <?php endif; ?>
                     <?php endif; ?>
@@ -552,6 +548,33 @@
     </div>
 </div>
 
+
+<div id="modal-scanner-return" class="fixed inset-0 z-[60] hidden overflow-y-auto" aria-hidden="true">
+    <div class="flex items-center justify-center min-h-screen px-4 text-center">
+        <div class="fixed inset-0 bg-slate-900 bg-opacity-75 transition-opacity backdrop-blur-sm" id="bg-close-scanner"></div>
+        
+        <div class="inline-block w-full max-w-sm bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all relative z-[70]">
+            <div class="bg-slate-800 px-4 py-3 border-b border-slate-700 flex justify-between items-center">
+                <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                    <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+                    Scan Pengembalian
+                </h3>
+                <button type="button" id="btn_close_camera" class="text-slate-400 hover:text-rose-400 transition-colors">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <div class="bg-black p-1">
+                <div id="qr-reader" class="w-full overflow-hidden outline-none bg-black" style="min-height: 250px;"></div>
+            </div>
+            
+            <div class="bg-slate-50 px-4 py-3 text-center border-t border-slate-200">
+                <p class="text-xs text-slate-500 font-medium whitespace-normal">Arahkan kamera ke QRCode / Barcode Aset</p>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 <script>
     // JS Logic Modal & Delete ...
@@ -579,7 +602,7 @@
     
     const btnScanCameraReturn = document.getElementById('btn_scan_camera_return');
     const btnCloseCameraReturn = document.getElementById('btn_close_camera');
-    const qrContainerReturn = document.getElementById('qr-reader-container');
+    const bgCloseScanner = document.getElementById('bg-close-scanner');
     let html5QrcodeScannerReturn = null;
 
     if (returnInput && returnBtn) {
@@ -594,10 +617,10 @@
             processReturnScanner(returnInput.value.trim());
         });
         
-        // Toggle Camera Scanner
+        // Toggle Camera Scanner Modal
         if (btnScanCameraReturn) {
             btnScanCameraReturn.addEventListener('click', function() {
-                qrContainerReturn.classList.remove('hidden');
+                toggleModal('modal-scanner-return');
                 if(!html5QrcodeScannerReturn) {
                     html5QrcodeScannerReturn = new Html5QrcodeScanner(
                         "qr-reader", { fps: 10, qrbox: {width: 250, height: 250} }, false);
@@ -607,27 +630,37 @@
             });
         }
 
+        const closeScannerHelper = () => {
+            if(html5QrcodeScannerReturn) {
+                html5QrcodeScannerReturn.clear().then(() => {
+                    html5QrcodeScannerReturn = null;
+                    document.getElementById('modal-scanner-return').classList.add('hidden');
+                    returnInput.focus();
+                });
+            } else {
+                document.getElementById('modal-scanner-return').classList.add('hidden');
+            }
+        };
+
         if (btnCloseCameraReturn) {
-            btnCloseCameraReturn.addEventListener('click', function() {
-                if(html5QrcodeScannerReturn) {
-                    html5QrcodeScannerReturn.clear().then(() => {
-                        html5QrcodeScannerReturn = null;
-                        qrContainerReturn.classList.add('hidden');
-                        returnInput.focus();
-                    });
-                }
-            });
+            btnCloseCameraReturn.addEventListener('click', closeScannerHelper);
+        }
+        if (bgCloseScanner) {
+            bgCloseScanner.addEventListener('click', closeScannerHelper);
         }
     }
     
     function onScanReturnSuccess(decodedText, decodedResult) {
-        processReturnScanner(decodedText);
-        
+        // Otomatis menutup kamera saat terbaca
         if(html5QrcodeScannerReturn) {
             html5QrcodeScannerReturn.clear().then(() => {
                 html5QrcodeScannerReturn = null;
-                qrContainerReturn.classList.add('hidden');
+                document.getElementById('modal-scanner-return').classList.add('hidden');
+                processReturnScanner(decodedText);
             });
+        } else {
+            toggleModal('modal-scanner-return');
+            processReturnScanner(decodedText);
         }
     }
 

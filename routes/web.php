@@ -56,6 +56,7 @@ Route::middleware('auth')->group(function () {
 
 
     // --- Peminjam & Peminjaman ---
+    Route::post('/borrowers/ajax', [BorrowerController::class, 'storeAjax'])->name('borrowers.storeAjax');
     Route::resource('borrowers', BorrowerController::class);
     
     // Custom Routes Peminjaman

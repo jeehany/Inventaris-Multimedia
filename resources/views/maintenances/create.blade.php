@@ -109,85 +109,102 @@
                     <form action="{{ route('maintenances.store') }}" method="POST">
                         @csrf
 
-                        {{-- 1. PILIH ASET DENGAN BARCODE / QR SCANNER --}}
-                        <div class="mb-5 bg-slate-50 p-4 rounded-xl border border-slate-200">
-                            <label class="block text-sm font-semibold text-slate-700 mb-2">Kode Aset / Pindai QR Code Multimedia</label>
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
                             
-                            <div class="flex gap-2 mb-3 flex-wrap">
-                                <input type="text" id="barcode_input" placeholder="Ketik kode aset atau Pindai QR..." class="w-full md:w-1/2 border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 font-mono text-sm" autofocus>
-                                <button type="button" id="btn_manual_add" class="bg-slate-800 text-white px-4 py-2 rounded-lg hover:bg-slate-700 transition font-medium text-sm flex items-center gap-2">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                                    Cari
-                                </button>
-                                <button type="button" id="btn_scan_camera" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition font-medium text-sm flex items-center gap-2">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                                    Kamera
-                                </button>
-                            </div>
-
-                            <!-- Container QR Scanner -->
-                            <div id="qr-reader-container" class="hidden w-full md:w-1/2 mb-4 border border-indigo-200 rounded-xl overflow-hidden bg-white shadow-sm">
-                                <div id="qr-reader" style="width: 100%;"></div>
-                                <button type="button" id="btn_close_camera" class="w-full bg-rose-50 text-rose-600 py-3 font-bold text-sm hover:bg-rose-100 transition border-t border-rose-100 flex items-center justify-center gap-2">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                    Tutup Scanner Kamera
-                                </button>
-                            </div>
-
-                            <p class="text-xs text-slate-500 mt-1" id="scan_status">Status: Standby untuk pemindaian QR...</p>
-                            
-                            <!-- Tempat menyimpan Info Barang yang akan diservis -->
-                            <div id="selected_tool_info" class="mt-4 hidden p-3 bg-indigo-50 rounded-lg border border-indigo-200 flex items-center justify-between">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 bg-white border border-indigo-100 rounded flex items-center justify-center text-indigo-500 font-bold shadow-sm">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>    
+                            {{-- KOLOM KIRI (JENIS, TANGGAL & KETERANGAN) --}}
+                            <div class="lg:col-span-4 flex flex-col gap-6">
+                                
+                                {{-- JENIS & TANGGAL --}}
+                                <div class="bg-slate-50 p-5 rounded-xl border border-slate-200">
+                                    <h4 class="font-bold text-indigo-900 text-sm uppercase tracking-wider mb-4 border-b border-indigo-100 pb-2">Detail Pemeliharaan</h4>
+                                    
+                                    <div class="mb-4">
+                                        <label class="block text-xs font-semibold text-slate-700 mb-2">Jenis Perbaikan / Pemeliharaan <span class="text-rose-500">*</span></label>
+                                        <select name="maintenance_type_id" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-slate-700 font-medium text-sm" required>
+                                            <option value="">-- Pilih Jenis --</option>
+                                            @foreach($types as $type)
+                                                <option value="{{ $type->id }}" {{ old('maintenance_type_id') == $type->id ? 'selected' : '' }}>
+                                                    {{ $type->name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        @if($types->isEmpty())
+                                            <p class="text-xs text-rose-500 mt-1 font-semibold">
+                                                *Data Jenis Maintenance kosong.
+                                            </p>
+                                        @endif
                                     </div>
+
                                     <div>
-                                        <div id="selected_tool_name" class="font-bold text-slate-800 text-sm">Nama Alat</div>
-                                        <div id="selected_tool_code" class="text-xs text-indigo-600 font-mono font-bold">CODE</div>
+                                        <label class="block text-xs font-semibold text-slate-700 mb-2">Tanggal Mulai <span class="text-rose-500">*</span></label>
+                                        <input type="date" name="start_date" value="{{ old('start_date', date('Y-m-d')) }}" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm" required>
                                     </div>
                                 </div>
+
+                                {{-- KETERANGAN KELUHAN --}}
+                                <div class="bg-slate-50 p-5 rounded-xl border border-slate-200">
+                                    <h4 class="font-bold text-indigo-900 text-sm uppercase tracking-wider mb-4 border-b border-indigo-100 pb-2">Keterangan / Keluhan</h4>
+                                    <textarea name="note" rows="5" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 placeholder-slate-400 text-sm" placeholder="Jelaskan detail kerusakan atau keluhan yang dialami aset..." required>{{ old('note') }}</textarea>
+                                </div>
                             </div>
-                            
-                            <!-- Hidden input -->
-                            <input type="hidden" name="tool_id" id="hidden_tool_id" required>
-                        </div>
 
-                        {{-- 2. Pilihan Jenis Maintenance --}}
-                        <div class="mb-5">
-                            <label class="block text-sm font-semibold text-slate-700 mb-2">Jenis Perbaikan / Pemeliharaan</label>
-                            <select name="maintenance_type_id" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-slate-700 font-medium" required>
-                                <option value="">-- Pilih Jenis --</option>
-                                @foreach($types as $type)
-                                    <option value="{{ $type->id }}" {{ old('maintenance_type_id') == $type->id ? 'selected' : '' }}>
-                                        {{ $type->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @if($types->isEmpty())
-                                <p class="text-xs text-rose-500 mt-1 font-semibold">
-                                    *Data Jenis Maintenance belum tersedia.
-                                </p>
-                            @endif
-                        </div>
+                            {{-- KOLOM KANAN (ASET YANG DIPERBAIKI) --}}
+                            <div class="lg:col-span-8 flex flex-col h-full bg-slate-50 rounded-xl border border-slate-200 overflow-hidden">
+                                
+                                <div class="p-6 flex-1 flex flex-col">
+                                    <h4 class="font-bold text-indigo-900 text-sm uppercase tracking-wider mb-5 pb-2 border-b border-indigo-100">Aset Multimedia yang Diproses</h4>
+                                    
+                                    <label for="barcode_input" class="block text-xs font-semibold text-slate-700 mb-2">Pencarian Aset (Scan / Ketik ID Aset) <span class="text-rose-500">*</span></label>
+                                    <div class="flex flex-col sm:flex-row gap-2 mb-3 items-start">
+                                        <div class="flex-1 w-full relative">
+                                            <input type="text" id="barcode_input" placeholder="Ketik kode aset atau Pindai Barcode..." class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 font-mono text-sm" autofocus>
+                                        </div>
+                                        <div class="flex gap-2 w-full sm:w-auto shrink-0">
+                                            <button type="button" id="btn_manual_add" class="flex-1 sm:flex-none justify-center bg-slate-800 text-white px-4 py-2 rounded-lg hover:bg-slate-700 transition font-medium text-sm flex items-center gap-1.5 shadow-sm">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                                                Cari
+                                            </button>
+                                            <button type="button" id="btn_scan_camera" class="flex-1 sm:flex-none justify-center bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition font-medium text-sm flex items-center gap-1.5 shadow-sm">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                                Kamera
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <p class="text-xs text-slate-500 font-semibold mt-1 mb-5" id="scan_status">Status: Menunggu identifikasi aset...</p>
+                                    
+                                    <!-- Tempat menyimpan Info Barang yang diservis -->
+                                    <div id="selected_tool_info" class="hidden relative p-5 bg-white rounded-xl border-2 border-indigo-200 shadow-sm overflow-hidden group">
+                                        <div class="absolute top-0 left-0 w-2 h-full bg-indigo-500"></div>
+                                        <div class="flex items-start gap-4">
+                                            <div class="w-12 h-12 bg-indigo-50 border border-indigo-100 rounded-lg flex items-center justify-center text-indigo-600 font-bold shadow-sm shrink-0">
+                                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>    
+                                            </div>
+                                            <div class="pt-1">
+                                                <div id="selected_tool_name" class="font-bold text-slate-800 text-lg leading-tight mb-1">Nama Alat</div>
+                                                <div id="selected_tool_code" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-bold bg-indigo-100 text-indigo-700">CODE</div>
+                                            </div>
+                                        </div>
+                                    </div>
 
-                        {{-- 3. Tanggal Mulai --}}
-                        <div class="mb-5">
-                            <label class="block text-sm font-semibold text-slate-700 mb-2">Tanggal Mulai</label>
-                            <input type="date" name="start_date" value="{{ old('start_date', date('Y-m-d')) }}" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
-                        </div>
-
-                        {{-- 4. Deskripsi Masalah --}}
-                        <div class="mb-8">
-                            <label class="block text-sm font-semibold text-slate-700 mb-2">Keterangan / Keluhan</label>
-                            <textarea name="note" rows="4" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 placeholder-slate-400" placeholder="Jelaskan detail kerusakan atau pemeliharaan yang dibutuhkan..." required>{{ old('note') }}</textarea>
-                        </div>
-
-                        <div class="flex flex-row-reverse gap-3 border-t border-slate-100 pt-6">
-                            <button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-indigo-700 shadow-md transition transform hover:-translate-y-0.5">
-                                Simpan Data
-                            </button>
-                            <a href="{{ route('maintenances.index') }}" class="bg-white border border-slate-300 text-slate-700 px-6 py-2 rounded-lg font-semibold hover:bg-slate-50 transition">Batal</a>
+                                    <!-- Placeholder ketika barang belum dipilih -->
+                                    <div id="empty_tool_info" class="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 rounded-xl p-8 bg-slate-50/50">
+                                        <svg class="w-12 h-12 text-slate-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path></svg>
+                                        <p class="text-sm font-medium text-slate-400">Belum ada aset pemeliharaan yang diidentifikasi.</p>
+                                    </div>
+                                    
+                                    <input type="hidden" name="tool_id" id="hidden_tool_id" required>
+                                </div>
+                                
+                                {{-- TOMBOL SUBMIT (TERPAUT DI KOLOM KANAN BAWAH) --}}
+                                <div class="bg-slate-100 border-t border-slate-200 p-5 flex items-center justify-end gap-3 mt-auto">
+                                    <a href="{{ route('maintenances.index') }}" class="text-slate-500 hover:text-slate-800 font-semibold px-4 py-2 transition text-sm">Kembali</a>
+                                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-md hover:shadow-indigo-500/30 transition duration-200 ease-in-out transform hover:-translate-y-0.5 whitespace-nowrap text-sm flex items-center gap-2">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                        Proses Pemeliharaan
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </form>
 
@@ -196,6 +213,40 @@
         </div>
     </div>
     
+    {{-- MODAL SCANNER KAMERA (POPUP) --}}
+    <div id="modal-scanner-camera" class="fixed inset-0 z-[60] hidden overflow-y-auto" aria-hidden="true">
+        <div class="flex items-center justify-center min-h-screen px-4 text-center">
+            <div class="fixed inset-0 bg-slate-900 bg-opacity-75 transition-opacity backdrop-blur-sm" id="bg-close-scanner"></div>
+            
+            <div class="inline-block w-full max-w-sm bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all relative z-[70]">
+                <div class="bg-slate-800 px-4 py-3 border-b border-slate-700 flex justify-between items-center">
+                    <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                        <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        Pemindai Aset Pemeliharaan
+                    </h3>
+                    <button type="button" id="btn_close_camera" class="text-slate-400 hover:text-rose-400 transition-colors">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                
+                <div class="bg-black p-1 relative">
+                    <div id="qr-reader" class="w-full overflow-hidden outline-none bg-black" style="min-height: 250px;"></div>
+                    <!-- Overlay Notifikasi Sukses Scan -->
+                    <div id="scan-success-overlay" class="absolute inset-0 bg-emerald-500/80 backdrop-blur-sm flex items-center justify-center text-white font-bold opacity-0 pointer-events-none transition-opacity duration-300 z-10">
+                        <div class="text-center">
+                            <svg class="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                            <span>Tangkapan Sukses!</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-slate-50 px-4 py-3 text-center border-t border-slate-200">
+                    <p class="text-xs text-slate-500 font-medium whitespace-normal">Arahkan kamera ke QRCode / Barcode aset yang rusak.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{-- JAVASCRIPT LOGIC & HTML5-QRCODE --}}
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <script>
@@ -203,13 +254,15 @@
         const btnManualAdd = document.getElementById('btn_manual_add');
         const btnScanCamera = document.getElementById('btn_scan_camera');
         const btnCloseCamera = document.getElementById('btn_close_camera');
-        const qrContainer = document.getElementById('qr-reader-container');
+        const bgCloseScanner = document.getElementById('bg-close-scanner');
+        const scanSuccessOverlay = document.getElementById('scan-success-overlay');
         const scanStatus = document.getElementById('scan_status');
         
         const hiddenToolId = document.getElementById('hidden_tool_id');
         const selectedToolInfo = document.getElementById('selected_tool_info');
         const selectedToolName = document.getElementById('selected_tool_name');
         const selectedToolCode = document.getElementById('selected_tool_code');
+        const emptyToolInfo = document.getElementById('empty_tool_info');
         
         let html5QrcodeScanner = null;
 
@@ -224,9 +277,16 @@
             processBarcode(barcodeInput.value.trim());
         });
 
-        // Toggle Camera Scanner
+        function toggleModal(id) {
+            const modal = document.getElementById(id);
+            if(modal) {
+                modal.classList.toggle('hidden');
+            }
+        }
+
+        // Toggle Camera Scanner Modal
         btnScanCamera.addEventListener('click', function() {
-            qrContainer.classList.remove('hidden');
+            toggleModal('modal-scanner-camera');
             if(!html5QrcodeScanner) {
                 html5QrcodeScanner = new Html5QrcodeScanner(
                     "qr-reader", { fps: 10, qrbox: {width: 250, height: 250} }, false);
@@ -236,32 +296,48 @@
             }
         });
 
-        btnCloseCamera.addEventListener('click', function() {
+        const closeCameraHelper = () => {
             if(html5QrcodeScanner) {
                 html5QrcodeScanner.clear().then(() => {
                     html5QrcodeScanner = null;
-                    qrContainer.classList.add('hidden');
+                    document.getElementById('modal-scanner-camera').classList.add('hidden');
                     showStatus('Kamera dimatikan.', 'info');
                     barcodeInput.focus();
                 });
+            } else {
+                document.getElementById('modal-scanner-camera').classList.add('hidden');
             }
-        });
+        };
+
+        if (btnCloseCamera) btnCloseCamera.addEventListener('click', closeCameraHelper);
+        if (bgCloseScanner) bgCloseScanner.addEventListener('click', closeCameraHelper);
 
         function onScanSuccess(decodedText, decodedResult) {
+            // Tampilkan animasi pop/overlay
+            scanSuccessOverlay.classList.remove('opacity-0');
+            setTimeout(() => {
+                scanSuccessOverlay.classList.add('opacity-0');
+            }, 800);
+
             showStatus('QR Terbaca: ' + decodedText, 'success');
             processBarcode(decodedText);
             
             // Auto close camera in Maintenance Form because we only need 1 tool
-            if(html5QrcodeScanner) {
-                html5QrcodeScanner.clear().then(() => {
-                    html5QrcodeScanner = null;
-                    qrContainer.classList.add('hidden');
-                });
-            }
+            setTimeout(() => {
+                closeCameraHelper();
+            }, 600);
         }
 
         function onScanFailure(error) {
             // keep scanning silently
+        }
+
+        function showStatus(message, type) {
+            scanStatus.textContent = 'Status: ' + message;
+            scanStatus.className = 'text-xs mt-1 font-semibold transition-colors mb-5 ';
+            if (type === 'error') scanStatus.classList.add('text-rose-500');
+            else if (type === 'success') scanStatus.classList.add('text-emerald-500');
+            else scanStatus.classList.add('text-indigo-500');
         }
 
         function processBarcode(code) {
@@ -272,15 +348,16 @@
 
             barcodeInput.disabled = true;
             btnManualAdd.disabled = true;
-            showStatus('Mencari data kerusakan alat dengan kode: ' + code + '...', 'info');
+            showStatus('Mencari data aset dengan kode: ' + code + '...', 'info');
 
             fetch(`/get-tool-by-code?code=${encodeURIComponent(code)}`)
                 .then(response => response.json())
                 .then(res => {
                     if (res.success) {
                         // Cek jika alat tidak sedang available/maintenance dsb sesuai rule jika perlu
-                        // Saat ini API default mengembalikan tool jika valid
                         selectedToolInfo.classList.remove('hidden');
+                        if (emptyToolInfo) emptyToolInfo.classList.add('hidden');
+                        
                         selectedToolName.textContent = res.data.tool_name + " (" + res.data.category_name + ")";
                         selectedToolCode.textContent = res.data.tool_code;
                         hiddenToolId.value = res.data.id;
@@ -290,6 +367,7 @@
                     } else {
                         showStatus(res.message, 'error');
                         selectedToolInfo.classList.add('hidden');
+                        if (emptyToolInfo) emptyToolInfo.classList.remove('hidden');
                         hiddenToolId.value = '';
                     }
                 })
@@ -303,5 +381,14 @@
                     barcodeInput.focus();
                 });
         }
+        
+        // Prevent form submission if tool_id is empty
+        document.querySelector('form').addEventListener('submit', function(e) {
+            if(!hiddenToolId.value) {
+                e.preventDefault();
+                alert('Anda harus memilih aset yang akan diperbaiki terlebih dahulu!');
+                barcodeInput.focus();
+            }
+        });
     </script>
 </x-app-layout>

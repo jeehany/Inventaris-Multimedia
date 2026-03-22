@@ -48,7 +48,7 @@
                         </div>
                         
                         
-                        <?php if(Auth::user()->role == 'head'): ?>
+                        <?php if(in_array(Auth::user()->role, ['head', 'kepala'])): ?>
                             <button onclick="toggleModal('modal-create')" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:border-indigo-900 focus:ring ring-indigo-300 disabled:opacity-25 transition ease-in-out duration-150 shadow-md">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
                                 Tambah User Baru
@@ -66,7 +66,7 @@
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">Terdaftar</th>
                                     
                                     
-                                    <?php if(Auth::user()->role == 'head'): ?>
+                                    <?php if(in_array(Auth::user()->role, ['head', 'kepala'])): ?>
                                         <th scope="col" class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider">Aksi</th>
                                     <?php endif; ?>
                                 </tr>
@@ -107,7 +107,7 @@
                                     </td>
 
                                     
-                                    <?php if(Auth::user()->role == 'head'): ?>
+                                    <?php if(in_array(Auth::user()->role, ['head', 'kepala'])): ?>
                                         <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                                             <div class="flex justify-center items-center gap-3">
                                                 <button onclick="toggleModal('modal-edit-<?php echo e($user->id); ?>')" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 p-2 rounded-lg hover:bg-indigo-100 transition" title="Edit">
@@ -175,6 +175,7 @@
                                 <select name="role" required class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-slate-700">
                                     <option value="admin">Admin Operasional</option>
                                     <option value="head">Kepala (Verifikator)</option>
+                                    <option value="kepala">Kepala Lab/Studio</option>
                                 </select>
                             </div>
 
