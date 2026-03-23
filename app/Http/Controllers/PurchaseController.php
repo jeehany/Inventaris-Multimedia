@@ -216,7 +216,7 @@ class PurchaseController extends Controller
         while (ob_get_level()) {
             ob_end_clean();
         } 
-        return $pdf->download('laporan-pengajuan-request-' . now()->format('Y-m-d') . '.pdf');
+        return $pdf->stream('laporan-pengajuan-request-' . now()->format('Y-m-d') . '.pdf');
     }
 
     /**
@@ -501,7 +501,7 @@ class PurchaseController extends Controller
             }
             $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('purchases.history_pdf', compact('purchases', 'logo'));
             // $pdf->setPaper('a4', 'landscape'); // REMOVED: User request Portrait
-            return $pdf->download('laporan-riwayat-pengadaan-' . now()->format('Y-m-d') . '.pdf');
+            return $pdf->stream('laporan-riwayat-pengadaan-' . now()->format('Y-m-d') . '.pdf');
         } catch (\Throwable $e) {
             return response()->json(['error' => 'Gagal export PDF: ' . $e->getMessage()], 500);
         }

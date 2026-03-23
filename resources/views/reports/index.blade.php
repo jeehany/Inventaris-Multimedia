@@ -24,7 +24,7 @@
                         <h4 class="font-bold text-slate-800 mb-2">Laporan Peminjaman Keluar-Masuk</h4>
                         <p class="text-xs text-slate-500 mb-4 line-clamp-3">Riwayat aktivitas sirkulasi aset yang dipinjam beserta tanggal peminjaman & pengembalian.</p>
                     </div>
-                    <form action="{{ route('reports.borrowing') }}" method="GET">
+                    <form action="{{ route('reports.borrowing') }}" method="GET" target="_blank">
                         <div class="space-y-3 mb-4">
                             <div>
                                 <label class="text-[10px] font-bold text-slate-500 uppercase">Mulai Tanggal</label>
@@ -36,8 +36,8 @@
                             </div>
                         </div>
                         <button type="submit" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-semibold py-2 rounded-xl text-sm transition shadow-sm flex justify-center items-center gap-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                            Download PDF
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                            Preview Laporan
                         </button>
                     </form>
                 </div>
@@ -51,7 +51,7 @@
                         <h4 class="font-bold text-slate-800 mb-2">Laporan Riwayat Maintenance</h4>
                         <p class="text-xs text-slate-500 mb-4 line-clamp-3">Daftar perbaikan alat yang selesai beserta total rincian biaya yang dihabiskan.</p>
                     </div>
-                    <form action="{{ route('reports.maintenance') }}" method="GET">
+                    <form action="{{ route('reports.maintenance') }}" method="GET" target="_blank">
                         <div class="space-y-3 mb-4">
                             <div>
                                 <label class="text-[10px] font-bold text-slate-500 uppercase">Mulai Tanggal</label>
@@ -63,8 +63,8 @@
                             </div>
                         </div>
                         <button type="submit" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-semibold py-2 rounded-xl text-sm transition shadow-sm flex justify-center items-center gap-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                            Download PDF
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                            Preview Laporan
                         </button>
                     </form>
                 </div>
@@ -78,7 +78,7 @@
                         <h4 class="font-bold text-slate-800 mb-2">Laporan Pengadaan Barang</h4>
                         <p class="text-xs text-slate-500 mb-4 line-clamp-3">Merekap bukti transaksi belanja, pengeluaran anggaran dan detail harga per item.</p>
                     </div>
-                    <form action="{{ route('reports.purchase') }}" method="GET">
+                    <form action="{{ route('reports.purchase') }}" method="GET" target="_blank">
                         <div class="space-y-3 mb-4">
                             <div>
                                 <label class="text-[10px] font-bold text-slate-500 uppercase">Mulai Tanggal</label>
@@ -90,8 +90,8 @@
                             </div>
                         </div>
                         <button type="submit" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-semibold py-2 rounded-xl text-sm transition shadow-sm flex justify-center items-center gap-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                            Download PDF
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                            Preview Laporan
                         </button>
                     </form>
                 </div>
@@ -105,7 +105,7 @@
                         <h4 class="font-bold text-slate-800 mb-2">Analisis Penggunaan Aset</h4>
                         <p class="text-xs text-slate-500 mb-4 line-clamp-3">Menghitung frekuensi tingkat penggunaan aset. Menampilkan daftar alat dari yang terbanyak disewa.</p>
                     </div>
-                    <form action="{{ route('reports.assetUsage') }}" method="GET">
+                    <form action="{{ route('reports.assetUsage') }}" method="GET" target="_blank">
                         <div class="space-y-3 mb-4">
                             <div>
                                 <label class="text-[10px] font-bold text-slate-500 uppercase">Mulai Tanggal (Periode Pinjam)</label>
@@ -117,8 +117,8 @@
                             </div>
                         </div>
                         <button type="submit" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-semibold py-2 rounded-xl text-sm transition shadow-sm flex justify-center items-center gap-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                            Download PDF
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                            Preview Laporan
                         </button>
                     </form>
                 </div>
@@ -132,13 +132,13 @@
                         <h4 class="font-bold text-slate-800 mb-2">Kondisi Barang Terkini</h4>
                         <p class="text-xs text-slate-500 mb-4 line-clamp-3">Menampilkan katalog status alat (Baik vs Rusak Ringan/Berat) posisi realtime tanpa filter tanggal.</p>
                     </div>
-                    <form action="{{ route('reports.assetCondition') }}" method="GET">
+                    <form action="{{ route('reports.assetCondition') }}" method="GET" target="_blank">
                         <div class="h-[124px] flex items-center justify-center border-2 border-dashed border-slate-100 rounded-xl mb-4 bg-slate-50">
                             <span class="text-xs font-medium text-slate-400">Dicetak Berdasarkan Kondisi Real-Time</span>
                         </div>
                         <button type="submit" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-semibold py-2 rounded-xl text-sm transition shadow-sm flex justify-center items-center gap-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                            Download PDF
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                            Preview Laporan
                         </button>
                     </form>
                 </div>
@@ -152,13 +152,13 @@
                         <h4 class="font-bold text-slate-800 mb-2">Nilai Aset / Depresiasi</h4>
                         <p class="text-xs text-slate-500 mb-4 line-clamp-3">Analisis Harga Beli Awal vs Total Beban Investasi / Perawatan yang telah dikeluarkan.</p>
                     </div>
-                    <form action="{{ route('reports.assetDepreciation') }}" method="GET">
+                    <form action="{{ route('reports.assetDepreciation') }}" method="GET" target="_blank">
                          <div class="h-[124px] flex items-center justify-center border-2 border-dashed border-slate-100 rounded-xl mb-4 bg-slate-50">
                             <span class="text-xs font-medium text-slate-400 text-center px-4">Mengakumulasi seluruh data biaya sejarah.</span>
                         </div>
                         <button type="submit" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-semibold py-2 rounded-xl text-sm transition shadow-sm flex justify-center items-center gap-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                            Download PDF
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                            Preview Laporan
                         </button>
                     </form>
                 </div>
@@ -172,7 +172,7 @@
                         <h4 class="font-bold text-slate-800 mb-2">Rekap Kerusakan per Kategori</h4>
                         <p class="text-xs text-slate-500 mb-4 line-clamp-3">Menilai kategori alat mana yang paling rengkih/sering diservis berdasarkan akumulasi perawatan.</p>
                     </div>
-                    <form action="{{ route('reports.damageCategory') }}" method="GET">
+                    <form action="{{ route('reports.damageCategory') }}" method="GET" target="_blank">
                         <div class="space-y-3 mb-4">
                             <div>
                                 <label class="text-[10px] font-bold text-slate-500 uppercase">Mulai Tanggal (Periode Servis)</label>
@@ -184,8 +184,8 @@
                             </div>
                         </div>
                         <button type="submit" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-semibold py-2 rounded-xl text-sm transition shadow-sm flex justify-center items-center gap-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                            Download PDF
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                            Preview Laporan
                         </button>
                     </form>
                 </div>
@@ -199,7 +199,7 @@
                         <h4 class="font-bold text-slate-800 mb-2">Laporan Rekapitulasi Vendor</h4>
                         <p class="text-xs text-slate-500 mb-4 line-clamp-3">Daftar peringkat vendor supplier yang paling sering menerima PO dari perusahaan.</p>
                     </div>
-                    <form action="{{ route('reports.vendorRecap') }}" method="GET">
+                    <form action="{{ route('reports.vendorRecap') }}" method="GET" target="_blank">
                         <div class="space-y-3 mb-4">
                             <div>
                                 <label class="text-[10px] font-bold text-slate-500 uppercase">Mulai Tanggal (Transaksi)</label>
@@ -211,8 +211,8 @@
                             </div>
                         </div>
                         <button type="submit" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-semibold py-2 rounded-xl text-sm transition shadow-sm flex justify-center items-center gap-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                            Download PDF
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                            Preview Laporan
                         </button>
                     </form>
                 </div>

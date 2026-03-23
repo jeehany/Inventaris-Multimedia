@@ -50,7 +50,7 @@ class ToolController extends Controller
             ob_end_clean();
         }
         
-        return $pdf->download('laporan-inventaris-alat-' . now()->format('Y-m-d') . '.pdf');
+        return $pdf->stream('laporan-inventaris-alat-' . now()->format('Y-m-d') . '.pdf');
     }
 
     public function exportExcel(Request $request)
@@ -71,7 +71,7 @@ class ToolController extends Controller
             ob_end_clean();
         }
         
-        return $pdf->download('Cetak_Label_QR_Aset_' . now()->format('Y-m-d') . '.pdf');
+        return $pdf->stream('Cetak_Label_QR_Aset_' . now()->format('Y-m-d') . '.pdf');
     }
 
     public function printSingleQr(Tool $tool)
@@ -83,7 +83,7 @@ class ToolController extends Controller
             ob_end_clean();
         }
         
-        return $pdf->download('Cetak_Label_QR_' . $tool->tool_code . '.pdf');
+        return $pdf->stream('Cetak_Label_QR_' . $tool->tool_code . '.pdf');
     }
 
     // ==========================
@@ -168,7 +168,7 @@ class ToolController extends Controller
          while (ob_get_level()) {
             ob_end_clean();
         }
-         return $pdf->download('laporan-alat-terhapus-' . now()->format('Y-m-d') . '.pdf');
+         return $pdf->stream('laporan-alat-terhapus-' . now()->format('Y-m-d') . '.pdf');
     }
 
     public function restore($id)

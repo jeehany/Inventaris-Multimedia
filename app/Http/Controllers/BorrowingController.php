@@ -82,7 +82,7 @@ class BorrowingController extends Controller
                 'user_id' => auth()->id(),
                 'borrow_date' => $request->borrow_date,
                 'planned_return_date' => $request->return_date,
-                'borrowing_status' => 'pending_head', // Menunggu persetujuan kepala
+                'borrowing_status' => 'active', // Langsung aktif saat barang di-scan Admin/Staff
                 'notes' => $request->notes,
             ]);
 
@@ -331,7 +331,7 @@ class BorrowingController extends Controller
                 ob_end_clean();
             }
             $pdf = Pdf::loadView('borrowings.pdf', compact('borrowings', 'logo'));
-            return $pdf->download('laporan-peminjaman-' . now()->format('Y-m-d') . '.pdf');
+            return $pdf->stream('laporan-peminjaman-' . now()->format('Y-m-d') . '.pdf');
         } catch (\Throwable $e) {
             return response()->json(['error' => 'Gagal membuat PDF: ' . $e->getMessage()], 500);
         }
@@ -369,7 +369,7 @@ class BorrowingController extends Controller
         try {
             if (ob_get_length()) ob_end_clean(); // [CLEAN BUFFER] Agar PDF tidak ERR_FAILED
             $pdf = Pdf::loadView('borrowings.analysis_pdf', compact('borrowings', 'logo'));
-            return $pdf->download('laporan-analisa-peminjaman-' . now()->format('Y-m-d') . '.pdf');
+            return $pdf->stream('laporan-analisa-peminjaman-' . now()->format('Y-m-d') . '.pdf');
         } catch (\Throwable $e) {
             return response()->json(['error' => 'Gagal membuat Laporan Analisa: ' . $e->getMessage()], 500);
         }

@@ -267,6 +267,6 @@ class MaintenanceController extends Controller
         while (ob_get_level()) {
             ob_end_clean();
         }
-        return $pdf->download('laporan-perawatan-'.now()->format('Y-m-d').'.pdf');
+        return $pdf->stream('laporan-perawatan-'.now()->format('Y-m-d').'.pdf');
     }
 }
