@@ -270,12 +270,12 @@
                                                 <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" onclick="document.getElementById('modal-detail-{{ $tool->id }}').classList.add('hidden')"></div>
                                                 
                                                 <div class="flex items-center justify-center min-h-screen p-4 text-center sm:p-0">
-                                                    <div class="relative bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:max-w-lg sm:w-full border border-slate-200">
+                                                    <div class="relative bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:max-w-2xl sm:w-full border border-slate-200">
                                                         
                                                         {{-- Modal Header --}}
                                                         <div class="bg-slate-50 px-6 py-4 border-b border-slate-100 flex justify-between items-center">
                                                             <h3 class="text-lg font-bold text-slate-800" id="modal-title">
-                                                                Detail Aset
+                                                                Detail & Histori Aset
                                                             </h3>
                                                             <button onclick="document.getElementById('modal-detail-{{ $tool->id }}').classList.add('hidden')" class="text-slate-400 hover:text-slate-600">
                                                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
@@ -285,7 +285,7 @@
                                                         {{-- Modal Body --}}
                                                         <div class="px-6 py-6">
                                                             <div class="flex items-center gap-4 mb-6">
-                                                                <div class="flex-shrink-0 h-16 w-16 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-2xl">
+                                                                <div class="flex-shrink-0 h-16 w-16 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-2xl font-sans">
                                                                     {{ substr($tool->tool_name, 0, 1) }}
                                                                 </div>
                                                                 <div>
@@ -294,7 +294,23 @@
                                                                 </div>
                                                             </div>
 
-                                                            <div class="space-y-4 text-sm">
+                                                            <!-- Tab Navigation -->
+                                                            <div class="border-b border-slate-200 mb-6">
+                                                                <nav class="-mb-px flex space-x-6" aria-label="Tabs">
+                                                                    <button type="button" id="tab-btn-info-{{ $tool->id }}" onclick="switchToolTab('{{ $tool->id }}', 'info')" class="border-indigo-500 text-indigo-600 whitespace-nowrap pb-3 px-1 border-b-2 font-bold text-sm transition-all focus:outline-none">
+                                                                        Informasi Umum
+                                                                    </button>
+                                                                    <button type="button" id="tab-btn-sirkulasi-{{ $tool->id }}" onclick="switchToolTab('{{ $tool->id }}', 'sirkulasi')" class="border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 whitespace-nowrap pb-3 px-1 border-b-2 font-medium text-sm transition-all focus:outline-none">
+                                                                        Riwayat Sirkulasi
+                                                                    </button>
+                                                                    <button type="button" id="tab-btn-perawatan-{{ $tool->id }}" onclick="switchToolTab('{{ $tool->id }}', 'perawatan')" class="border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 whitespace-nowrap pb-3 px-1 border-b-2 font-medium text-sm transition-all focus:outline-none">
+                                                                        Riwayat Perawatan
+                                                                    </button>
+                                                                </nav>
+                                                            </div>
+
+                                                            <!-- TAB CONTENT 1: INFO UMUM -->
+                                                            <div id="tab-content-info-{{ $tool->id }}" class="space-y-4 text-sm">
                                                                 <div class="grid grid-cols-3 gap-4 border-b border-slate-50 pb-3">
                                                                     <span class="font-semibold text-slate-500">Merk / Tipe</span>
                                                                     <span class="col-span-2 text-slate-800 font-medium">{{ $tool->brand ?? '-' }}</span>
@@ -304,8 +320,18 @@
                                                                     <span class="col-span-2 text-slate-800 font-medium">{{ $tool->category->category_name ?? '-' }}</span>
                                                                 </div>
                                                                 <div class="grid grid-cols-3 gap-4 border-b border-slate-50 pb-3">
-                                                                    <span class="font-semibold text-slate-500">Tahun Perolehan</span>
+                                                                    <span class="font-semibold text-slate-500">Tanggal Perolehan</span>
                                                                     <span class="col-span-2 text-slate-800 font-medium">{{ $tool->purchase_date ? \Carbon\Carbon::parse($tool->purchase_date)->translatedFormat('d F Y') : '-' }}</span>
+                                                                </div>
+                                                                <div class="grid grid-cols-3 gap-4 border-b border-slate-50 pb-3">
+                                                                    <span class="font-semibold text-slate-500">Harga Perolehan</span>
+                                                                    <span class="col-span-2 text-slate-800 font-bold">
+                                                                        @if($tool->purchase_price)
+                                                                            Rp {{ number_format($tool->purchase_price, 0, ',', '.') }}
+                                                                        @else
+                                                                            -
+                                                                        @endif
+                                                                    </span>
                                                                 </div>
                                                                 <div class="grid grid-cols-3 gap-4 border-b border-slate-50 pb-3">
                                                                     <span class="font-semibold text-slate-500">Kondisi</span>
@@ -313,6 +339,28 @@
                                                                         <span class="px-2 py-1 rounded text-xs font-bold {{ $tool->current_condition == 'Baik' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700' }}">
                                                                             {{ $tool->current_condition }}
                                                                         </span>
+                                                                    </span>
+                                                                </div>
+                                                                <div class="grid grid-cols-3 gap-4 border-b border-slate-50 pb-3">
+                                                                    <span class="font-semibold text-slate-500">Status Ketersediaan</span>
+                                                                    <span class="col-span-2 font-medium">
+                                                                        @if($tool->availability_status == 'available')
+                                                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-emerald-100 text-emerald-800">
+                                                                                Tersedia (Ready)
+                                                                            </span>
+                                                                        @elseif($tool->availability_status == 'borrowed')
+                                                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-amber-100 text-amber-800">
+                                                                                Dipinjam (Borrowed)
+                                                                            </span>
+                                                                        @elseif($tool->availability_status == 'maintenance')
+                                                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-800">
+                                                                                Servis (Maintenance)
+                                                                            </span>
+                                                                        @else
+                                                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-rose-100 text-rose-800">
+                                                                                {{ $tool->availability_status }}
+                                                                            </span>
+                                                                        @endif
                                                                     </span>
                                                                 </div>
                                                                 <div class="grid grid-cols-3 gap-4">
@@ -327,6 +375,115 @@
                                                                             <span class="text-slate-500">Input Manual / Hibah</span>
                                                                         @endif
                                                                     </span>
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- TAB CONTENT 2: RIWAYAT SIRKULASI -->
+                                                            <div id="tab-content-sirkulasi-{{ $tool->id }}" class="hidden space-y-4">
+                                                                <div class="max-h-[300px] overflow-y-auto rounded-lg border border-slate-200">
+                                                                    <table class="w-full text-sm text-left">
+                                                                        <thead class="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-200">
+                                                                            <tr>
+                                                                                <th class="px-4 py-3 font-bold text-slate-700">Peminjam</th>
+                                                                                <th class="px-4 py-3 font-bold text-slate-700">Tgl Pinjam</th>
+                                                                                <th class="px-4 py-3 font-bold text-slate-700">Tgl Kembali</th>
+                                                                                <th class="px-4 py-3 font-bold text-slate-700">Status</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody class="divide-y divide-slate-100">
+                                                                            @forelse($tool->borrowingItems as $bi)
+                                                                                <tr class="hover:bg-slate-50/50">
+                                                                                    <td class="px-4 py-2.5 text-slate-800 font-semibold text-xs">
+                                                                                        {{ $bi->borrowing->borrower->name ?? '-' }}
+                                                                                        <div class="text-[10px] text-slate-400 font-mono">{{ $bi->borrowing->borrowing_code ?? '-' }}</div>
+                                                                                    </td>
+                                                                                    <td class="px-4 py-2.5 text-slate-500 text-xs">
+                                                                                        {{ $bi->borrowing->borrow_date ? \Carbon\Carbon::parse($bi->borrowing->borrow_date)->translatedFormat('d M Y') : '-' }}
+                                                                                    </td>
+                                                                                    <td class="px-4 py-2.5 text-slate-500 text-xs">
+                                                                                        {{ $bi->borrowing->actual_return_date ? \Carbon\Carbon::parse($bi->borrowing->actual_return_date)->translatedFormat('d M Y') : '-' }}
+                                                                                    </td>
+                                                                                    <td class="px-4 py-2.5">
+                                                                                        @if($bi->borrowing->borrowing_status == 'active')
+                                                                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                                                                                                Dipinjam
+                                                                                            </span>
+                                                                                        @elseif($bi->borrowing->borrowing_status == 'completed')
+                                                                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                                                                                Kembali
+                                                                                            </span>
+                                                                                        @elseif($bi->borrowing->borrowing_status == 'pending_verification')
+                                                                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-200 animate-pulse">
+                                                                                                Verifikasi
+                                                                                            </span>
+                                                                                        @else
+                                                                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-800 border border-slate-200">
+                                                                                                {{ $bi->borrowing->borrowing_status }}
+                                                                                            </span>
+                                                                                        @endif
+                                                                                    </td>
+                                                                                </tr>
+                                                                            @empty
+                                                                                <tr>
+                                                                                    <td colspan="4" class="px-4 py-6 text-center text-slate-400 italic text-xs">
+                                                                                        Belum ada riwayat peminjaman.
+                                                                                    </td>
+                                                                                </tr>
+                                                                            @endforelse
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- TAB CONTENT 3: RIWAYAT PERAWATAN -->
+                                                            <div id="tab-content-perawatan-{{ $tool->id }}" class="hidden space-y-4">
+                                                                <div class="max-h-[300px] overflow-y-auto rounded-lg border border-slate-200">
+                                                                    <table class="w-full text-sm text-left">
+                                                                        <thead class="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-200">
+                                                                            <tr>
+                                                                                <th class="px-4 py-3 font-bold text-slate-700">Tgl Servis</th>
+                                                                                <th class="px-4 py-3 font-bold text-slate-700">Jenis & Catatan</th>
+                                                                                <th class="px-4 py-3 font-bold text-slate-700 text-right">Biaya</th>
+                                                                                <th class="px-4 py-3 font-bold text-slate-700">Status</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody class="divide-y divide-slate-100">
+                                                                            @forelse($tool->maintenances as $m)
+                                                                                <tr class="hover:bg-slate-50/50">
+                                                                                    <td class="px-4 py-2.5 text-slate-800 text-xs">
+                                                                                        {{ \Carbon\Carbon::parse($m->start_date)->translatedFormat('d M Y') }}
+                                                                                        @if($m->end_date)
+                                                                                            <div class="text-[10px] text-slate-400 font-semibold">s.d {{ \Carbon\Carbon::parse($m->end_date)->translatedFormat('d M Y') }}</div>
+                                                                                        @endif
+                                                                                    </td>
+                                                                                    <td class="px-4 py-2.5">
+                                                                                        <div class="text-xs font-bold text-slate-700">{{ $m->type->name ?? '-' }}</div>
+                                                                                        <div class="text-[11px] text-slate-500 leading-tight">{{ $m->note }}</div>
+                                                                                    </td>
+                                                                                    <td class="px-4 py-2.5 text-right font-bold text-slate-700 text-xs">
+                                                                                        Rp {{ number_format($m->cost, 0, ',', '.') }}
+                                                                                    </td>
+                                                                                    <td class="px-4 py-2.5">
+                                                                                        @if($m->status == 'completed')
+                                                                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                                                                                Selesai
+                                                                                            </span>
+                                                                                        @else
+                                                                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-200">
+                                                                                                Diproses
+                                                                                            </span>
+                                                                                        @endif
+                                                                                    </td>
+                                                                                </tr>
+                                                                            @empty
+                                                                                <tr>
+                                                                                    <td colspan="4" class="px-4 py-6 text-center text-slate-400 italic text-xs">
+                                                                                        Belum ada riwayat perbaikan.
+                                                                                    </td>
+                                                                                </tr>
+                                                                            @endforelse
+                                                                        </tbody>
+                                                                    </table>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -468,6 +625,38 @@
             const modal = document.getElementById(id);
             if(modal) {
                 modal.classList.toggle('hidden');
+            }
+        }
+
+        function switchToolTab(toolId, tabName) {
+            // Hide all tab contents
+            document.getElementById(`tab-content-info-${toolId}`).classList.add('hidden');
+            document.getElementById(`tab-content-sirkulasi-${toolId}`).classList.add('hidden');
+            document.getElementById(`tab-content-perawatan-${toolId}`).classList.add('hidden');
+
+            // Show active tab content
+            document.getElementById(`tab-content-${tabName}-${toolId}`).classList.remove('hidden');
+
+            // Reset all tab button styles
+            const btnInfo = document.getElementById(`tab-btn-info-${toolId}`);
+            const btnSirkulasi = document.getElementById(`tab-btn-sirkulasi-${toolId}`);
+            const btnPerawatan = document.getElementById(`tab-btn-perawatan-${toolId}`);
+
+            const activeClasses = ['border-indigo-500', 'text-indigo-600', 'font-bold'];
+            const inactiveClasses = ['border-transparent', 'text-slate-500', 'hover:text-slate-700', 'hover:border-slate-300', 'font-medium'];
+
+            [btnInfo, btnSirkulasi, btnPerawatan].forEach(btn => {
+                if (btn) {
+                    btn.classList.remove(...activeClasses);
+                    btn.classList.add(...inactiveClasses);
+                }
+            });
+
+            // Set active tab button style
+            const activeBtn = document.getElementById(`tab-btn-${tabName}-${toolId}`);
+            if (activeBtn) {
+                activeBtn.classList.remove(...inactiveClasses);
+                activeBtn.classList.add(...activeClasses);
             }
         }
     </script>

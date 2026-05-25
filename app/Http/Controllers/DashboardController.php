@@ -53,6 +53,51 @@ class DashboardController extends Controller
             ];
         } else {
             // === DATA UNTUK STAFF (Operasional) ===
+            $tools = Tool::whereIn('availability_status', ['available', 'borrowed'])
+                ->where('current_condition', 'Baik')
+                ->get();
+
+            $maintenanceAlerts = [];
+            foreach ($tools as $tool) {
+                $lastMaintenance = \App\Models\Maintenance::where('tool_id', $tool->id)
+                    ->where('status', 'completed')
+                    ->latest('end_date')
+                    ->first();
+
+                $sinceDate = $lastMaintenance 
+                    ? $lastMaintenance->end_date 
+                    : ($tool->purchase_date ?? ($tool->created_at ? $tool->created_at->format('Y-m-d') : now()->format('Y-m-d')));
+
+                $borrowCount = \App\Models\BorrowingItem::where('tool_id', $tool->id)
+                    ->whereHas('borrowing', function ($query) use ($sinceDate) {
+                        $query->where('borrow_date', '>=', $sinceDate);
+                    })
+                    ->count();
+
+                $sinceTimestamp = strtotime($sinceDate);
+                $daysElapsed = floor((time() - $sinceTimestamp) / (60 * 60 * 24));
+
+                $needsServicing = false;
+                $reason = '';
+
+                if ($borrowCount > 10) {
+                    $needsServicing = true;
+                    $reason = "Telah dipinjam sebanyak {$borrowCount} kali sejak servis/perolehan terakhir.";
+                } elseif ($daysElapsed > 180) {
+                    $needsServicing = true;
+                    $reason = "Sudah melewati {$daysElapsed} hari tanpa pemeliharaan berkala.";
+                }
+
+                if ($needsServicing) {
+                    $maintenanceAlerts[] = [
+                        'tool' => $tool,
+                        'reason' => $reason,
+                        'borrow_count' => $borrowCount,
+                        'days_elapsed' => $daysElapsed,
+                    ];
+                }
+            }
+
             $data = [
                 'total_users'       => User::count(),
                 'total_tools'       => Tool::count(),
@@ -62,6 +107,7 @@ class DashboardController extends Controller
                                         ->latest()
                                         ->take(5)
                                         ->get(),
+                'maintenance_alerts' => $maintenanceAlerts,
             ];
         }
 

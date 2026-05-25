@@ -14,6 +14,7 @@ class PurchaseItem extends Model
         'brand',
         'quantity',
         'unit_price',
+        'realized_unit_price',
         'subtotal'
     ];
 

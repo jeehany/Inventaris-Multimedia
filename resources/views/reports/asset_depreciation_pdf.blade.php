@@ -21,24 +21,26 @@
     <h2>LAPORAN NILAI ASET & BEBAN PERAWATAN</h2>
     <p>Dicetak pada: {{ now()->translatedFormat('d F Y H:i') }}</p>
 
-    <table>
         <thead>
             <tr>
                 <th class="text-center" width="5%">No</th>
-                <th width="15%">Kode Aset</th>
-                <th width="25%">Nama Aset</th>
-                <th width="15%">Kategori</th>
-                <th class="text-right" width="15%">Harga Beli Awal (Rp)</th>
-                <th class="text-right" width="15%">Total Servis (Rp)</th>
-                <th class="text-right" width="15%">Valuasi Saat Ini (Rp)</th>
+                <th width="12%">Kode Aset</th>
+                <th width="20%">Nama Aset</th>
+                <th width="12%">Kategori</th>
+                <th class="text-right" width="13%">Harga Beli (Rp)</th>
+                <th class="text-center" width="10%">Umur Aset</th>
+                <th class="text-right" width="13%">Beban Servis (Rp)</th>
+                <th class="text-right" width="15%">Akum. Susut (Rp)</th>
+                <th class="text-right" width="15%">Nilai Buku (Rp)</th>
             </tr>
         </thead>
         <tbody>
-            @php $totalInit = 0; $totalMaint = 0; $totalVal = 0; @endphp
+            @php $totalInit = 0; $totalMaint = 0; $totalDep = 0; $totalVal = 0; @endphp
             @forelse($tools as $index => $t)
                 @php 
                     $totalInit += $t->initial_price ?? 0;
                     $totalMaint += $t->total_maintenance_cost;
+                    $totalDep += $t->accumulated_depreciation;
                     $totalVal += $t->current_valuation;
                 @endphp
                 <tr>
@@ -47,20 +49,24 @@
                     <td>{{ $t->tool_name }}</td>
                     <td>{{ $t->category_name ?? '-' }}</td>
                     <td class="text-right">{{ number_format($t->initial_price ?? 0, 0, ',', '.') }}</td>
+                    <td class="text-center">{{ $t->years_elapsed }} Thn</td>
                     <td class="text-right {{ $t->total_maintenance_cost > 0 ? 'val-bad' : '' }}">
                         {{ number_format($t->total_maintenance_cost, 0, ',', '.') }}
                     </td>
+                    <td class="text-right val-bad">{{ number_format($t->accumulated_depreciation, 0, ',', '.') }}</td>
                     <td class="text-right val-good">{{ number_format($t->current_valuation, 0, ',', '.') }}</td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="7" class="text-center">Tidak ada data aset terdaftar.</td>
+                    <td colspan="9" class="text-center">Tidak ada data aset terdaftar.</td>
                 </tr>
             @endforelse
             <tr>
                 <th colspan="4" class="text-right">TOTAL KESELURUHAN (RP)</th>
                 <th class="text-right">{{ number_format($totalInit, 0, ',', '.') }}</th>
+                <th class="text-center">-</th>
                 <th class="text-right val-bad">{{ number_format($totalMaint, 0, ',', '.') }}</th>
+                <th class="text-right val-bad">{{ number_format($totalDep, 0, ',', '.') }}</th>
                 <th class="text-right val-good">{{ number_format($totalVal, 0, ',', '.') }}</th>
             </tr>
         </tbody>

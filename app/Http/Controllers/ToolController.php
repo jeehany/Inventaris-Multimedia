@@ -188,6 +188,8 @@ class ToolController extends Controller
         $tool->save();
         $tool->restore();
         
+        \App\Models\ActivityLog::log('Pulihkan Aset', "Memulihkan aset dari sampah: {$tool->tool_name} ({$tool->tool_code})");
+
         return redirect()->route('tools.trash')->with('success', 'Alat berhasil dipulihkan ke daftar aktif.');
     }
 
@@ -211,6 +213,11 @@ class ToolController extends Controller
 
     public function store(Request $request)
     {
+        $user = Auth::user();
+        if ($user && in_array($user->role, ['kepala', 'head'])) {
+            return redirect()->route('tools.index')->with('error', 'Akses ditolak.');
+        }
+
         // 1. VALIDASI INPUT (SAYA SESUAIKAN DENGAN FILE BLADE ABANG)
         $request->validate([
             'tool_name'           => 'required|string|max:255',
@@ -229,16 +236,14 @@ class ToolController extends Controller
 
         $prefix = 'TOOL'; 
 
-        // Ambil 3 huruf depan dari category_name
-        if ($category && !empty($category->category_name)) {
-            $prefix = strtoupper(substr($category->category_name, 0, 3));
+        if ($category && !empty($category->code)) {
+            $prefix = strtoupper($category->code);
         }
 
-        // Cari nomor urut terakhir
-        // Cari nomor urut terakhir (termasuk yang soft deleted agar tidak duplikat)
+        // Cari nomor urut terakhir (berdasarkan string suffix angka bukan ID untuk cegah duplikat kode acak)
         $lastTool = Tool::withTrashed()
                         ->where('tool_code', 'like', $prefix . '-%')
-                        ->orderBy('id', 'desc')
+                        ->orderByRaw('CAST(SUBSTRING(tool_code, LENGTH(?) + 2) AS UNSIGNED) DESC', [$prefix])
                         ->first();
 
         $nextNumber = 1;
@@ -258,7 +263,7 @@ class ToolController extends Controller
 
         // ==========================================================
         
-        Tool::create([
+        $tool = Tool::create([
             'tool_code'           => $generatedCode, 
             'tool_name'           => $request->tool_name,
             'brand'               => $request->brand,         // <--- Baru
@@ -267,6 +272,8 @@ class ToolController extends Controller
             'current_condition'   => $request->current_condition,
             'availability_status' => $request->availability_status,
         ]);
+
+        \App\Models\ActivityLog::log('Tambah Aset', "Menambahkan aset baru: {$tool->tool_name} ({$tool->tool_code})");
 
         return redirect()->route('tools.index')->with('success', 'Alat baru berhasil ditambahkan.');
     }
@@ -290,6 +297,11 @@ class ToolController extends Controller
 
     public function update(Request $request, Tool $tool)
     {
+        $user = Auth::user();
+        if ($user && in_array($user->role, ['kepala', 'head'])) {
+            return redirect()->route('tools.index')->with('error', 'Akses ditolak.');
+        }
+
         $request->validate([
             'tool_name'           => 'required|string|max:255',
             'brand'               => 'nullable|string|max:100', // <--- Baru
@@ -311,6 +323,8 @@ class ToolController extends Controller
             'availability_status' => $request->availability_status,
         ]);
 
+        \App\Models\ActivityLog::log('Edit Aset', "Memperbarui data aset: {$tool->tool_name} ({$tool->tool_code})");
+
         return redirect()->route('tools.index')->with('success', 'Data alat diperbarui.');
     }
 
@@ -324,12 +338,14 @@ class ToolController extends Controller
         // Soft Delete
         $tool->delete();
 
+        \App\Models\ActivityLog::log('Hapus Aset', "Memindahkan aset ke sampah: {$tool->tool_name} ({$tool->tool_code}). Alasan: " . request('disposal_reason', '-'));
+
         return redirect()->route('tools.index')->with('success', 'Alat dipindahkan ke sampah (Soft Delete).');
     }
 
     // --- Private Helper ---
     private function getFilteredQuery(Request $request) {
-        $query = Tool::with('category');
+        $query = Tool::with(['category', 'maintenances.type', 'borrowingItems.borrowing.borrower']);
 
         // Filter Search
         if ($request->has('search') && $request->search != '') {
@@ -348,6 +364,11 @@ class ToolController extends Controller
         // Filter Kategori
         if ($request->has('category_id') && $request->category_id != '' && $request->category_id != 'all') {
             $query->where('category_id', $request->category_id);
+        }
+
+        // Filter Purchase ID (Baru)
+        if ($request->has('purchase_id') && $request->purchase_id != '') {
+            $query->where('purchase_item_id', $request->purchase_id);
         }
 
         return $query;

@@ -174,26 +174,30 @@
                                     <p class="text-xs text-slate-500 font-semibold mt-1 mb-5" id="scan_status">Status: Menunggu identifikasi aset...</p>
                                     
                                     <!-- Tempat menyimpan Info Barang yang diservis -->
-                                    <div id="selected_tool_info" class="hidden relative p-5 bg-white rounded-xl border-2 border-indigo-200 shadow-sm overflow-hidden group">
+                                    <div id="selected_tool_info" class="{{ isset($selectedTool) ? '' : 'hidden' }} relative p-5 bg-white rounded-xl border-2 border-indigo-200 shadow-sm overflow-hidden group">
                                         <div class="absolute top-0 left-0 w-2 h-full bg-indigo-500"></div>
                                         <div class="flex items-start gap-4">
                                             <div class="w-12 h-12 bg-indigo-50 border border-indigo-100 rounded-lg flex items-center justify-center text-indigo-600 font-bold shadow-sm shrink-0">
                                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>    
                                             </div>
                                             <div class="pt-1">
-                                                <div id="selected_tool_name" class="font-bold text-slate-800 text-lg leading-tight mb-1">Nama Alat</div>
-                                                <div id="selected_tool_code" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-bold bg-indigo-100 text-indigo-700">CODE</div>
+                                                <div id="selected_tool_name" class="font-bold text-slate-800 text-lg leading-tight mb-1">
+                                                    {{ isset($selectedTool) ? $selectedTool->tool_name . ' (' . ($selectedTool->category->category_name ?? '') . ')' : 'Nama Alat' }}
+                                                </div>
+                                                <div id="selected_tool_code" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-bold bg-indigo-100 text-indigo-700">
+                                                    {{ isset($selectedTool) ? $selectedTool->tool_code : 'CODE' }}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
 
                                     <!-- Placeholder ketika barang belum dipilih -->
-                                    <div id="empty_tool_info" class="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 rounded-xl p-8 bg-slate-50/50">
+                                    <div id="empty_tool_info" class="{{ isset($selectedTool) ? 'hidden' : '' }} flex-1 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 rounded-xl p-8 bg-slate-50/50">
                                         <svg class="w-12 h-12 text-slate-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path></svg>
                                         <p class="text-sm font-medium text-slate-400">Belum ada aset pemeliharaan yang diidentifikasi.</p>
                                     </div>
                                     
-                                    <input type="hidden" name="tool_id" id="hidden_tool_id" required>
+                                    <input type="hidden" name="tool_id" id="hidden_tool_id" value="{{ isset($selectedTool) ? $selectedTool->id : '' }}" required>
                                 </div>
                                 
                                 {{-- TOMBOL SUBMIT (TERPAUT DI KOLOM KANAN BAWAH) --}}

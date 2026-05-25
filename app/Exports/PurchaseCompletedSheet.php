@@ -26,7 +26,7 @@ class PurchaseCompletedSheet implements FromQuery, WithHeadings, WithMapping, Sh
     public function query()
     {
         $query = Purchase::with(['vendor', 'user', 'category'])
-                         ->where('is_purchased', true);
+                         ->where('status', 'completed');
 
         // Apply shared filters
         // 1. Check Status Filter: Jika user filter 'rejected', Sheet Completed harusnya KOSONG

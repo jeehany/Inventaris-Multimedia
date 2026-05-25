@@ -90,7 +90,8 @@
                                 </div>
                                 <select name="status" onchange="this.form.submit()" class="w-full md:w-40 pl-8 pr-8 py-2 border-none bg-transparent rounded-lg text-sm text-slate-600 font-medium focus:ring-0 cursor-pointer hover:text-indigo-700 transition-colors appearance-none">
                                     <option value="">- Status -</option>
-                                    <option value="pending_head" {{ request('status') == 'pending_head' ? 'selected' : '' }}>Pending</option>
+                                    <option value="pending_verification" {{ request('status') == 'pending_verification' ? 'selected' : '' }}>Verifikasi Peminjam</option>
+                                    <option value="pending_head" {{ request('status') == 'pending_head' ? 'selected' : '' }}>Pending Kepala</option>
                                     <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Dipinjam</option>
                                     <option value="returned" {{ request('status') == 'returned' ? 'selected' : '' }}>Kembali</option>
                                     <option value="rejected_head" {{ request('status') == 'rejected_head' ? 'selected' : '' }}>Ditolak</option>
@@ -218,7 +219,12 @@
                                         </td>
 
                                         <td class="px-6 py-4 whitespace-nowrap text-center">
-                                            @if($borrowing->borrowing_status == 'active')
+                                            @if($borrowing->borrowing_status == 'pending_verification')
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 border border-indigo-200 animate-pulse">
+                                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                                                    Verifikasi PIN/OTP
+                                                </span>
+                                            @elseif($borrowing->borrowing_status == 'active')
                                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 border border-amber-200">
                                                     <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                                     Dipinjam
@@ -254,6 +260,18 @@
 
                                                 @auth
                                                     @if(!auth()->user()->isKepala())
+                                                        {{-- VERIFIKASI (Pending Verification Only) --}}
+                                                        @if($borrowing->borrowing_status == 'pending_verification')
+                                                            <button onclick="toggleModal('modal-verify-{{ $borrowing->id }}')" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 p-2 rounded-lg transition" title="Verifikasi PIN/OTP Peminjam">
+                                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                                                            </button>
+
+                                                            {{-- DELETE / CANCEL (Pending Verification Only) --}}
+                                                            <button type="button" onclick="openDeleteModal('{{ route('borrowings.destroy', $borrowing->id) }}', 'Batalkan Peminjaman?', 'Yakin ingin membatalkan pengajuan peminjaman ini? Data akan dihapus permanen.')" class="text-rose-600 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 p-2 rounded-lg transition" title="Batalkan Peminjaman">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                                                            </button>
+                                                        @endif
+
                                                         {{-- EDIT (Active Only) --}}
                                                         @if($borrowing->borrowing_status == 'active')
                                                             <button onclick="toggleModal('modal-edit-{{ $borrowing->id }}')" class="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 p-2 rounded-lg transition" title="Edit Data">
@@ -445,6 +463,46 @@
                                                             </div>
                                                         </div>
                                                     </div>
+                                                @endif
+                                            @endauth
+
+                                            {{-- MODAL VERIFIKASI PEMINJAM (Baru) --}}
+                                            @if($borrowing->borrowing_status == 'pending_verification')
+                                                <div id="modal-verify-{{ $borrowing->id }}" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-hidden="true">
+                                                    <div class="flex items-center justify-center min-h-screen px-4 text-center">
+                                                        <div class="fixed inset-0 bg-slate-900 bg-opacity-75 transition-opacity" onclick="toggleModal('modal-verify-{{ $borrowing->id }}')"></div>
+                                                        <div class="inline-block bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full border border-slate-200">
+                                                            <form action="{{ route('borrowings.verify', $borrowing->id) }}" method="POST">
+                                                                @csrf
+                                                                <div class="bg-white px-6 py-6">
+                                                                    <div class="flex items-center gap-3 mb-4 border-b border-slate-100 pb-4">
+                                                                        <div class="p-2 bg-indigo-100 rounded-full text-indigo-600">
+                                                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                                                                        </div>
+                                                                        <h3 class="text-xl font-bold text-slate-800">Verifikasi Sah Peminjam</h3>
+                                                                    </div>
+                                                                    <div class="space-y-4">
+                                                                        <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                                                                            <p class="text-xs text-slate-500 font-semibold uppercase">Informasi Transaksi</p>
+                                                                            <p class="text-sm font-bold text-slate-800 mt-1">{{ $borrowing->borrowing_code }}</p>
+                                                                            <p class="text-xs text-slate-600 font-medium">Peminjam: {{ $borrowing->borrower->name }} ({{ $borrowing->borrower->code }})</p>
+                                                                        </div>
+                                                                        <div>
+                                                                            <label class="block text-sm font-bold text-slate-700 mb-1">PIN Peminjam atau Kode OTP <span class="text-rose-500">*</span></label>
+                                                                            <input type="password" name="verification_code" required class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm font-mono tracking-widest text-center" placeholder="Masukkan PIN atau OTP 4-Digit">
+                                                                            <p class="text-[10px] text-slate-500 mt-1">Peminjam dapat memasukkan PIN pribadi mereka atau kode OTP yang dikirimkan via WhatsApp.</p>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="bg-slate-50 px-6 py-4 flex flex-row-reverse gap-3">
+                                                                    <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 text-sm font-semibold shadow-sm transition">Verifikasi & Setujui</button>
+                                                                    <button type="button" onclick="toggleModal('modal-verify-{{ $borrowing->id }}')" class="bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-50 text-sm font-medium transition">Batal</button>
+                                                                </div>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            @endif
                                                 @endif
                                             @endauth
 

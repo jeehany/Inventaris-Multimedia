@@ -96,22 +96,19 @@ class PurchaseController extends Controller
 
         // --- FILTER 1: STATUS ---
         // Logika: 
-        // 1. Jika pilih 'completed' -> cari yang is_purchased = true
-        // 2. Jika pilih 'rejected'  -> cari yang status = rejected
+        // 1. Jika pilih 'completed' -> cari yang status = 'completed'
+        // 2. Jika pilih 'rejected'  -> cari yang status = 'rejected'
         // 3. Jika kosong/all      -> cari keduanya (OR)
         
         if ($request->filled('status') && $request->status == 'completed') {
-            $query->where('is_purchased', true);
+            $query->where('status', 'completed');
         } 
         elseif ($request->filled('status') && $request->status == 'rejected') {
             $query->where('status', 'rejected');
         } 
         else {
             // Default: Tampilkan Keduanya (Selesai ATAU Ditolak)
-            $query->where(function($q) {
-                $q->where('is_purchased', true)
-                  ->orWhere('status', 'rejected');
-            });
+            $query->whereIn('status', ['completed', 'rejected']);
         }
 
         // --- FILTER 2: SEARCH ---
@@ -141,14 +138,10 @@ class PurchaseController extends Controller
                          ->withQueryString();
 
         // STATISTICS (HISTORY PAGE)
-        $completedPurchases = Purchase::where('is_purchased', true)->count();
+        $completedPurchases = Purchase::where('status', 'completed')->count();
         
         // Menghitung total expense dari barang yang sudah dibeli (completed)
-        // Kita gunakan subtotal yang sudah diupdate dengan harga realisasi (jika ada logic update subtotal waktu completed)
-        // Atau hitung manual: quantity * actual_unit_price (jika disimpan)
-        // Tapi di controller storeEvidence ada logic: $purchase->subtotal = $request->real_price * $purchase->quantity;
-        // Jadi aman pakai sum('subtotal') untuk yang is_purchased=true.
-        $totalExpense = Purchase::where('is_purchased', true)->sum('subtotal');
+        $totalExpense = Purchase::where('status', 'completed')->sum('total_amount');
 
         return view('purchases.history', compact('history', 'completedPurchases', 'totalExpense'));
     }
@@ -279,7 +272,6 @@ class PurchaseController extends Controller
                 'user_id'       => Auth::id(),
                 'total_amount'  => $grandTotal,
                 'status'        => 'pending_head', // Default Pending Kepala
-                'is_purchased'  => false,
             ]);
 
             // 4. Simpan Detail Purchase Items
@@ -297,6 +289,16 @@ class PurchaseController extends Controller
             }
 
             DB::commit();
+
+            // 1. Audit Trail
+            \App\Models\ActivityLog::log('Ajukan RAB', "Mengajukan pengadaan baru {$purchase->purchase_code} senilai Rp " . number_format($grandTotal, 0, ',', '.'));
+
+            // 2. WhatsApp Gateway (Simulasi ke Kepala)
+            $kepala = \App\Models\User::where('role', 'kepala')->first();
+            $phone = $kepala->phone ?? '081234567890';
+            $message = "Halo Kepala Multimedia, ada pengajuan RAB baru {$purchase->purchase_code} dari " . Auth::user()->name . " sebesar Rp " . number_format($grandTotal, 0, ',', '.') . " yang membutuhkan persetujuan Anda di sistem.";
+            \App\Services\WhatsAppService::send($phone, $message);
+
             return redirect()->route('purchases.request')->with('success', 'Pengajuan pengadaan berhasil dibuat dan menunggu persetujuan Kepala Multimedia.');
 
         } catch (\Exception $e) {
@@ -314,15 +316,18 @@ class PurchaseController extends Controller
         $purchase = Purchase::findOrFail($id);
 
         if ($user->role == 'kepala' && $purchase->status == 'pending_head') {
-            // Kepala menyetujui -> diteruskan ke Bendahara
             $purchase->update(['status' => 'approved_head']);
-            return redirect()->back()->with('success', 'Pengajuan disetujui (Kepala) dan diteruskan ke Bendahara.');
-        } 
-        elseif ($user->role == 'bendahara' && $purchase->status == 'approved_head') {
-            // Bendahara menyetujui -> masuk ke daftar Pencairan Dana / Pembelian
-            // Disini status belum "completed", tapi "pending_purchased" atau tetap "approved_head" dg flag uang cair
-            // Kita gunakan 'approved_head' tapi role Bendahara di frontend akan punya tombol 'Proses Cairkan' yg nnti memanggil storePurchaseEvidence
-            return redirect()->back()->with('info', 'Approval Bendahara dilakukan pada saat pencairan langsung (Upload Bukti).');
+
+            // 1. Audit Trail
+            \App\Models\ActivityLog::log('Setujui RAB', "Kepala Multimedia menyetujui pengajuan pengadaan {$purchase->purchase_code}");
+
+            // 2. WhatsApp Gateway (Simulasi ke Bendahara)
+            $bendahara = \App\Models\User::where('role', 'bendahara')->first();
+            $phoneB = $bendahara->phone ?? '081234567890';
+            $messageB = "Halo Bendahara, pengajuan pengadaan {$purchase->purchase_code} senilai Rp " . number_format($purchase->total_amount, 0, ',', '.') . " telah disetujui oleh Kepala Multimedia. Harap lakukan pencairan anggaran.";
+            \App\Services\WhatsAppService::send($phoneB, $messageB);
+
+            return redirect()->back()->with('success', 'Pengajuan disetujui. Surat Perintah otomatis diterbitkan untuk Staff.');
         }
 
         return abort(403, 'Unauthorized Action or Invalid State');
@@ -334,21 +339,26 @@ class PurchaseController extends Controller
         $purchase = Purchase::findOrFail($id);
 
         if ($user->role == 'kepala' && $purchase->status == 'pending_head') {
+            $note = $request->input('note', '-');
             $purchase->update([
                 'status' => 'rejected_head',
-                'rejection_note' => $request->input('note', '-')
+                'rejection_note' => $note
             ]);
+
+            // 1. Audit Trail
+            \App\Models\ActivityLog::log('Tolak RAB', "Kepala Multimedia menolak pengajuan pengadaan {$purchase->purchase_code}. Catatan: {$note}");
+
+            // 2. WhatsApp Gateway (Simulasi ke Staff pemohon)
+            if ($purchase->user) {
+                $phone = $purchase->user->phone ?? '081234567890';
+                $message = "Halo {$purchase->user->name}, pengajuan pengadaan Anda {$purchase->purchase_code} ditolak oleh Kepala Multimedia dengan catatan: \"{$note}\"";
+                \App\Services\WhatsAppService::send($phone, $message);
+            }
+
             return redirect()->back()->with('success', 'Pengajuan ditolak oleh Kepala Multimedia.');
         } 
-        elseif ($user->role == 'bendahara' && $purchase->status == 'approved_head') {
-            $purchase->update([
-                'status' => 'rejected_bendahara',
-                'rejection_note' => $request->input('note', '-')
-            ]);
-            return redirect()->back()->with('success', 'Pengajuan ditolak oleh Bendahara (Tidak Ada Anggaran).');
-        }
 
-        return abort(403);
+        return abort(403, 'Unauthorized Action');
     }
 
     // ----------------------------------------------------------------------
@@ -359,63 +369,89 @@ class PurchaseController extends Controller
     {
         // 1. VALIDASI INPUT
         $request->validate([
-            'proof_photo' => 'required|image|max:2048',
-            'real_price'  => 'required|numeric', // Total Pencairan Keseluruhan
+            'proof_photo' => 'required|file|mimes:jpeg,png,jpg,pdf|max:2048',
+            'real_price'  => 'required|numeric|min:0', // Total Pencairan Keseluruhan
             'brand'       => 'required|string|max:100', // Merk default jika ada
         ]);
 
-        $purchase = Purchase::with('items.category')->findOrFail($id);
+        $purchase = Purchase::with(['items.category', 'user'])->findOrFail($id);
+
+        // Pengecekan agar hanya Bendahara atau Admin yang bisa mengonfirmasi pencairan
+        if (!in_array(Auth::user()->role, ['bendahara', 'admin'])) {
+            return abort(403, 'Hanya Bendahara atau Admin yang dapat mengonfirmasi pencairan dana.');
+        }
 
         if ($request->hasFile('proof_photo')) {
             $path = $request->file('proof_photo')->store('proofs', 'public');
             $purchase->transaction_proof_photo = $path;
         }
 
-        // 2. SIMPAN HARGA REALISASI (Optional, disimpan sbg total realisasi)
-        $purchase->total_amount = $request->real_price; 
-        
+        // 2. SIMPAN HARGA REALISASI (Tidak menimpa total_amount asli)
+        $purchase->realized_total_amount = $request->real_price; 
         $purchase->status = 'completed';
-        $purchase->is_purchased = true;
         $purchase->save();
 
+        // Hitung rasio untuk mendistribusikan harga realisasi ke masing-masing item
+        $ratio = $purchase->total_amount > 0 ? ($request->real_price / $purchase->total_amount) : 1;
+
         // 3. GENERATOR ASET PER ITEM
-        // Looping setiap item yang ada di Transaksi Purchase ini
         foreach ($purchase->items as $item) {
             
+            // Hitung harga realisasi satuan
+            $realizedUnitPrice = $item->unit_price * $ratio;
+            $item->update(['realized_unit_price' => $realizedUnitPrice]);
+
             $prefix = 'GEN'; 
-            if ($item->category && !empty($item->category->category_name)) {
-                $prefix = strtoupper(substr($item->category->category_name, 0, 3));
+            if ($item->category && !empty($item->category->code)) {
+                $prefix = strtoupper($item->category->code);
             }
 
-            // Loop sebanyak quantity per item (Misal beli 3 Lensa, buat 3 kode)
+            // Cari Nomor Terakhir
+            $lastTool = Tool::withTrashed()->where('tool_code', 'like', $prefix . '-%')
+                            ->orderByRaw('CAST(SUBSTRING(tool_code, LENGTH(?) + 2) AS UNSIGNED) DESC', [$prefix])
+                            ->first();
+            $nextNumber = 1;
+            if ($lastTool) {
+                $parts = explode('-', $lastTool->tool_code);
+                if (count($parts) >= 2) {
+                    $nextNumber = (int) end($parts) + 1;
+                }
+            }
+
+            // Loop sebanyak quantity per item
             for ($i = 0; $i < $item->quantity; $i++) {
                 
-                // Cari Nomor Terakhir
-                $lastTool = Tool::where('tool_code', 'like', $prefix . '-%')->orderBy('id', 'desc')->first();
-                $nextNumber = 1;
-                if ($lastTool) {
-                    $parts = explode('-', $lastTool->tool_code);
-                    if (count($parts) >= 2) {
-                        $nextNumber = intval(end($parts)) + 1;
-                    }
-                }
                 $generatedCode = $prefix . '-' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+                $nextNumber++; // Increment in-memory!
 
                 // INSERT KE TOOLS
                 Tool::create([
                     'tool_code'           => $generatedCode,
                     'tool_name'           => $item->tool_name,
-                    'brand'               => $request->brand,       // Sama rata brand
-                    'purchase_date'       => $purchase->date,       // DARI TANGGAL BELI MASTER
+                    'brand'               => $request->brand,
+                    'purchase_date'       => $purchase->date,
+                    'purchase_price'      => $realizedUnitPrice, // Simpan harga perolehan realisasi
                     'category_id'         => $item->category_id,
-                    'purchase_item_id'    => $purchase->id,         // Track dari master purchase
+                    'purchase_item_id'    => $purchase->id,
                     'current_condition'   => 'Baik',
                     'availability_status' => 'available',
                 ]);
             }
         }
 
-        return redirect()->route('purchases.request')->with('success', 'Transaksi Selesai! Anggaran dicairkan dan barang masuk inventaris.');
+        // 4. Audit Trail
+        \App\Models\ActivityLog::log('Cairkan Anggaran', "Bendahara mengonfirmasi pencairan dana untuk pengadaan {$purchase->purchase_code}. Nominal Realisasi: Rp " . number_format($request->real_price, 0, ',', '.') . " (Estimasi Awal: Rp " . number_format($purchase->total_amount, 0, ',', '.') . ")");
+
+        // 5. WhatsApp Notification (Simulasi ke Staff pemohon)
+        if ($purchase->user) {
+            $phone = $purchase->user->phone ?? '081234567890';
+            $message = "Halo {$purchase->user->name}, pengajuan pengadaan Anda {$purchase->purchase_code} telah dicairkan oleh Bendahara sebesar Rp " . number_format($request->real_price, 0, ',', '.') . ". Barang otomatis masuk inventaris dan siap dicetak label QR-nya.";
+            \App\Services\WhatsAppService::send($phone, $message);
+        }
+
+        // Redirect ke cetak QR code dengan filter purchase_id
+        return redirect()->route('tools.printQr', ['purchase_id' => $purchase->id])
+            ->with('success', 'Transaksi Selesai! Anggaran dicairkan dan barang telah masuk inventaris. Halaman cetak QR otomatis dibuka.');
     }
 
     public function show($id)
@@ -428,15 +464,57 @@ class PurchaseController extends Controller
     {
         $purchase = Purchase::findOrFail($id);
         
-        if (in_array($purchase->status, ['approved_head', 'completed']) || $purchase->is_purchased) {
+        if (in_array($purchase->status, ['approved_head', 'completed'])) {
              return back()->with('error', 'Tidak bisa menghapus data yang sudah disetujui/diselesaikan.');
         }
 
+        $code = $purchase->purchase_code;
         $purchase->delete();
+
+        \App\Models\ActivityLog::log('Hapus RAB', "Menghapus pengajuan pengadaan (RAB): {$code}");
+
         return back()->with('success', 'Data dihapus.');
     }
 
-    // (Fungsi process() dihapus karena tugasnya sudah digabung ke storePurchaseEvidence)
+    /**
+     * [BARU] Download Surat Perintah Pembelian (Berbasis QR)
+     */
+    public function downloadSuratPerintah($id)
+    {
+        set_time_limit(300);
+        $purchase = Purchase::with(['user', 'items.category'])->findOrFail($id);
+        
+        if ($purchase->status !== 'approved_head' && $purchase->status !== 'completed') {
+            return back()->with('error', 'Surat hanya dapat dicetak setelah disetujui Kepala.');
+        }
+
+        // Link QR dummy atau data teks pengesahan
+        $qrData = route('purchases.request'); 
+        $qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=' . urlencode($qrData);
+        
+        try {
+             $path = public_path('images/logo.png');
+             if (file_exists($path)) {
+                 $type = pathinfo($path, PATHINFO_EXTENSION);
+                 $data = file_get_contents($path);
+                 $logo = 'data:image/' . $type . ';base64,' . base64_encode($data);
+             } else {
+                 $logo = null;
+             }
+        } catch (\Throwable $e) {
+             $logo = null;
+        }
+
+        try {
+            while (ob_get_level()) {
+                ob_end_clean();
+            }
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('purchases.surat_perintah_pdf', compact('purchase', 'logo', 'qrUrl'));
+            return $pdf->stream('Surat-Perintah-Pengadaan-' . $purchase->purchase_code . '.pdf');
+        } catch (\Throwable $e) {
+            return response()->json(['error' => 'Gagal membuat PDF Surat Perintah: ' . $e->getMessage()], 500);
+        }
+    }
 
     /**
      * [BARU] Export PDF History with Analysis
@@ -449,17 +527,14 @@ class PurchaseController extends Controller
 
         // Filter Status Defaul (Completed / Rejected)
         if ($request->filled('status') && $request->status == 'completed') {
-            $query->where('is_purchased', true);
+            $query->where('status', 'completed');
         } 
         elseif ($request->filled('status') && $request->status == 'rejected') {
             $query->where('status', 'rejected');
         } 
         else {
             // Default: Tampilkan Keduanya (Selesai ATAU Ditolak)
-            $query->where(function($q) {
-                $q->where('is_purchased', true)
-                  ->orWhere('status', 'rejected');
-            });
+            $query->whereIn('status', ['completed', 'rejected']);
         }
 
         // ... FILTERING LAIN ...

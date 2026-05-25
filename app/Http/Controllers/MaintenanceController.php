@@ -53,22 +53,23 @@ class MaintenanceController extends Controller
         return view('maintenances.index', compact('maintenances', 'types', 'totalMaintenance', 'minProgress', 'completed', 'totalCost'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
         // Block kepala/head from creating maintenance records
         $user = Auth::user();
         if ($user && in_array($user->role, ['kepala', 'head'])) {
             return redirect()->route('maintenances.index')->with('error', 'Akses ditolak. Anda tidak dapat mencatat perbaikan.');
         }
-        // Mengambil alat yang statusnya TIDAK maintenance
-        // Sesuai migration tools: nama kolom 'availability_status'
-        //        $tools = Tool::where('availability_status', 'available')->get();
-       // Allow picking even borrowed items if needed? Usually available only.
-        $tools = Tool::where('availability_status', 'available')->get();
         
+        $tools = Tool::where('availability_status', 'available')->get();
         $types = MaintenanceType::all(); 
 
-        return view('maintenances.create', compact('tools', 'types'));
+        $selectedTool = null;
+        if ($request->filled('tool_id')) {
+            $selectedTool = Tool::with('category')->find($request->tool_id);
+        }
+
+        return view('maintenances.create', compact('tools', 'types', 'selectedTool'));
     }
 
     public function store(Request $request)

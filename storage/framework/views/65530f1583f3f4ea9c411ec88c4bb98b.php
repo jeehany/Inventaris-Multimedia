@@ -45,6 +45,68 @@
                 </div>
             </div>
 
+            <!-- Maintenance Alerts (Pemberitahuan Servis Rutin) -->
+            <?php if(isset($data['maintenance_alerts']) && count($data['maintenance_alerts']) > 0): ?>
+                <div class="relative overflow-hidden rounded-2xl bg-amber-50 border border-amber-200/60 p-6 shadow-sm mb-8">
+                    <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-amber-100 rounded-full blur-2xl opacity-50"></div>
+                    <div class="relative z-10 flex flex-col md:flex-row items-start gap-4">
+                        <div class="p-3 bg-amber-500 text-white rounded-xl shadow-md shadow-amber-500/20 shrink-0">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="text-lg font-bold text-amber-900 flex items-center gap-2">
+                                Peringatan Pemeliharaan Aset
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300">
+                                    <?php echo e(count($data['maintenance_alerts'])); ?> Perlu Servis
+                                </span>
+                            </h4>
+                            <p class="text-sm text-amber-700 mt-1">
+                                Beberapa aset multimedia di bawah ini terdeteksi memerlukan perawatan berkala karena frekuensi peminjaman yang tinggi (>10 kali) atau masa perolehan/pemeliharaan terakhir yang sudah melebihi 180 hari.
+                            </p>
+                            
+                            <div class="mt-4 overflow-x-auto rounded-lg border border-amber-200/50 bg-white">
+                                <table class="w-full text-sm text-left">
+                                    <thead class="text-xs uppercase bg-amber-50/50 text-amber-900 border-b border-amber-200/50">
+                                        <tr>
+                                            <th class="px-6 py-3 font-bold">Kode Aset</th>
+                                            <th class="px-6 py-3 font-bold">Nama Aset</th>
+                                            <th class="px-6 py-3 font-bold">Kondisi</th>
+                                            <th class="px-6 py-3 font-bold">Alasan Servis</th>
+                                            <th class="px-6 py-3 font-bold text-center">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-amber-100">
+                                        <?php $__currentLoopData = $data['maintenance_alerts']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $alert): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                            <tr class="hover:bg-amber-50/30 transition-colors">
+                                                <td class="px-6 py-3 font-mono font-bold text-slate-800"><?php echo e($alert['tool']->tool_code); ?></td>
+                                                <td class="px-6 py-3 font-medium text-slate-700"><?php echo e($alert['tool']->tool_name); ?></td>
+                                                <td class="px-6 py-3">
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                                        <?php echo e($alert['tool']->current_condition); ?>
+
+                                                    </span>
+                                                </td>
+                                                <td class="px-6 py-3 text-amber-800 text-xs font-medium"><?php echo e($alert['reason']); ?></td>
+                                                <td class="px-6 py-3 text-center">
+                                                    <a href="<?php echo e(route('maintenances.create', ['tool_id' => $alert['tool']->id])); ?>" class="inline-flex items-center px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-lg shadow-sm hover:shadow-amber-600/30 transition-all gap-1">
+                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
+                                                        </svg>
+                                                        Buat Tiket Perbaikan
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <?php endif; ?>
+
             <!-- Stats Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <?php if(auth()->user()->isKepala()): ?>

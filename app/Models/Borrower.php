@@ -14,5 +14,6 @@ class Borrower extends Model
         'name',
         'phone',
         'photo',
+        'pin',
     ];
 }

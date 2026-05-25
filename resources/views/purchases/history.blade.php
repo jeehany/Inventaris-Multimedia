@@ -197,7 +197,7 @@
                                             <span class="text-slate-400 italic">-</span>
                                         @else
                                             @php
-                                                $totalReal = $h->total_amount;
+                                                $totalReal = $h->realized_total_amount > 0 ? $h->realized_total_amount : $h->total_amount;
                                                 $diff = $totalPlan - $totalReal;
                                             @endphp
                                             
@@ -232,7 +232,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                        @elseif($h->status == 'approved' || $h->is_purchased)
+                                        @elseif($h->status == 'approved' || $h->status == 'completed')
                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200">
                                                 <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                                                 Selesai

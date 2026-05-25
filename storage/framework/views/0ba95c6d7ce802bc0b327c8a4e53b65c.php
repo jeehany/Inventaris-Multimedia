@@ -35,17 +35,7 @@
                                    placeholder="Nama Kategori">
                         </div>
 
-                        <div>
-                            <label for="code-<?php echo e($category->id); ?>" class="block text-sm font-semibold text-slate-700 mb-1">Kode Prefix</label>
-                            <input type="text"
-                                   id="code-<?php echo e($category->id); ?>"
-                                   name="code"
-                                   value="<?php echo e(old('code', $category->code)); ?>"
-                                   maxlength="10"
-                                   class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 font-mono uppercase"
-                                   placeholder="Contoh: LPT">
-                            <p class="text-xs text-slate-500 mt-1">Ubah prefix akan mempengaruhi kode aset baru.</p>
-                        </div>
+
 
                         <div>
                             <label for="desc-<?php echo e($category->id); ?>" class="block text-sm font-semibold text-slate-700 mb-1">Deskripsi</label>

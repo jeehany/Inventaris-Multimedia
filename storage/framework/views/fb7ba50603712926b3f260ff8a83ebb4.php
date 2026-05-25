@@ -97,7 +97,7 @@
         <?php endif; ?>
 
         <!-- 4. Monitoring & Report -->
-        <div x-data="{ open: <?php echo e(request()->routeIs('monitoring.*', 'reports.*') ? 'true' : 'false'); ?> }" class="pt-2 pb-6">
+        <div x-data="{ open: <?php echo e(request()->routeIs('monitoring.*', 'reports.*', 'activity-logs.*') ? 'true' : 'false'); ?> }" class="pt-2 pb-6">
             <button @click="open = !open" class="w-full flex items-center justify-between px-4 py-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:text-white transition">
                 <span>Tracking & Laporan</span>
                 <svg :class="open ? 'rotate-180' : ''" class="w-4 h-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
@@ -110,6 +110,10 @@
                 <a href="<?php echo e(route('reports.index')); ?>" class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors <?php echo e(request()->routeIs('reports.*') ? 'bg-indigo-600 text-white shadow-md shadow-indigo-900/50' : 'text-slate-300 hover:bg-slate-700 hover:text-white'); ?>">
                     <svg class="h-4 w-4 <?php echo e(request()->routeIs('reports.*') ? 'text-white' : 'text-slate-500'); ?>" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                     <span class="font-medium text-[13px]">Pusat Analitik Laporan</span>
+                </a>
+                <a href="<?php echo e(route('activity-logs.index')); ?>" class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors <?php echo e(request()->routeIs('activity-logs.*') ? 'bg-indigo-600 text-white shadow-md shadow-indigo-900/50' : 'text-slate-300 hover:bg-slate-700 hover:text-white'); ?>">
+                    <svg class="h-4 w-4 <?php echo e(request()->routeIs('activity-logs.*') ? 'text-white' : 'text-slate-500'); ?>" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                    <span class="font-medium text-[13px]">Log Aktivitas (Audit)</span>
                 </a>
             </div>
         </div>

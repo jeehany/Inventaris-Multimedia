@@ -17,6 +17,7 @@ class Purchase extends Model
         'vendor_id',
         'user_id',
         'total_amount',
+        'realized_total_amount',
         'status',
         'transaction_proof_photo',
         'rejection_note'

@@ -68,40 +68,97 @@ class BorrowingController extends Controller
             'borrow_date' => 'required|date',
             'return_date' => 'required|date|after_or_equal:borrow_date',
             'tool_ids' => 'required|array',
-            'tool_ids.*' => 'exists:tools,id',
+            'tool_ids.*' => [
+                'required',
+                \Illuminate\Validation\Rule::exists('tools', 'id')->where(function ($query) {
+                    $query->where('availability_status', 'available');
+                }),
+            ],
             'notes' => 'nullable|string',
         ]);
 
-        DB::transaction(function () use ($request) {
+        $borrower = Borrower::findOrFail($request->borrower_id);
+
+        DB::transaction(function () use ($request, $borrower) {
             // Generate Code Automatically
             $generatedCode = 'BRW-' . date('Ymd') . '-' . rand(100, 999);
+            
+            // Generate 4-digit OTP
+            $otp = str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
 
             $borrowing = Borrowing::create([
-                'borrowing_code' => $generatedCode,
-                'borrower_id' => $request->borrower_id,
-                'user_id' => auth()->id(),
-                'borrow_date' => $request->borrow_date,
-                'planned_return_date' => $request->return_date,
-                'borrowing_status' => 'active', // Langsung aktif saat barang di-scan Admin/Staff
-                'notes' => $request->notes,
+                'borrowing_code'    => $generatedCode,
+                'borrower_id'       => $request->borrower_id,
+                'user_id'           => auth()->id(),
+                'borrow_date'       => $request->borrow_date,
+                'planned_return_date'=> $request->return_date,
+                'borrowing_status'  => 'pending_verification', // Alur Baru: Menunggu Verifikasi
+                'verification_otp'  => $otp,
+                'notes'             => $request->notes,
             ]);
 
             foreach ($request->tool_ids as $toolId) {
-                // Create item record
-                // Assuming BorrowingItem model exists and has correct fields
                 \App\Models\BorrowingItem::create([
                     'borrowing_id' => $borrowing->id,
                     'tool_id' => $toolId,
-                    'tool_condition_before' => 'baik', // Default, or fetch from tool
+                    'tool_condition_before' => 'baik',
                 ]);
 
-                // Update tool status
+                // Update tool status (Direservasi agar tidak ganda)
                 $tool = Tool::find($toolId);
                 $tool->update(['availability_status' => 'borrowed']);
             }
+
+            // 1. Audit Trail
+            \App\Models\ActivityLog::log('Peminjaman Baru', "Mendaftarkan peminjaman {$generatedCode} untuk {$borrower->name} (Menunggu Verifikasi PIN/OTP)");
+
+            // 2. WhatsApp Gateway (Simulasi)
+            $phone = $borrower->phone ?? '081234567890';
+            $message = "Halo {$borrower->name}, Anda mengajukan peminjaman alat multimedia {$generatedCode}. Silakan gunakan PIN Anda atau masukkan OTP ini ke petugas: {$otp} untuk persetujuan serah terima alat secara sah.";
+            \App\Services\WhatsAppService::send($phone, $message);
         });
 
-        return redirect()->route('borrowings.index')->with('success', 'Peminjaman berhasil dicatat.');
+        return redirect()->route('borrowings.index')->with('success', 'Peminjaman berhasil didaftarkan. Harap lakukan verifikasi PIN/OTP peminjam.');
+    }
+
+    /**
+     * [BARU] Verifikasi Peminjam menggunakan PIN atau OTP
+     */
+    public function verifyBorrower(Request $request, $id)
+    {
+        $request->validate([
+            'verification_code' => 'required|string',
+        ]);
+
+        $borrowing = Borrowing::with('borrower')->findOrFail($id);
+
+        if ($borrowing->borrowing_status !== 'pending_verification') {
+            return back()->with('error', 'Transaksi ini tidak membutuhkan verifikasi.');
+        }
+
+        $code = $request->verification_code;
+        $borrower = $borrowing->borrower;
+
+        // Cek apakah kode cocok dengan PIN peminjam atau OTP transaksi
+        if ($code === $borrower->pin || $code === $borrowing->verification_otp) {
+            
+            // Ubah status menjadi active (atau pending_head jika membutuhkan approval Kepala)
+            // Sesuai alur asli, staff langsung mengubah status alat menjadi dipinjam.
+            // Maka setelah verifikasi, transaksi langsung Aktif.
+            $borrowing->update([
+                'borrowing_status' => 'active',
+            ]);
+
+            // 1. Audit Trail
+            \App\Models\ActivityLog::log('Verifikasi Peminjaman', "Peminjaman {$borrowing->borrowing_code} berhasil diverifikasi sah oleh peminjam {$borrower->name}");
+
+            // 2. WhatsApp Gateway (Simulasi ke Staf/Peminjam)
+            \App\Services\WhatsAppService::send($borrower->phone ?? '081234567890', "Halo {$borrower->name}, peminjaman {$borrowing->borrowing_code} telah sah diverifikasi. Silakan ambil barang Anda.");
+
+            return redirect()->route('borrowings.index')->with('success', 'Peminjaman berhasil diverifikasi secara sah!');
+        }
+
+        return back()->with('error', 'PIN atau OTP salah. Verifikasi gagal.');
     }
 
     /**
@@ -273,6 +330,9 @@ class BorrowingController extends Controller
             }
         });
 
+        // 1. Audit Trail
+        \App\Models\ActivityLog::log('Kembalikan Aset', "Aset dari peminjaman {$borrowing->borrowing_code} berhasil dikembalikan oleh {$borrowing->borrower->name}. Kondisi: {$request->return_condition}, Status Akhir: {$request->final_status}");
+
         return redirect()->route('borrowings.index')->with('success', 'Aset telah dikembalikan.');
     }
 
@@ -282,8 +342,8 @@ class BorrowingController extends Controller
     public function destroy(Borrowing $borrowing)
     {
         DB::transaction(function () use ($borrowing) {
-            // Restore tool status if borrowing was active
-            if ($borrowing->borrowing_status == 'active') {
+            // Restore tool status if borrowing was active or pending verification
+            if (in_array($borrowing->borrowing_status, ['active', 'pending_verification'])) {
                 foreach ($borrowing->items as $item) {
                     if ($item->tool) {
                         $item->tool->update(['availability_status' => 'available']);
@@ -292,6 +352,9 @@ class BorrowingController extends Controller
             }
             $borrowing->items()->delete();
             $borrowing->delete();
+
+            // 1. Audit Trail
+            \App\Models\ActivityLog::log('Hapus Peminjaman', "Menghapus data transaksi peminjaman: {$borrowing->borrowing_code}");
         });
 
         return redirect()->route('borrowings.index')->with('success', 'Data peminjaman dihapus.');

@@ -35,12 +35,12 @@
         <table style="width: 100%; border: none; margin-bottom: 0;">
             <tr>
                 <td style="width: 60px; border: none; text-align: center; vertical-align: middle;">
-                    @php $logoPath = public_path('images/logo.png'); @endphp
-                    @if(file_exists($logoPath))
-                        <img src="data:image/png;base64,{{ base64_encode(file_get_contents($logoPath)) }}" style="height: 60px; width: auto;">
-                    @else
+                    <?php $logoPath = public_path('images/logo.png'); ?>
+                    <?php if(file_exists($logoPath)): ?>
+                        <img src="data:image/png;base64,<?php echo e(base64_encode(file_get_contents($logoPath))); ?>" style="height: 60px; width: auto;">
+                    <?php else: ?>
                        <span style="font-weight:bold; font-size:12px;">LOGO</span>
-                    @endif
+                    <?php endif; ?>
                 </td>
                 <td style="border: none; text-align: center; vertical-align: middle;">
                     <h1 style="margin: 0; font-size: 18px; text-transform: uppercase;">HM COMPANY</h1>
@@ -59,15 +59,15 @@
                 <td>Riwayat Pengadaan & Analisa Budget</td>
                 <td style="width: 15%"><strong>Dicetak Oleh</strong></td>
                 <td style="width: 2%">:</td>
-                <td>{{ auth()->user()->name }}</td>
+                <td><?php echo e(auth()->user()->name); ?></td>
             </tr>
             <tr>
                 <td><strong>Tanggal Cetak</strong></td>
                 <td>:</td>
-                <td>{{ now()->translatedFormat('d F Y') }}</td>
+                <td><?php echo e(now()->translatedFormat('d F Y')); ?></td>
                 <td><strong>Filter Status</strong></td>
                 <td>:</td>
-                <td>{{ request('status') ?: 'Semua (Selesai/Ditolak)' }}</td>
+                <td><?php echo e(request('status') ?: 'Semua (Selesai/Ditolak)'); ?></td>
             </tr>
         </table>
     </div>
@@ -87,13 +87,13 @@
             </tr>
         </thead>
         <tbody>
-            @php 
+            <?php 
                 $totalBudget = 0; 
                 $totalRealization = 0; 
                 $totalSavings = 0;
-            @endphp
-            @forelse($purchases as $index => $h)
-            @php
+            ?>
+            <?php $__empty_1 = true; $__currentLoopData = $purchases; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $h): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+            <?php
                 $planTotal = $h->items ? $h->items->sum('subtotal') : $h->total_amount;
                 
                 // Jika rejected, realisasi 0
@@ -110,74 +110,76 @@
                     $totalRealization += $realTotal;
                     $totalSavings += $diff;
                 }
-            @endphp
+            ?>
             <tr>
-                <td class="text-center">{{ $index + 1 }}</td>
+                <td class="text-center"><?php echo e($index + 1); ?></td>
                 <td>
-                    <div style="font-weight:bold;">{{ $h->purchase_code }}</div>
-                    <small>{{ \Carbon\Carbon::parse($h->updated_at)->format('d/m/Y') }}</small>
+                    <div style="font-weight:bold;"><?php echo e($h->purchase_code); ?></div>
+                    <small><?php echo e(\Carbon\Carbon::parse($h->updated_at)->format('d/m/Y')); ?></small>
                 </td>
                 <td>
-                    @if($h->items && $h->items->count() > 0)
-                        @foreach($h->items as $item)
+                    <?php if($h->items && $h->items->count() > 0): ?>
+                        <?php $__currentLoopData = $h->items; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                             <div style="margin-bottom: 4px;">
-                                <strong>{{ $item->tool_name }}</strong><br>
-                                <small style="color:#555;">{{ $item->category->category_name ?? '-' }} (Qty: {{ $item->quantity }})</small>
+                                <strong><?php echo e($item->tool_name); ?></strong><br>
+                                <small style="color:#555;"><?php echo e($item->category->category_name ?? '-'); ?> (Qty: <?php echo e($item->quantity); ?>)</small>
                             </div>
-                        @endforeach
-                    @else
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                    <?php else: ?>
                         -
-                    @endif
+                    <?php endif; ?>
                 </td>
-                <td class="text-center">{{ $h->vendor->name ?? '-' }}</td>
-                <td class="text-center">{{ $h->items ? $h->items->sum('quantity') : 0 }}</td>
+                <td class="text-center"><?php echo e($h->vendor->name ?? '-'); ?></td>
+                <td class="text-center"><?php echo e($h->items ? $h->items->sum('quantity') : 0); ?></td>
                 <td class="text-right">-</td>
                 
                 <td class="text-right" style="background-color: #f9fafb;">
-                    Rp {{ number_format($planTotal, 0, ',', '.') }}
+                    Rp <?php echo e(number_format($planTotal, 0, ',', '.')); ?>
+
                 </td>
                 
                 <td class="text-right">
-                    @if(str_contains($h->status, 'rejected'))
+                    <?php if(str_contains($h->status, 'rejected')): ?>
                         <span style="color:red; font-style:italic;">Ditolak</span>
-                    @else
-                        Rp {{ number_format($realTotal, 0, ',', '.') }}
-                    @endif
+                    <?php else: ?>
+                        Rp <?php echo e(number_format($realTotal, 0, ',', '.')); ?>
+
+                    <?php endif; ?>
                 </td>
 
                 <td class="text-right">
-                    @if(str_contains($h->status, 'rejected'))
+                    <?php if(str_contains($h->status, 'rejected')): ?>
                         -
-                    @else
-                        @if($diff > 0)
-                            <span class="badge-hemat">(+) Hemat {{ number_format($diff, 0, ',', '.') }}</span>
-                        @elseif($diff < 0)
-                            <span class="badge-over">(-) Boros {{ number_format(abs($diff), 0, ',', '.') }}</span>
-                        @else
+                    <?php else: ?>
+                        <?php if($diff > 0): ?>
+                            <span class="badge-hemat">(+) Hemat <?php echo e(number_format($diff, 0, ',', '.')); ?></span>
+                        <?php elseif($diff < 0): ?>
+                            <span class="badge-over">(-) Boros <?php echo e(number_format(abs($diff), 0, ',', '.')); ?></span>
+                        <?php else: ?>
                             <span class="badge-normal">Sesuai Budget</span>
-                        @endif
-                    @endif
+                        <?php endif; ?>
+                    <?php endif; ?>
                 </td>
             </tr>
-            @empty
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
             <tr>
                 <td colspan="9" class="text-center">Tidak ada data riwayat.</td>
             </tr>
-            @endforelse
+            <?php endif; ?>
         </tbody>
         <tfoot>
             <tr style="background-color: #f3f4f6; font-weight: bold;">
                 <td colspan="6" class="text-right">TOTAL (Selesai Only)</td>
-                <td class="text-right">Rp {{ number_format($totalBudget, 0, ',', '.') }}</td>
-                <td class="text-right">Rp {{ number_format($totalRealization, 0, ',', '.') }}</td>
+                <td class="text-right">Rp <?php echo e(number_format($totalBudget, 0, ',', '.')); ?></td>
+                <td class="text-right">Rp <?php echo e(number_format($totalRealization, 0, ',', '.')); ?></td>
                 <td class="text-right">
-                    @if($totalSavings > 0)
-                        <span style="color:#059669;">Hemat: Rp {{ number_format($totalSavings, 0, ',', '.') }}</span>
-                    @elseif($totalSavings < 0)
-                        <span style="color:#dc2626;">Over: Rp {{ number_format(abs($totalSavings), 0, ',', '.') }}</span>
-                    @else
+                    <?php if($totalSavings > 0): ?>
+                        <span style="color:#059669;">Hemat: Rp <?php echo e(number_format($totalSavings, 0, ',', '.')); ?></span>
+                    <?php elseif($totalSavings < 0): ?>
+                        <span style="color:#dc2626;">Over: Rp <?php echo e(number_format(abs($totalSavings), 0, ',', '.')); ?></span>
+                    <?php else: ?>
                         Sesuai
-                    @endif
+                    <?php endif; ?>
                 </td>
             </tr>
         </tfoot>
@@ -187,9 +189,10 @@
         <div class="signature-box">
             <p>Mengetahui,</p>
             <p>Kepala Manajemen Inventaris</p>
-            <div class="signature-line">{{ auth()->user()->name }}</div>
+            <div class="signature-line"><?php echo e(auth()->user()->name); ?></div>
             <p>NIP. ..........................</p>
         </div>
     </div>
 </body>
 </html>
+<?php /**PATH C:\laragon\www\app-inventaris\resources\views/purchases/history_pdf.blade.php ENDPATH**/ ?>

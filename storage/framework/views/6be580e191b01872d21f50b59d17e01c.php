@@ -199,7 +199,7 @@
                                                         <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                                         Disetujui Kep.
                                                     </span>
-                                                    <span class="text-[10px] text-slate-500 italic block">Menunggu Bendahara</span>
+                                                    <span class="text-[10px] text-slate-500 italic block">Laksanakan Beli (Staff)</span>
                                                 </div>
                                             <?php elseif($purchase->status == 'completed'): ?> 
                                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200">
@@ -251,26 +251,21 @@
                                                         <input type="hidden" name="note" id="note-<?php echo e($purchase->id); ?>">
                                                     </form>
                                                     
-                                                <?php elseif(auth()->user()->role == 'bendahara' && $purchase->status == 'approved_head'): ?>
-                                                    
-                                                    <button onclick="openEvidenceModal(<?php echo e($purchase->id); ?>, <?php echo e($purchase->total_amount); ?>)" class="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 p-2 rounded-lg transition" title="Proses Pencairan & Bukti Belanja">
-                                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                                    </button>
-                                                    
-                                                    <button type="button" class="text-rose-600 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 p-2 rounded-lg transition inline" title="Tolak Pencairan" onclick="rejectPurchase(<?php echo e($purchase->id); ?>, 'Alasan Penolakan (Misal: Tidak Ada Anggaran):')">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                                                    </button>
-                                                    <form id="reject-form-<?php echo e($purchase->id); ?>" action="<?php echo e(route('purchases.reject', $purchase->id)); ?>" method="POST" class="hidden">
-                                                        <?php echo csrf_field(); ?> <?php echo method_field('PATCH'); ?>
-                                                        <input type="hidden" name="note" id="note-<?php echo e($purchase->id); ?>">
-                                                    </form>
-
-                                                <?php elseif(auth()->user()->role == 'staff' && str_starts_with($purchase->status, 'pending')): ?>
-                                                    <button type="button" onclick="openDeleteModal('<?php echo e(route('purchases.destroy', $purchase->id)); ?>', 'Batalkan Pengajuan?', 'Yakin ingin membatalkan pengajuan ini? Data akan dihapus permanen.')" class="text-rose-600 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 p-2 rounded-lg transition" title="Batalkan Pengajuan">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                        </svg>
-                                                    </button>
+                                                <?php elseif(auth()->user()->role == 'staff'): ?>
+                                                    <?php if(str_starts_with($purchase->status, 'pending')): ?>
+                                                        <button type="button" onclick="openDeleteModal('<?php echo e(route('purchases.destroy', $purchase->id)); ?>', 'Batalkan Pengajuan?', 'Yakin ingin membatalkan pengajuan ini? Data akan dihapus permanen.')" class="text-rose-600 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 p-2 rounded-lg transition" title="Batalkan Pengajuan">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                                        </button>
+                                                    <?php elseif($purchase->status == 'approved_head'): ?>
+                                                        
+                                                        <a href="<?php echo e(route('purchases.surat_perintah', $purchase->id)); ?>" target="_blank" class="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 p-2 rounded-lg transition inline-block" title="Cetak Surat Perintah (QR)">
+                                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                                        </a>
+                                                        
+                                                        <button type="button" onclick="openEvidenceModal(<?php echo e($purchase->id); ?>, <?php echo e($purchase->total_amount); ?>)" class="text-emerald-600 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 p-2 rounded-lg transition inline-block" title="Upload Kwitansi & Selesaikan Beli">
+                                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                                                        </button>
+                                                    <?php endif; ?>
                                                 <?php endif; ?>
 
                                             </div>
@@ -356,10 +351,9 @@
             // Translate Status Multi-level
             let statusBadge = '';
             if(data.status === 'pending_head' || data.status === 'pending') statusBadge = '<span class="px-2 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-bold border border-amber-200">Menunggu Kepala</span>';
-            else if(data.status === 'approved_head') statusBadge = '<span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-bold border border-blue-200">Disetujui Kep. (Tunggu Bendahara)</span>';
+            else if(data.status === 'approved_head') statusBadge = '<span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-bold border border-blue-200">Disetujui Kep. (Laksanakan Belanja)</span>';
             else if(data.status === 'rejected_head') statusBadge = '<span class="px-2 py-1 bg-rose-100 text-rose-800 rounded-full text-xs font-bold border border-rose-200">Ditolak Kepala</span>';
-            else if(data.status === 'rejected_bendahara') statusBadge = '<span class="px-2 py-1 bg-rose-100 text-rose-800 rounded-full text-xs font-bold border border-rose-200">Ditolak Bendahara</span>';
-            else if(data.status === 'completed') statusBadge = '<span class="px-2 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-bold border border-emerald-200">Anggaran Cair / Dibeli</span>';
+            else if(data.status === 'completed') statusBadge = '<span class="px-2 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-bold border border-emerald-200">Anggaran Cair / Telah Dibeli</span>';
 
             // Tanggal
             const date = new Date(data.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -497,20 +491,20 @@
                         </div>
                         <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
                             <h3 class="text-lg leading-6 font-medium text-slate-900" id="modal-title">
-                                Proses Pencairan & Bukti Belanja
+                                Upload Laporan & Bukti Belanja
                             </h3>
                             <div class="mt-4">
                                 <form id="evidenceForm" method="POST" action="" enctype="multipart/form-data">
                                     <?php echo csrf_field(); ?>
                                     <div class="mb-4">
-                                        <label class="block text-sm font-medium text-slate-700 mb-1">Total Dana Dicairkan/Realisasi (Rp) <span class="text-rose-500">*</span></label>
+                                        <label class="block text-sm font-medium text-slate-700 mb-1">Total Harga Realisasi Kwitansi (Rp) <span class="text-rose-500">*</span></label>
                                         <div class="relative">
                                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                                 <span class="text-slate-500 sm:text-sm">Rp</span>
                                             </div>
                                             <input type="number" name="real_price" id="realPriceInput" class="pl-10 focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-slate-300 rounded-md" required>
                                         </div>
-                                        <p class="text-xs text-slate-500 mt-1">Masukkan total uang yang direalisasikan.</p>
+                                        <p class="text-xs text-slate-500 mt-1">Penting: Masukkan nominal tagihan final sesuai struk belanja Anda.</p>
                                     </div>
                                     <div class="mb-4">
                                         <label class="block text-sm font-medium text-slate-700 mb-1">Merek Barang (Jika ada) <span class="text-rose-500">*</span></label>

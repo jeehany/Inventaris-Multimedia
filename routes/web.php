@@ -14,6 +14,7 @@ use App\Http\Controllers\MaintenanceTypeController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\MonitoringController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ActivityLogController;
 
 /*
 |--------------------------------------------------------------------------
@@ -70,6 +71,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/get-borrowing-by-tool', [BorrowingController::class, 'getBorrowingByToolCode'])->name('borrowings.getByTool');
     Route::patch('/borrowings/{id}/approve', [BorrowingController::class, 'approve'])->name('borrowings.approve');
     Route::patch('/borrowings/{id}/reject', [BorrowingController::class, 'reject'])->name('borrowings.reject');
+    Route::post('/borrowings/{id}/verify', [BorrowingController::class, 'verifyBorrower'])->name('borrowings.verify');
     
     Route::resource('borrowings', BorrowingController::class);
 
@@ -96,6 +98,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/purchases/{id}/reject', [PurchaseController::class, 'reject'])->name('purchases.reject');
     // Upload Bukti / Eksekusi Belanja (Admin)
     Route::post('/purchases/{id}/evidence', [PurchaseController::class, 'storePurchaseEvidence'])->name('purchases.evidence');
+    Route::get('/purchases/{id}/surat-perintah', [PurchaseController::class, 'downloadSuratPerintah'])->name('purchases.surat_perintah');
     
     // 3. Resource Purchases (CRUD Dasar)
     // Menggunakan except 'index' karena kita sudah buat custom index di atas (requests, todos, history)
@@ -124,6 +127,7 @@ Route::middleware('auth')->group(function () {
 
     // ROUTE USER MANAGEMENT
     Route::resource('users', UserController::class);
+    Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
 });
 
 require __DIR__.'/auth.php';

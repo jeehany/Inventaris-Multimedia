@@ -75,8 +75,9 @@ class ReportController extends Controller
                 'tools.id',
                 'tools.tool_code',
                 'tools.tool_name',
+                'tools.purchase_date',
                 'categories.category_name',
-                'purchase_items.unit_price as initial_price'
+                DB::raw('COALESCE(tools.purchase_price, purchase_items.unit_price) as initial_price')
             )
             ->whereNull('tools.deleted_at')
             ->orderBy('tools.tool_name')
@@ -89,12 +90,31 @@ class ReportController extends Controller
                 ->sum('cost');
 
             $t->total_maintenance_cost = $totalMaintenanceCost;
-            $t->total_investment = ($t->initial_price ?? 0) + $totalMaintenanceCost;
-            
-            // Contoh sederhana depresiasi: Harga Beli - (Sebagian biaya servis? atau Depresiasi umur?)
-            // Karena permintaan adalah Harga beli vs total beban, kita tampilkan itu saja.
-            $t->current_valuation = ($t->initial_price ?? 0) - ($totalMaintenanceCost * 0.5); // Penurunan nilai estimasi
-            if ($t->current_valuation < 0) $t->current_valuation = 0;
+
+            // Perhitungan Depresiasi (Metode Garis Lurus)
+            $initialPrice = $t->initial_price ?? 0;
+            $t->initial_price = $initialPrice;
+            $t->total_investment = $initialPrice + $totalMaintenanceCost;
+
+            $usefulLife = 5; // Masa manfaat 5 tahun
+            $salvageValue = $initialPrice * 0.10; // Nilai residu 10%
+
+            // Hitung selisih tahun perolehan
+            $purchaseYear = $t->purchase_date ? date('Y', strtotime($t->purchase_date)) : date('Y');
+            $currentYear = date('Y');
+            $yearsElapsed = max(0, $currentYear - $purchaseYear);
+
+            if ($yearsElapsed >= $usefulLife) {
+                // Nilai buku telah menyusut ke nilai residu
+                $accumulatedDepreciation = $initialPrice - $salvageValue;
+            } else {
+                $yearlyDepreciation = ($initialPrice - $salvageValue) / $usefulLife;
+                $accumulatedDepreciation = $yearlyDepreciation * $yearsElapsed;
+            }
+
+            $t->years_elapsed = $yearsElapsed;
+            $t->accumulated_depreciation = $accumulatedDepreciation;
+            $t->current_valuation = max($salvageValue, $initialPrice - $accumulatedDepreciation);
         }
 
         $pdf = Pdf::loadView('reports.asset_depreciation_pdf', compact('tools', 'request'));
@@ -111,21 +131,32 @@ class ReportController extends Controller
         $startDate = $request->start_date ?? null;
         $endDate = $request->end_date ?? null;
 
-        $categories = Category::withCount('tools')->get();
+        $queryBuilder = DB::table('tool_categories')
+            ->leftJoin('tools', 'tool_categories.id', '=', 'tools.category_id')
+            ->leftJoin('maintenances', 'tools.id', '=', 'maintenances.tool_id');
 
-        foreach ($categories as $cat) {
-            $query = DB::table('maintenances')
-                ->join('tools', 'maintenances.tool_id', '=', 'tools.id')
-                ->where('tools.category_id', $cat->id);
+        if ($startDate) $queryBuilder->whereDate('maintenances.start_date', '>=', $startDate);
+        if ($endDate) $queryBuilder->whereDate('maintenances.start_date', '<=', $endDate);
 
-            if ($startDate) $query->whereDate('maintenances.start_date', '>=', $startDate);
-            if ($endDate) $query->whereDate('maintenances.start_date', '<=', $endDate);
-
-            $cat->maintenance_count = $query->count();
-            $cat->total_repair_cost = $query->sum('maintenances.cost');
-        }
-
-        $categories = $categories->sortByDesc('maintenance_count');
+        $categoriesData = $queryBuilder->select(
+                'tool_categories.id',
+                'tool_categories.category_name',
+                DB::raw('COUNT(maintenances.id) as maintenance_count'),
+                DB::raw('COALESCE(SUM(maintenances.cost), 0) as total_repair_cost')
+            )
+            ->groupBy('tool_categories.id', 'tool_categories.category_name')
+            ->orderByDesc('maintenance_count')
+            ->get();
+            
+        // Map as Category models to keep compatibility with blade view
+        $categories = $categoriesData->map(function ($item) {
+            $cat = new Category();
+            $cat->id = $item->id;
+            $cat->category_name = $item->category_name;
+            $cat->maintenance_count = $item->maintenance_count;
+            $cat->total_repair_cost = $item->total_repair_cost;
+            return $cat;
+        });
 
         $pdf = Pdf::loadView('reports.damage_category_pdf', compact('categories', 'startDate', 'endDate'));
         return $pdf->stream('Laporan_Kerusakan_Kategori.pdf');
@@ -146,8 +177,8 @@ class ReportController extends Controller
             $query = Purchase::where('vendor_id', $vendor->id)
                 ->where('status', 'completed');
 
-            if ($startDate) $query->whereDate('purchase_date', '>=', $startDate);
-            if ($endDate) $query->whereDate('purchase_date', '<=', $endDate);
+            if ($startDate) $query->whereDate('date', '>=', $startDate);
+            if ($endDate) $query->whereDate('date', '<=', $endDate);
 
             $vendor->total_transactions = $query->count();
             $vendor->total_spent = $query->sum('total_amount');

@@ -159,13 +159,7 @@
                                     class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 placeholder-slate-400" 
                                     placeholder="Contoh: Kamera & Lensa">
                             </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-slate-700 mb-1">Kode Prefix (Opsional)</label>
-                                <input type="text" name="code" maxlength="10" 
-                                    class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 placeholder-slate-400 uppercase font-mono" 
-                                    placeholder="Contoh: CAM">
-                                <p class="text-xs text-slate-500 mt-1">Digunakan untuk generate kode aset otomatis.</p>
-                            </div>
+
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 mb-1">Deskripsi</label>
                                 <textarea name="description" rows="2" 

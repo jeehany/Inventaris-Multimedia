@@ -20,6 +20,7 @@ class Tool extends Model
         'tool_name', 
         'brand',           
         'purchase_date',
+        'purchase_price',
         'category_id', 
         'current_condition', 
         'availability_status',
@@ -36,6 +37,11 @@ class Tool extends Model
     public function borrowingItems()
     {
         return $this->hasMany(\App\Models\BorrowingItem::class, 'tool_id', 'id');
+    }
+
+    public function maintenances()
+    {
+        return $this->hasMany(\App\Models\Maintenance::class, 'tool_id', 'id');
     }
 
     // Relasi balik ke pembelian

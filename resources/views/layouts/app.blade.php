@@ -182,5 +182,23 @@
                 
             </div>
         </div>
+        {{-- SIMULATED WHATSAPP NOTIFICATION TOAST --}}
+        @if (session('wa_notif'))
+            <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 7000)" class="fixed bottom-5 right-5 z-50 max-w-sm w-full bg-slate-900 text-white rounded-xl shadow-2xl border border-indigo-500 overflow-hidden transition-all duration-300 transform" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-2">
+                <div class="p-4 flex items-start gap-3">
+                    <div class="p-2 bg-emerald-500 text-white rounded-lg animate-bounce">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.733-1.458L0 24zm6.292-4.148c1.691.997 3.324 1.542 5.673 1.543 5.485 0 9.946-4.428 9.95-9.87.002-2.636-1.02-5.115-2.88-6.978-1.859-1.862-4.331-2.888-6.965-2.89-5.492 0-9.953 4.431-9.957 9.873-.002 1.986.518 3.926 1.508 5.626L2.61 21.31l3.739-1.458zm10.745-6.289c-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.668.149-.198.297-.766.967-.94 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.521.149-.174.198-.298.298-.497.099-.198.05-.372-.025-.521-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-xs font-bold uppercase tracking-wider text-emerald-400 font-mono">Notifikasi WA Gateway</span>
+                            <button @click="show = false" class="text-slate-400 hover:text-white transition text-lg">&times;</button>
+                        </div>
+                        <p class="text-xs text-slate-300 font-semibold">Tujuan: {{ session('wa_notif')['to'] }}</p>
+                        <p class="text-xs text-white mt-1 font-medium italic">"{{ session('wa_notif')['message'] }}"</p>
+                    </div>
+                </div>
+            </div>
+        @endif
     </body>
 </html>
